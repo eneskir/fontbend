@@ -8,9 +8,9 @@ weight 400-700, Basic Latin only, as WOFF2, plus a copy of OFL.txt.
 The WOFF2 is named recursive-sans.<hash>.woff2, where <hash> is the first 8 hex
 digits of its SHA-256. site/_headers lets browsers and Cloudflare keep .woff2 files
 for a year without asking again, so a changed font must get a new name or visitors
-keep the old one. The script writes the new file, points site/index.html at it and
-then removes the previous file. The build is reproducible: the same source gives the
-same bytes, so running it again changes nothing.
+keep the old one. The script writes the new file, points every page in site/ at it
+and then removes the previous file. The build is reproducible: the same source gives
+the same bytes, so running it again changes nothing.
 
 Usage: python scripts/build-soon-font.py <folder with the Recursive .ttf and OFL.txt>
 """
@@ -20,7 +20,7 @@ from fontTools.varLib import instancer
 from fontTools import subset
 
 FONT_REF = re.compile(r"/fonts/recursive-sans(?:\.[0-9a-f]{8})?\.woff2")
-# index.html names the font twice: the preload link and the @font-face rule.
+# Every page names the font twice: the preload link and the @font-face rule.
 EXPECTED_REFS = 2
 
 
@@ -54,21 +54,25 @@ def write_atomic(path: str, data: bytes) -> None:
 
 
 def publish(data: bytes, site_dir: str) -> str:
-    """Writes the font under its hashed name, updates index.html, removes older fonts."""
+    """Writes the font under its hashed name, updates every page, removes older fonts."""
     name = "recursive-sans." + hashlib.sha256(data).hexdigest()[:8] + ".woff2"
     fonts_dir = os.path.join(site_dir, "fonts")
-    index = os.path.join(site_dir, "index.html")
-    with open(index, "rb") as f:
-        html = f.read().decode("utf-8")
-    refs = FONT_REF.findall(html)
-    if len(refs) != EXPECTED_REFS:
-        sys.exit(f"Expected {EXPECTED_REFS} font references in {index}, found {len(refs)}; nothing written")
+    pages = {}
+    for page in sorted(glob.glob(os.path.join(site_dir, "*.html"))):
+        with open(page, "rb") as f:
+            pages[page] = f.read().decode("utf-8")
+        refs = FONT_REF.findall(pages[page])
+        if len(refs) != EXPECTED_REFS:
+            sys.exit(f"Expected {EXPECTED_REFS} font references in {page}, found {len(refs)}; nothing written")
+    if not pages:
+        sys.exit(f"No pages in {site_dir}; nothing written")
 
     os.makedirs(fonts_dir, exist_ok=True)
     write_atomic(os.path.join(fonts_dir, name), data)
-    new_html = FONT_REF.sub("/fonts/" + name, html)
-    if new_html != html:
-        write_atomic(index, new_html.encode("utf-8"))
+    for page, html in pages.items():
+        new_html = FONT_REF.sub("/fonts/" + name, html)
+        if new_html != html:
+            write_atomic(page, new_html.encode("utf-8"))
     for old in glob.glob(os.path.join(fonts_dir, "recursive-sans*.woff2")):
         if os.path.basename(old) != name:
             os.remove(old)

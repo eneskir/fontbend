@@ -23,7 +23,7 @@ The maintainer designs the product and approves every change but does not read c
 
 - `python3 tools/secret_scan.py`: no secrets, credential files or personal data in tracked files.
 - `TITLE="fix: ..." python3 tools/check_pr_title.py`: pull request titles follow Conventional Commits, at most 100 characters. Squash merges turn the title into the commit subject.
-- `python3 tools/check_site_cache.py`: every file that `site/_headers` caches as immutable has the first 8 hex digits of its SHA-256 in its name, and every local link in `site/*.html` points to a file that exists. Browsers and Cloudflare keep such files for a year, so a changed file needs a new name. `scripts/build-soon-font.py` names the font this way and updates `site/index.html`.
+- `python3 tools/check_site_cache.py`: every file that `site/_headers` caches as immutable has the first 8 hex digits of its SHA-256 in its name, and every local link in `site/*.html` points to a file that exists. Browsers and Cloudflare keep such files for a year, so a changed file needs a new name. `scripts/build-soon-font.py` names the font this way and updates every page in `site/`.
 
 ## Rules
 

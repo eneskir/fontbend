@@ -1,0 +1,14 @@
+# Plans, research notes, agent files and pull request evidence stay out of the repository.
+docs/
+plans/
+.plans/
+.claude/
+pr-assets/
+
+.wrangler/
+node_modules/
+__pycache__/
+.env
+.env.*
+!.env.example
+.dev.vars

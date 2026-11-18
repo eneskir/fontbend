@@ -1,0 +1,36 @@
+name: Bug report
+description: Something in Fontbend does not work as expected.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: What did you do?
+      description: The steps, one per line, so someone else can repeat them.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+      description: A screenshot helps.
+    validations:
+      required: true
+  - type: input
+    id: font
+    attributes:
+      label: Font
+      description: The catalog font, or the file type if you used your own font (TTF, OTF, WOFF2). Attach the file only if its license allows sharing it.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and operating system
+      placeholder: Firefox on Windows 11
+    validations:
+      required: true

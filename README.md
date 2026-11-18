@@ -1,6 +1,6 @@
 # Fontbend
 
-A free, open-source font maker that runs in your browser. Pick a font from the catalog, shape it with sliders, check that it covers Turkish, and download it with its license.
+A free, open-source font maker that runs in your browser. Pick a font from the catalog, shape it with sliders, see which languages it covers and download it with its license.
 
 Fontbend is in development. Until the first release, [fontbend.com](https://fontbend.com) shows a placeholder page.
 
@@ -22,7 +22,7 @@ Bug reports, translation fixes and ideas are welcome through the issue forms. Pu
 
 # Fontbend (Türkçe)
 
-Tarayıcıda çalışan, ücretsiz ve açık kaynak bir font yapıcı. Katalogdan bir font seç, sürgülerle biçimlendir, Türkçeyi karşıladığını denetle, lisansıyla birlikte indir.
+Tarayıcıda çalışan, ücretsiz ve açık kaynak bir font yapıcı. Katalogdan bir font seç, sürgülerle biçimlendir, hangi dilleri karşıladığına bak, lisansıyla birlikte indir.
 
 Fontbend geliştirme aşamasında. İlk sürüme kadar [fontbend.com](https://fontbend.com) bir bekleme sayfası gösteriyor.
 

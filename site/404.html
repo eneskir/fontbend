@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not found | Fontbend</title>
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<link rel="preload" href="/fonts/recursive-sans.4b801a95.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face {
+  font-family: "Recursive Sans";
+  src: url("/fonts/recursive-sans.4b801a95.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+:root {
+  --paper: #FAFAF7;
+  --surface: #EFEEE9;
+  --line: #E2E0DA;
+  --ink: #161616;
+  --ink-muted: #5E5D58;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1A1A18;
+    --surface: #232320;
+    --line: #34332F;
+    --ink: #ECEAE4;
+    --ink-muted: #A6A49D;
+  }
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Recursive Sans", system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+}
+header {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+h1 { font-size: 16px; font-weight: 600; line-height: 24px; }
+main { flex: 1; padding: 200px 16px 16px; }
+.not-found {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px 48px;
+  max-width: 672px;
+  margin: 0 auto;
+}
+.not-found svg { flex: none; width: 83px; height: 170px; }
+h2 { font-size: 16px; font-weight: 600; line-height: 24px; }
+.button {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 6px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 600;
+  text-decoration: none;
+}
+.button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+@media (max-width: 600px) {
+  main { padding-top: 64px; }
+}
+</style>
+</head>
+<body>
+<header><h1>Fontbend</h1></header>
+<main>
+<div class="not-found">
+<!-- The box a font draws for a character it does not have (.notdef), as in the app's design. -->
+<svg viewBox="0 0 83 170" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="6">
+<rect x="3.5" y="3.5" width="76" height="163" stroke-width="7"/>
+<path d="M7 7 76 163M76 7 7 163"/>
+</svg>
+<div>
+<h2>No page at this address</h2>
+<a class="button" href="/">Open Fontbend</a>
+</div>
+</div>
+</main>
+</body>
+</html>

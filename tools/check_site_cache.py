@@ -9,7 +9,8 @@ new deploy.
 For every file under site/ that an immutable rule covers, the name must end in
 .<hash>.<extension>, where <hash> is the first 8 hex digits of the file's SHA-256.
 Every local reference in site/*.html (href, src, url()) must point to a file that exists,
-so a renamed file cannot leave the page pointing at nothing.
+so a renamed file cannot leave the page pointing at nothing. A reference ending in / means
+the index.html in that folder, the way Cloudflare Pages serves it.
 
 Exit code: 0 ok, 1 findings, 2 site/_headers missing or a rule this check cannot read.
 """
@@ -79,7 +80,8 @@ def main() -> int:
         for match in LOCAL_REF.finditer(page.read_text(encoding="utf-8")):
             ref = match.group(1) or match.group(2)
             refs += 1
-            if not (site / ref.lstrip("/")).is_file():
+            target = ref + "index.html" if ref.endswith("/") else ref
+            if not (site / target.lstrip("/")).is_file():
                 findings.append(f"{page.relative_to(site).as_posix()} points to {ref}, which does not exist")
 
     for finding in findings:

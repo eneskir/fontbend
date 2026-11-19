@@ -6,7 +6,7 @@ its content: a new version then has a new name. On 18.11.2026 the placeholder fo
 its name, and fontbend.com went on serving the old font from Cloudflare's cache after a
 new deploy.
 
-For every file under site/ that an immutable rule covers, the name must end in
+For every served file that an immutable rule covers, the name must end in
 .<hash>.<extension>, where <hash> is the first 8 hex digits of the file's SHA-256.
 Every local reference in the pages (href, src, url()) must point to a file that exists,
 so a renamed file cannot leave the page pointing at nothing. A reference ending in / means

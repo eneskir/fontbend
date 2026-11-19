@@ -15,7 +15,8 @@ The maintainer designs the product and approves every change but does not read c
 ## Layout
 
 - `site/`: what fontbend.com serves. Deployed from `main` by `.github/workflows/deploy.yml`.
-- `scripts/`: build scripts. `scripts/build-soon-font.py` builds the placeholder page's font from Recursive.
+- `preview/`: pages that are not public yet. The same workflow deploys them on top of `site/` to a Cloudflare Pages preview address, preview.fontbend.pages.dev, so the maintainer can see them in a browser while fontbend.com shows only the placeholder. A page moves to `site/` when the maintainer decides it goes public.
+- `scripts/`: build scripts. `scripts/build-site-font.py` builds the fonts of `site/` and `preview/` from Recursive.
 - `tools/`: checks that CI runs.
 - `.github/`: workflows, issue forms, pull request template, Dependabot.
 
@@ -23,7 +24,7 @@ The maintainer designs the product and approves every change but does not read c
 
 - `python3 tools/secret_scan.py`: no secrets, credential files or personal data in tracked files.
 - `TITLE="fix: ..." python3 tools/check_pr_title.py`: pull request titles follow Conventional Commits, at most 100 characters. Squash merges turn the title into the commit subject.
-- `python3 tools/check_site_cache.py`: every file that `site/_headers` caches as immutable has the first 8 hex digits of its SHA-256 in its name, and every local link in `site/*.html` points to a file that exists. Browsers and Cloudflare keep such files for a year, so a changed file needs a new name. `scripts/build-soon-font.py` names the font this way and updates every page in `site/`.
+- `python3 tools/check_site_cache.py site` and `python3 tools/check_site_cache.py site preview`: every file that `_headers` caches as immutable has the first 8 hex digits of its SHA-256 in its name, and every local link in the pages points to a file that exists. The first checks what fontbend.com serves, the second what the preview address serves. Browsers and Cloudflare keep such files for a year, so a changed file needs a new name. `scripts/build-site-font.py` names the fonts this way and updates every page that uses them.
 
 ## Rules
 

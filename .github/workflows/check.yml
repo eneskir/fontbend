@@ -18,8 +18,12 @@ jobs:
       - name: Secret scan
         run: python3 tools/secret_scan.py
 
+      # site/ alone is what fontbend.com serves; site/ with preview/ on top is what the
+      # preview address serves. Both must hold.
       - name: Cache-safe file names
-        run: python3 tools/check_site_cache.py
+        run: |
+          python3 tools/check_site_cache.py site
+          python3 tools/check_site_cache.py site preview
 
       # The title is passed through the environment, never pasted into the command,
       # so a crafted title cannot change what runs.

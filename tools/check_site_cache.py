@@ -8,11 +8,15 @@ new deploy.
 
 For every file under site/ that an immutable rule covers, the name must end in
 .<hash>.<extension>, where <hash> is the first 8 hex digits of the file's SHA-256.
-Every local reference in site/*.html (href, src, url()) must point to a file that exists,
+Every local reference in the pages (href, src, url()) must point to a file that exists,
 so a renamed file cannot leave the page pointing at nothing. A reference ending in / means
 the index.html in that folder, the way Cloudflare Pages serves it.
 
-Exit code: 0 ok, 1 findings, 2 site/_headers missing or a rule this check cannot read.
+Usage: python3 tools/check_site_cache.py [folder ...]
+With no folder it checks site/. Several folders are checked as one deployment, each
+served on top of the ones before it: "site preview" is what the preview address serves.
+
+Exit code: 0 ok, 1 findings, 2 a folder or _headers missing, or a rule this check cannot read.
 """
 
 import hashlib
@@ -49,22 +53,28 @@ def to_regex(pattern: str) -> re.Pattern:
 
 
 def main() -> int:
-    site = Path(__file__).resolve().parent.parent / "site"
-    headers_file = site / "_headers"
-    if not headers_file.is_file():
-        print(f"ERROR: {headers_file} not found")
+    root = Path(__file__).resolve().parent.parent
+    layers = [root / name for name in (sys.argv[1:] or ["site"])]
+    served = {}
+    for layer in layers:
+        if not layer.is_dir():
+            print(f"ERROR: {layer} not found")
+            return 2
+        for path in sorted(p for p in layer.rglob("*") if p.is_file()):
+            served["/" + path.relative_to(layer).as_posix()] = path
+    headers_file = served.get("/_headers")
+    if headers_file is None:
+        print(f"ERROR: no _headers in {', '.join(str(layer) for layer in layers)}")
         return 2
     try:
         rules = [to_regex(p) for p in immutable_patterns(headers_file)]
     except ValueError as exc:
-        print(f"ERROR: this check cannot read the rule {exc} in site/_headers")
+        print(f"ERROR: this check cannot read the rule {exc} in {headers_file}")
         return 2
 
     findings = []
-    files = sorted(p for p in site.rglob("*") if p.is_file())
     cached = 0
-    for path in files:
-        url = "/" + path.relative_to(site).as_posix()
+    for url, path in sorted(served.items()):
         if not any(rule.match(url) for rule in rules):
             continue
         cached += 1
@@ -76,13 +86,15 @@ def main() -> int:
             findings.append(f"{url} is cached as immutable but its name says {match.group(1)} and its content hashes to {digest}")
 
     refs = 0
-    for page in (p for p in files if p.suffix == ".html"):
+    for url, page in sorted(served.items()):
+        if page.suffix != ".html":
+            continue
         for match in LOCAL_REF.finditer(page.read_text(encoding="utf-8")):
             ref = match.group(1) or match.group(2)
             refs += 1
             target = ref + "index.html" if ref.endswith("/") else ref
-            if not (site / target.lstrip("/")).is_file():
-                findings.append(f"{page.relative_to(site).as_posix()} points to {ref}, which does not exist")
+            if target not in served:
+                findings.append(f"{url.lstrip('/')} points to {ref}, which does not exist")
 
     for finding in findings:
         print(f"FOUND {finding}")

@@ -23,6 +23,14 @@ PATTERNS = {
     "quoted-password": re.compile(r"(?i)\b(?:password|passwd|parola|sifre|şifre)\s*[:=]\s*['\"][^'\"]{4,}['\"]"),
     "tr-phone": re.compile(r"(?<!\d)(?:\+90|0)\s?5\d{2}\s?\d{3}\s?\d{2}\s?\d{2}(?!\d)"),
     "email": re.compile(r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b"),
+    # A path into a Windows user folder carries the account name and the layout of the
+    # machine. Written as C:\Users\, C:\\Users\\ (escaped), C:/Users/, or the Git Bash,
+    # WSL and Cygwin forms /c/Users/, /mnt/c/Users/, /cygdrive/c/Users/. Other drive paths
+    # are left alone: made-up ones such as C:/x.json are common in test data.
+    "local-user-path": re.compile(
+        r"(?i)(?<![A-Za-z0-9])[A-Z]:(?:\\+|/)Users(?:\\+|/)"
+        r"|(?<![\w.\-])/(?:mnt/|cygdrive/)?[A-Z]/Users/"
+    ),
 }
 
 # Addresses published on purpose. A personal address never goes here.

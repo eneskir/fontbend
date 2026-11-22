@@ -39,6 +39,15 @@ The fonts people start from in the app. Each `.ttf` is an unchanged copy from go
 | Caveat | 2.000 | SIL Open Font License 1.1 | [google/fonts](https://github.com/google/fonts/tree/06bfe0d62a98375cb09c942fa18e68bd32cff057/ofl/caveat) | `app/public/catalog/caveat/`, license text in `OFL.txt` there |
 <!-- end of catalog fonts -->
 
+## App libraries
+
+Code from these packages is served with the app and runs in the user's browser.
+
+| Library | Version | License | Source | Where |
+|---|---|---|---|---|
+| harfbuzzjs, the `harfbuzz-subset.wasm` build | 1.6.4 | MIT | [harfbuzz/harfbuzzjs](https://github.com/harfbuzz/harfbuzzjs) | makes the font files people download (`app/src/core/harfbuzz.ts`); license text in `app/public/licenses/harfbuzz.txt` |
+| HarfBuzz, compiled into that wasm file | 15.0.0 | Old MIT | [harfbuzz/harfbuzz](https://github.com/harfbuzz/harfbuzz) at the commit harfbuzzjs 1.6.4 pins | same file as above, with its copyright notice |
+
 ## Build tools
 
 These run on the developer's computer and in CI to check and build Fontbend; none of their code is in what the site serves.

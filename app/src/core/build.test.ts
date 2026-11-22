@@ -1,0 +1,98 @@
+/// <reference types="vite/client" />
+import { describe, expect, it } from "vitest";
+import initWasm from "harfbuzzjs/dist/harfbuzz-subset.wasm?init";
+import { BuildError, buildFont, needsStretched } from "./build";
+import { loadInstancer } from "./harfbuzz";
+import { SIGNATURE, postScriptName, readNames } from "./names";
+import { readTables, view } from "./sfnt";
+import { stretchFont } from "./stretch";
+
+const decode = (dataUrl: string) => Uint8Array.from(atob(dataUrl.slice(dataUrl.indexOf(",") + 1)), (c) => c.charCodeAt(0));
+const fontFile = Object.values(import.meta.glob<string>("../../public/catalog/fraunces/fraunces.*.ttf", { query: "?inline", import: "default", eager: true }))[0]!;
+const original = decode(fontFile);
+const stretched = stretchFont(original).bytes;
+const axes = [
+  { tag: "opsz", min: 9, default: 9, max: 144 },
+  { tag: "wght", min: 100, default: 900, max: 900 },
+  { tag: "SOFT", min: 0, default: 0, max: 100 },
+  { tag: "WONK", min: 0, default: 1, max: 1 },
+];
+const hb = await loadInstancer(await initWasm({}));
+const names = { family: "Fraunces Fontbend", style: "Regular" as const };
+
+const tablesOf = (font: Uint8Array) => readTables(font);
+const winName = (font: Uint8Array, id: number) => readNames(tablesOf(font).get("name")!).find((r) => r.platform === 3 && r.id === id)?.text;
+const checksumOk = (font: Uint8Array) => {
+  const v = view(font);
+  let sum = 0;
+  for (let i = 0; i + 3 < font.length; i += 4) sum = (sum + v.getUint32(i)) >>> 0;
+  return font.length % 4 === 0 && sum === 0xb1b0afba;
+};
+
+describe("buildFont", () => {
+  const regular = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, names);
+
+  it("makes a static font from values inside the range without the stretched font", () => {
+    const t = tablesOf(regular);
+    expect(t.has("fvar")).toBe(false);
+    expect(t.has("gvar")).toBe(false);
+    expect(view(t.get("OS/2")!).getUint16(4)).toBe(500); // usWeightClass
+    expect(checksumOk(regular)).toBe(true);
+  });
+
+  it("names it as the user chose and signs it", () => {
+    expect(winName(regular, 1)).toBe("Fraunces Fontbend");
+    expect(winName(regular, 2)).toBe("Regular");
+    expect(winName(regular, 4)).toBe("Fraunces Fontbend");
+    expect(winName(regular, 6)).toBe("FrauncesFontbend-Regular");
+    expect(winName(regular, 10)).toBe(SIGNATURE);
+    expect(winName(regular, 0)).toMatch(/Copyright[\s\S]*\nModified with Fontbend/);
+    expect(winName(regular, 16)).toBeUndefined();
+    // The license stays.
+    expect(winName(regular, 13)).toMatch(/SIL Open Font License/);
+    // No Mac record keeps the old family name.
+    expect(readNames(tablesOf(regular).get("name")!).filter((r) => r.id === 1).map((r) => r.text)).toEqual(["Fraunces Fontbend"]);
+  });
+
+  it("sets one style: regular, not bold, no signature table left", () => {
+    const t = tablesOf(regular);
+    expect(view(t.get("OS/2")!).getUint16(62) & 0x61).toBe(0x40);
+    expect(view(t.get("head")!).getUint16(44) & 0x3).toBe(0);
+    expect(t.has("DSIG")).toBe(false);
+  });
+
+  it("needs the stretched font past the range, and makes the value with it", () => {
+    expect(needsStretched(axes, { wght: 1300 })).toBe(true);
+    expect(needsStretched(axes, { wght: [500, 900] })).toBe(false);
+    expect(() => buildFont(hb, { original, stretched: null, axes }, { wght: 1300 }, names)).toThrow(BuildError);
+    const heavy = buildFont(hb, { original, stretched, axes }, { wght: 1300 }, names);
+    const black = buildFont(hb, { original, stretched, axes }, { wght: 900 }, names);
+    expect(tablesOf(heavy).has("fvar")).toBe(false);
+    expect(view(tablesOf(heavy).get("OS/2")!).getUint16(4)).toBe(1000); // usWeightClass stops at 1000
+    expect(tablesOf(heavy).get("glyf")).not.toEqual(tablesOf(black).get("glyf"));
+    expect(checksumOk(heavy)).toBe(true);
+  });
+
+  it("keeps an axis variable when a range is chosen", () => {
+    const font = buildFont(hb, { original, stretched: null, axes }, { wght: [400, 700] }, names);
+    const fvar = tablesOf(font).get("fvar")!;
+    const v = view(fvar);
+    const first = v.getUint16(4), size = v.getUint16(10);
+    const ranges = Array.from({ length: v.getUint16(8) }, (_, i) => String.fromCharCode(...fvar.subarray(first + i * size, first + i * size + 4)) + " " + v.getInt32(first + i * size + 4) / 65536 + "-" + v.getInt32(first + i * size + 12) / 65536);
+    expect(ranges).toEqual(["wght 400-700"]);
+    expect(winName(font, 25)).toBe("FrauncesFontbend");
+  });
+
+  it("reports HarfBuzz refusing a value in the user's words", () => {
+    expect(() => buildFont(hb, { original, stretched: null, axes }, { wght: [700, 400] as unknown as [number, number] }, names)).toThrow(/could not be made/);
+  });
+});
+
+describe("postScriptName", () => {
+  it("keeps only letters and digits of the family, at most 63 characters", () => {
+    expect(postScriptName("Fraunces Fontbend 2", "Italic")).toBe("FrauncesFontbend2-Italic");
+    expect(postScriptName("Çok güzel", "Regular")).toBe("okgzel-Regular");
+    expect(postScriptName("#$%", "Regular")).toBe("Fontbend-Regular");
+    expect(postScriptName("x".repeat(80), "Regular")).toHaveLength(63);
+  });
+});

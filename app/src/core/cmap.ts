@@ -1,11 +1,14 @@
 /** Which characters a font draws, from its cmap table. */
 import { view } from "./sfnt";
 
+/** The code points the font maps to a glyph other than .notdef. */
+export const codePoints = (cmap: Uint8Array): Set<number> => new Set(glyphMap(cmap).keys());
+
 /**
- * The code points the font maps to a glyph other than .notdef. Reads the full Unicode subtable
- * (format 12) when there is one, otherwise the BMP one (format 4).
+ * Code point to glyph index, for every code point mapped to a glyph other than .notdef. Reads
+ * the full Unicode subtable (format 12) when there is one, otherwise the BMP one (format 4).
  */
-export function codePoints(cmap: Uint8Array): Set<number> {
+export function glyphMap(cmap: Uint8Array): Map<number, number> {
   const v = view(cmap);
   const count = v.getUint16(2);
   const subtables: { format: number; at: number; rank: number }[] = [];
@@ -23,19 +26,19 @@ export function codePoints(cmap: Uint8Array): Set<number> {
   return best.format === 12 ? format12(v, best.at) : format4(v, best.at);
 }
 
-function format12(v: DataView, at: number): Set<number> {
-  const out = new Set<number>();
+function format12(v: DataView, at: number): Map<number, number> {
+  const out = new Map<number, number>();
   const groups = v.getUint32(at + 12);
   for (let g = 0; g < groups; g++) {
     const p = at + 16 + g * 12;
     const start = v.getUint32(p), end = v.getUint32(p + 4), glyph = v.getUint32(p + 8);
-    for (let c = start; c <= end; c++) if (glyph + (c - start) !== 0) out.add(c);
+    for (let c = start; c <= end; c++) if (glyph + (c - start) !== 0) out.set(c, glyph + (c - start));
   }
   return out;
 }
 
-function format4(v: DataView, at: number): Set<number> {
-  const out = new Set<number>();
+function format4(v: DataView, at: number): Map<number, number> {
+  const out = new Map<number, number>();
   const segments = v.getUint16(at + 6) / 2;
   const ends = at + 14, starts = ends + segments * 2 + 2, deltas = starts + segments * 2, offsets = deltas + segments * 2;
   for (let s = 0; s < segments; s++) {
@@ -46,7 +49,7 @@ function format4(v: DataView, at: number): Set<number> {
         const g = v.getUint16(offsetAt + offset + (c - start) * 2);
         return g === 0 ? 0 : (g + delta) & 0xffff;
       })();
-      if (glyph !== 0) out.add(c);
+      if (glyph !== 0) out.set(c, glyph);
     }
   }
   return out;

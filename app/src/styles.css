@@ -120,6 +120,9 @@ ul { list-style: none; }
 }
 /* The row keeps its place when empty, so a message appearing or leaving never moves the sample. */
 .status-row { display: flex; align-items: center; gap: 8px; min-height: 32px; margin-top: 8px; }
+.status-result { color: var(--ink-muted); }
+/* Measured, never seen: a box of no size keeps its long line from widening the page. */
+.measure { position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden; pointer-events: none; white-space: pre; font-size: 64px; }
 .is-failed .status { color: var(--red); }
 .is-loading .sample, .is-failed .sample { visibility: hidden; }
 

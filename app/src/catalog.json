@@ -12,6 +12,7 @@
       "version": "3.200",
       "copyright": "Copyright 2017 The Roboto Flex Project Authors (https://github.com/TypeNetwork/Roboto-Flex)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "glyphs": 948,
       "axes": [
         {
           "tag": "opsz",
@@ -112,6 +113,7 @@
       "version": "1.085",
       "copyright": "Copyright 2019 The Recursive Project Authors (github.com/arrowtype/recursive)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "glyphs": 1304,
       "axes": [
         {
           "tag": "MONO",
@@ -164,6 +166,7 @@
       "version": "1.001",
       "copyright": "Copyright 2019 The Commissioner Project Authors (github.com/kosbarts/Commissioner)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "glyphs": 1123,
       "axes": [
         {
           "tag": "wght",
@@ -210,6 +213,7 @@
       "version": "1.001",
       "copyright": "Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 597,
       "axes": [
         {
           "tag": "opsz",
@@ -250,6 +254,7 @@
       "version": "1.000",
       "copyright": "Copyright 2022 The Instrument Sans Project Authors (https://github.com/Instrument/instrument-sans)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 501,
       "axes": [
         {
           "tag": "wdth",
@@ -289,6 +294,7 @@
       "version": "3.602",
       "copyright": "Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 1103,
       "axes": [
         {
           "tag": "wght",
@@ -322,6 +328,7 @@
       "version": "4.001",
       "copyright": "Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "glyphs": 2933,
       "axes": [
         {
           "tag": "opsz",
@@ -361,6 +368,7 @@
       "version": "1.010",
       "copyright": "Copyright 2020 The Geologica Project Authors (https://github.com/googlefonts/geologica)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 973,
       "axes": [
         {
           "tag": "wght",
@@ -407,6 +415,7 @@
       "version": "1.035",
       "copyright": "Copyright © 2025 The Science Gothic Project Authors (https://github.com/googlefonts/science-gothic/blob/main/AUTHORS.txt)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "glyphs": 1321,
       "axes": [
         {
           "tag": "CTRS",
@@ -453,6 +462,7 @@
       "version": "3.103",
       "copyright": "Copyright 2017 The Literata Project Authors (https://github.com/googlefonts/literata)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 1789,
       "axes": [
         {
           "tag": "opsz",
@@ -492,6 +502,7 @@
       "version": "1.000",
       "copyright": "Copyright 2020 The Fraunces Project Authors (github.com/undercasetype/Fraunces)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 698,
       "axes": [
         {
           "tag": "opsz",
@@ -543,6 +554,7 @@
       "version": "2.203",
       "copyright": "Copyright 2005 The Playfair Project Authors (https://github.com/clauseggers/Playfair)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "glyphs": 2316,
       "axes": [
         {
           "tag": "opsz",
@@ -588,6 +600,7 @@
       "version": "1.003",
       "copyright": "Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "glyphs": 658,
       "axes": [
         {
           "tag": "wght",
@@ -627,6 +640,7 @@
       "version": "1.000",
       "copyright": "Copyright 2021 The Montagu Slab Project Authors (https://github.com/floriankarsten/montagu-slab)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 687,
       "axes": [
         {
           "tag": "wght",
@@ -661,6 +675,7 @@
       "version": "2.002",
       "copyright": "Copyright 2019 The Big Shoulders Project Authors (https://github.com/xotypeco/big_shoulders)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "glyphs": 1075,
       "axes": [
         {
           "tag": "wght",
@@ -695,6 +710,7 @@
       "version": "1.011",
       "copyright": "Copyright 2022 The Shantell Sans Project Authors (https://github.com/arrowtype/shantell-sans)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "glyphs": 1728,
       "axes": [
         {
           "tag": "wght",
@@ -746,6 +762,7 @@
       "version": "1.000",
       "copyright": "Copyright 2020 The Martian Mono Project Authors (https://github.com/evilmartians/mono)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 567,
       "axes": [
         {
           "tag": "wght",
@@ -780,6 +797,7 @@
       "version": "2.211",
       "copyright": "Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 1179,
       "axes": [
         {
           "tag": "wght",
@@ -813,6 +831,7 @@
       "version": "2.112",
       "copyright": "Copyright 2020 The Sono Project Authors (https://github.com/sursly/sono)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "glyphs": 750,
       "axes": [
         {
           "tag": "wght",
@@ -847,6 +866,7 @@
       "version": "2.000",
       "copyright": "Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)",
       "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "glyphs": 1034,
       "axes": [
         {
           "tag": "wght",

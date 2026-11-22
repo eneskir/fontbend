@@ -5,7 +5,7 @@ const fraunces: FontSettings = {
   schemaVersion: 1,
   source: { kind: "catalog", id: "fraunces" },
   axes: { wght: 640, opsz: [9, 72], SOFT: 50.5 },
-  subset: "latin",
+  subset: "western",
   formats: ["ttf", "woff2"],
 };
 
@@ -16,7 +16,7 @@ describe("settings text", () => {
   });
 
   it("stays short and readable in a link", () => {
-    expect(encodeSettings(fraunces)).toBe("v=1&f=fraunces&SOFT=50.5&opsz=9..72&wght=640&sub=latin&out=ttf%2Cwoff2");
+    expect(encodeSettings(fraunces)).toBe("v=1&f=fraunces&SOFT=50.5&opsz=9..72&wght=640&sub=western&out=ttf%2Cwoff2");
   });
 
   it("refuses text it does not understand", () => {

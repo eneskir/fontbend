@@ -5,6 +5,7 @@ import { BuildError, buildFont } from "../core/build";
 import { loadInstancer, type Instancer } from "../core/harfbuzz";
 import type { MadeNames } from "../core/download";
 import type { AxisSetting } from "../core/settings";
+import type { Subset } from "../core/subsets";
 
 export type BuildRequest = {
   id: number;
@@ -13,6 +14,7 @@ export type BuildRequest = {
   axes: readonly Axis[];
   settings: Record<string, AxisSetting>;
   names: MadeNames;
+  subset: Subset;
 };
 export type BuildReply = { id: number; bytes: Uint8Array } | { id: number; error: string; message: string };
 
@@ -33,7 +35,7 @@ const instancer = () => {
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 scope.onmessage = async (e: MessageEvent<BuildRequest>) => {
-  const { id, original, stretched, axes, settings, names } = e.data;
+  const { id, original, stretched, axes, settings, names, subset } = e.data;
   let maker: Instancer;
   try {
     maker = await instancer();
@@ -43,7 +45,7 @@ scope.onmessage = async (e: MessageEvent<BuildRequest>) => {
     return;
   }
   try {
-    const bytes = buildFont(maker, { original, stretched, axes }, settings, names);
+    const bytes = buildFont(maker, { original, stretched, axes }, settings, names, subset);
     scope.postMessage({ id, bytes } satisfies BuildReply, [bytes.buffer]);
   } catch (err) {
     const reply: BuildReply = err instanceof BuildError

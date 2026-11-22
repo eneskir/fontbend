@@ -7,7 +7,8 @@ Each entry in FONTS is one instance of Recursive, subset and saved as WOFF2 in t
 fonts/ folder of its tree:
 - recursive-sans (site/): the placeholder pages. The Sans Linear cut (CASL 0, MONO 0),
   Basic Latin only.
-- recursive-text and recursive-mono (preview/): pages that are not public yet. The text
+- recursive-text and recursive-mono (preview/ and app/): pages that are not public yet and
+  the font maker's interface. The text
   cut chosen for the site on 19.11.2026, MONO 0.3 and CASL 0.25: wider and softer than
   Sans Linear and close to the logo's single stroke. Numbers and code use the same
   casualness at MONO 1. Both cover Latin-1, Latin Extended-A and typographic
@@ -24,7 +25,7 @@ same bytes, so running it again changes nothing.
 
 Usage: python scripts/build-site-font.py <folder with the Recursive .ttf and OFL.txt>
 """
-import glob, hashlib, io, os, re, shutil, sys
+import glob, hashlib, io, os, re, sys
 from dataclasses import dataclass
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
@@ -52,6 +53,9 @@ FONTS = (
     Font("recursive-sans", "site", {"CASL": 0, "MONO": 0, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, BASIC_LATIN),
     Font("recursive-text", "preview", {"CASL": 0.25, "MONO": 0.3, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, TEXT),
     Font("recursive-mono", "preview", {"CASL": 0.25, "MONO": 1, "slnt": 0, "CRSV": 0.5, "wght": 400}, TEXT),
+    # The font maker's interface wears the same cuts as the preview pages.
+    Font("recursive-text", "app", {"CASL": 0.25, "MONO": 0.3, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, TEXT),
+    Font("recursive-mono", "app", {"CASL": 0.25, "MONO": 1, "slnt": 0, "CRSV": 0.5, "wght": 400}, TEXT),
 )
 # Every page names each font of its tree twice: the preload link and the @font-face rule.
 EXPECTED_REFS = 2
@@ -142,7 +146,12 @@ def main() -> None:
             if current != html:
                 write_atomic(page, html.encode("utf-8"))
     # The preview is deployed on top of site/, so one copy of the license serves both.
-    shutil.copy2(license_file, os.path.join(repo_root, "site", "fonts", "OFL.txt"))
+    # A Windows checkout may have turned its line ends into CRLF; the repository keeps LF.
+    with open(license_file, "rb") as f:
+        license_text = f.read().replace(b"\r\n", b"\n")
+    target = os.path.join(repo_root, "site", "fonts", "OFL.txt")
+    if not os.path.exists(target) or open(target, "rb").read() != license_text:
+        write_atomic(target, license_text)
 
 
 if __name__ == "__main__":

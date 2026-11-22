@@ -97,12 +97,13 @@
       "licenseCopyright": "Copyright 2017 The Roboto Flex Project Authors (https://github.com/TypeNetwork/Roboto-Flex)",
       "files": {
         "upright": {
-          "path": "fonts/roboto-flex/roboto-flex.9b523f7d.ttf",
+          "path": "catalog/roboto-flex/roboto-flex.9b523f7d.ttf",
           "source": "ofl/robotoflex/RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf",
           "bytes": 1787292
         }
       },
-      "licenseFile": "fonts/roboto-flex/OFL.txt"
+      "nameFile": "catalog/roboto-flex/roboto-flex-name.e7748868.woff2",
+      "licenseFile": "catalog/roboto-flex/OFL.txt"
     },
     {
       "id": "recursive",
@@ -148,12 +149,13 @@
       "licenseCopyright": "Copyright 2020 The Recursive Project Authors (https://github.com/arrowtype/recursive)",
       "files": {
         "upright": {
-          "path": "fonts/recursive/recursive.653221ca.ttf",
+          "path": "catalog/recursive/recursive.653221ca.ttf",
           "source": "ofl/recursive/Recursive[CASL,CRSV,MONO,slnt,wght].ttf",
           "bytes": 2379132
         }
       },
-      "licenseFile": "fonts/recursive/OFL.txt"
+      "nameFile": "catalog/recursive/recursive-name.264fb910.woff2",
+      "licenseFile": "catalog/recursive/OFL.txt"
     },
     {
       "id": "commissioner",
@@ -193,12 +195,13 @@
       "licenseCopyright": "Copyright 2019 The Commissioner Project Authors (https://github.com/kosbarts/Commissioner)",
       "files": {
         "upright": {
-          "path": "fonts/commissioner/commissioner.db01279a.ttf",
+          "path": "catalog/commissioner/commissioner.db01279a.ttf",
           "source": "ofl/commissioner/Commissioner[FLAR,VOLM,slnt,wght].ttf",
           "bytes": 742232
         }
       },
-      "licenseFile": "fonts/commissioner/OFL.txt"
+      "nameFile": "catalog/commissioner/commissioner-name.5a26335b.woff2",
+      "licenseFile": "catalog/commissioner/OFL.txt"
     },
     {
       "id": "bricolage-grotesque",
@@ -232,12 +235,13 @@
       "licenseCopyright": "Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)",
       "files": {
         "upright": {
-          "path": "fonts/bricolage-grotesque/bricolage-grotesque.413e7357.ttf",
+          "path": "catalog/bricolage-grotesque/bricolage-grotesque.413e7357.ttf",
           "source": "ofl/bricolagegrotesque/BricolageGrotesque[opsz,wdth,wght].ttf",
           "bytes": 408496
         }
       },
-      "licenseFile": "fonts/bricolage-grotesque/OFL.txt"
+      "nameFile": "catalog/bricolage-grotesque/bricolage-grotesque-name.877914ff.woff2",
+      "licenseFile": "catalog/bricolage-grotesque/OFL.txt"
     },
     {
       "id": "instrument-sans",
@@ -265,17 +269,18 @@
       "licenseCopyright": "Copyright 2022 The Instrument Sans Project Authors (https://github.com/Instrument/instrument-sans)",
       "files": {
         "upright": {
-          "path": "fonts/instrument-sans/instrument-sans.b24f1812.ttf",
+          "path": "catalog/instrument-sans/instrument-sans.b24f1812.ttf",
           "source": "ofl/instrumentsans/InstrumentSans[wdth,wght].ttf",
           "bytes": 194336
         },
         "italic": {
-          "path": "fonts/instrument-sans/instrument-sans-italic.a74203cc.ttf",
+          "path": "catalog/instrument-sans/instrument-sans-italic.a74203cc.ttf",
           "source": "ofl/instrumentsans/InstrumentSans-Italic[wdth,wght].ttf",
           "bytes": 202128
         }
       },
-      "licenseFile": "fonts/instrument-sans/OFL.txt"
+      "nameFile": "catalog/instrument-sans/instrument-sans-name.8cda628b.woff2",
+      "licenseFile": "catalog/instrument-sans/OFL.txt"
     },
     {
       "id": "nunito",
@@ -297,17 +302,18 @@
       "licenseCopyright": "Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)",
       "files": {
         "upright": {
-          "path": "fonts/nunito/nunito.bb55a5ca.ttf",
+          "path": "catalog/nunito/nunito.bb55a5ca.ttf",
           "source": "ofl/nunito/Nunito[wght].ttf",
           "bytes": 276932
         },
         "italic": {
-          "path": "fonts/nunito/nunito-italic.b520cc87.ttf",
+          "path": "catalog/nunito/nunito-italic.b520cc87.ttf",
           "source": "ofl/nunito/Nunito-Italic[wght].ttf",
           "bytes": 281832
         }
       },
-      "licenseFile": "fonts/nunito/OFL.txt"
+      "nameFile": "catalog/nunito/nunito-name.04ca958e.woff2",
+      "licenseFile": "catalog/nunito/OFL.txt"
     },
     {
       "id": "inter",
@@ -335,17 +341,18 @@
       "licenseCopyright": "Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)",
       "files": {
         "upright": {
-          "path": "fonts/inter/inter.29160a80.ttf",
+          "path": "catalog/inter/inter.29160a80.ttf",
           "source": "ofl/inter/Inter[opsz,wght].ttf",
           "bytes": 876576
         },
         "italic": {
-          "path": "fonts/inter/inter-italic.acd98e64.ttf",
+          "path": "catalog/inter/inter-italic.acd98e64.ttf",
           "source": "ofl/inter/Inter-Italic[opsz,wght].ttf",
           "bytes": 906596
         }
       },
-      "licenseFile": "fonts/inter/OFL.txt"
+      "nameFile": "catalog/inter/inter-name.430fbfa8.woff2",
+      "licenseFile": "catalog/inter/OFL.txt"
     },
     {
       "id": "geologica",
@@ -385,12 +392,13 @@
       "licenseCopyright": "Copyright 2020 The Geologisk Project Authors (https://github.com/monokromskriftforlag/geologisk)",
       "files": {
         "upright": {
-          "path": "fonts/geologica/geologica.9124d9e8.ttf",
+          "path": "catalog/geologica/geologica.9124d9e8.ttf",
           "source": "ofl/geologica/Geologica[CRSV,SHRP,slnt,wght].ttf",
           "bytes": 348640
         }
       },
-      "licenseFile": "fonts/geologica/OFL.txt"
+      "nameFile": "catalog/geologica/geologica-name.12550d3c.woff2",
+      "licenseFile": "catalog/geologica/OFL.txt"
     },
     {
       "id": "science-gothic",
@@ -430,12 +438,13 @@
       "licenseCopyright": "Copyright 2024 Font Detective LLC <https://github.com/googlefonts/science-gothic/OFL.txt>",
       "files": {
         "upright": {
-          "path": "fonts/science-gothic/science-gothic.246e4d33.ttf",
+          "path": "catalog/science-gothic/science-gothic.246e4d33.ttf",
           "source": "ofl/sciencegothic/ScienceGothic[CTRS,slnt,wdth,wght].ttf",
           "bytes": 2726388
         }
       },
-      "licenseFile": "fonts/science-gothic/OFL.txt"
+      "nameFile": "catalog/science-gothic/science-gothic-name.6025bcdd.woff2",
+      "licenseFile": "catalog/science-gothic/OFL.txt"
     },
     {
       "id": "literata",
@@ -463,17 +472,18 @@
       "licenseCopyright": "Copyright 2017 The Literata Project Authors (https://github.com/googlefonts/literata)",
       "files": {
         "upright": {
-          "path": "fonts/literata/literata.b41138c9.ttf",
+          "path": "catalog/literata/literata.b41138c9.ttf",
           "source": "ofl/literata/Literata[opsz,wght].ttf",
           "bytes": 955132
         },
         "italic": {
-          "path": "fonts/literata/literata-italic.d483dfae.ttf",
+          "path": "catalog/literata/literata-italic.d483dfae.ttf",
           "source": "ofl/literata/Literata-Italic[opsz,wght].ttf",
           "bytes": 902728
         }
       },
-      "licenseFile": "fonts/literata/OFL.txt"
+      "nameFile": "catalog/literata/literata-name.fae99fc0.woff2",
+      "licenseFile": "catalog/literata/OFL.txt"
     },
     {
       "id": "fraunces",
@@ -513,17 +523,18 @@
       "licenseCopyright": "Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)",
       "files": {
         "upright": {
-          "path": "fonts/fraunces/fraunces.177ff6c0.ttf",
+          "path": "catalog/fraunces/fraunces.177ff6c0.ttf",
           "source": "ofl/fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf",
           "bytes": 360440
         },
         "italic": {
-          "path": "fonts/fraunces/fraunces-italic.b24448c4.ttf",
+          "path": "catalog/fraunces/fraunces-italic.b24448c4.ttf",
           "source": "ofl/fraunces/Fraunces-Italic[SOFT,WONK,opsz,wght].ttf",
           "bytes": 414904
         }
       },
-      "licenseFile": "fonts/fraunces/OFL.txt"
+      "nameFile": "catalog/fraunces/fraunces-name.99836200.woff2",
+      "licenseFile": "catalog/fraunces/OFL.txt"
     },
     {
       "id": "playfair",
@@ -557,17 +568,18 @@
       "licenseCopyright": "Copyright 2005 The Playfair Project Authors (https://github.com/googlefonts/Playfair)",
       "files": {
         "upright": {
-          "path": "fonts/playfair/playfair.33cfecbc.ttf",
+          "path": "catalog/playfair/playfair.33cfecbc.ttf",
           "source": "ofl/playfair/Playfair[opsz,wdth,wght].ttf",
           "bytes": 1776724
         },
         "italic": {
-          "path": "fonts/playfair/playfair-italic.ae0d7a72.ttf",
+          "path": "catalog/playfair/playfair-italic.ae0d7a72.ttf",
           "source": "ofl/playfair/Playfair-Italic[opsz,wdth,wght].ttf",
           "bytes": 1783732
         }
       },
-      "licenseFile": "fonts/playfair/OFL.txt"
+      "nameFile": "catalog/playfair/playfair-name.221feadb.woff2",
+      "licenseFile": "catalog/playfair/OFL.txt"
     },
     {
       "id": "newsreader",
@@ -595,17 +607,18 @@
       "licenseCopyright": "Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)",
       "files": {
         "upright": {
-          "path": "fonts/newsreader/newsreader.8a08d13f.ttf",
+          "path": "catalog/newsreader/newsreader.8a08d13f.ttf",
           "source": "ofl/newsreader/Newsreader[opsz,wght].ttf",
           "bytes": 451664
         },
         "italic": {
-          "path": "fonts/newsreader/newsreader-italic.79666861.ttf",
+          "path": "catalog/newsreader/newsreader-italic.79666861.ttf",
           "source": "ofl/newsreader/Newsreader-Italic[opsz,wght].ttf",
           "bytes": 495684
         }
       },
-      "licenseFile": "fonts/newsreader/OFL.txt"
+      "nameFile": "catalog/newsreader/newsreader-name.ab695fde.woff2",
+      "licenseFile": "catalog/newsreader/OFL.txt"
     },
     {
       "id": "montagu-slab",
@@ -633,12 +646,13 @@
       "licenseCopyright": "Copyright 2020 The Montagu Slab Project Authors (https://github.com/floriankarsten/montagu-slab)",
       "files": {
         "upright": {
-          "path": "fonts/montagu-slab/montagu-slab.26fe25e6.ttf",
+          "path": "catalog/montagu-slab/montagu-slab.26fe25e6.ttf",
           "source": "ofl/montaguslab/MontaguSlab[opsz,wght].ttf",
           "bytes": 529316
         }
       },
-      "licenseFile": "fonts/montagu-slab/OFL.txt"
+      "nameFile": "catalog/montagu-slab/montagu-slab-name.d64ca231.woff2",
+      "licenseFile": "catalog/montagu-slab/OFL.txt"
     },
     {
       "id": "big-shoulders",
@@ -666,12 +680,13 @@
       "licenseCopyright": "Copyright 2019 The Big Shoulders Project Authors (https://github.com/xotypeco/big_shoulders)",
       "files": {
         "upright": {
-          "path": "fonts/big-shoulders/big-shoulders.4b4b24aa.ttf",
+          "path": "catalog/big-shoulders/big-shoulders.4b4b24aa.ttf",
           "source": "ofl/bigshoulders/BigShoulders[opsz,wght].ttf",
           "bytes": 320800
         }
       },
-      "licenseFile": "fonts/big-shoulders/OFL.txt"
+      "nameFile": "catalog/big-shoulders/big-shoulders-name.622d6dc8.woff2",
+      "licenseFile": "catalog/big-shoulders/OFL.txt"
     },
     {
       "id": "shantell-sans",
@@ -711,17 +726,18 @@
       "licenseCopyright": "Copyright 2022 The Shantell Sans Project Authors (https://github.com/arrowtype/shantell-sans)",
       "files": {
         "upright": {
-          "path": "fonts/shantell-sans/shantell-sans.d98a7913.ttf",
+          "path": "catalog/shantell-sans/shantell-sans.d98a7913.ttf",
           "source": "ofl/shantellsans/ShantellSans[BNCE,INFM,SPAC,wght].ttf",
           "bytes": 1284736
         },
         "italic": {
-          "path": "fonts/shantell-sans/shantell-sans-italic.269eb724.ttf",
+          "path": "catalog/shantell-sans/shantell-sans-italic.269eb724.ttf",
           "source": "ofl/shantellsans/ShantellSans-Italic[BNCE,INFM,SPAC,wght].ttf",
           "bytes": 1532432
         }
       },
-      "licenseFile": "fonts/shantell-sans/OFL.txt"
+      "nameFile": "catalog/shantell-sans/shantell-sans-name.2645477a.woff2",
+      "licenseFile": "catalog/shantell-sans/OFL.txt"
     },
     {
       "id": "martian-mono",
@@ -749,12 +765,13 @@
       "licenseCopyright": "Copyright 2021 The Martian Mono Project Authors (https://github.com/evilmartians/mono)",
       "files": {
         "upright": {
-          "path": "fonts/martian-mono/martian-mono.c3467843.ttf",
+          "path": "catalog/martian-mono/martian-mono.c3467843.ttf",
           "source": "ofl/martianmono/MartianMono[wdth,wght].ttf",
           "bytes": 148460
         }
       },
-      "licenseFile": "fonts/martian-mono/OFL.txt"
+      "nameFile": "catalog/martian-mono/martian-mono-name.03defbfb.woff2",
+      "licenseFile": "catalog/martian-mono/OFL.txt"
     },
     {
       "id": "jetbrains-mono",
@@ -776,17 +793,18 @@
       "licenseCopyright": "Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)",
       "files": {
         "upright": {
-          "path": "fonts/jetbrains-mono/jetbrains-mono.48715a42.ttf",
+          "path": "catalog/jetbrains-mono/jetbrains-mono.48715a42.ttf",
           "source": "ofl/jetbrainsmono/JetBrainsMono[wght].ttf",
           "bytes": 187208
         },
         "italic": {
-          "path": "fonts/jetbrains-mono/jetbrains-mono-italic.85ae2a5c.ttf",
+          "path": "catalog/jetbrains-mono/jetbrains-mono-italic.85ae2a5c.ttf",
           "source": "ofl/jetbrainsmono/JetBrainsMono-Italic[wght].ttf",
           "bytes": 191556
         }
       },
-      "licenseFile": "fonts/jetbrains-mono/OFL.txt"
+      "nameFile": "catalog/jetbrains-mono/jetbrains-mono-name.f97ffc9d.woff2",
+      "licenseFile": "catalog/jetbrains-mono/OFL.txt"
     },
     {
       "id": "sono",
@@ -814,12 +832,13 @@
       "licenseCopyright": "Copyright 2020 The Sono Project Authors (https://github.com/sursly/sono)",
       "files": {
         "upright": {
-          "path": "fonts/sono/sono.247ca641.ttf",
+          "path": "catalog/sono/sono.247ca641.ttf",
           "source": "ofl/sono/Sono[MONO,wght].ttf",
           "bytes": 154620
         }
       },
-      "licenseFile": "fonts/sono/OFL.txt"
+      "nameFile": "catalog/sono/sono-name.7d49d31f.woff2",
+      "licenseFile": "catalog/sono/OFL.txt"
     },
     {
       "id": "caveat",
@@ -841,12 +860,13 @@
       "licenseCopyright": "Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)",
       "files": {
         "upright": {
-          "path": "fonts/caveat/caveat.0bdb6b66.ttf",
+          "path": "catalog/caveat/caveat.0bdb6b66.ttf",
           "source": "ofl/caveat/Caveat[wght].ttf",
           "bytes": 403648
         }
       },
-      "licenseFile": "fonts/caveat/OFL.txt"
+      "nameFile": "catalog/caveat/caveat-name.8bd76bff.woff2",
+      "licenseFile": "catalog/caveat/OFL.txt"
     }
   ]
 }

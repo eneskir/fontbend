@@ -4,9 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fontbend</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preload" href="/fonts/recursive-text.86bc049c.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/recursive-mono.114d3264.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face {
+  font-family: "Recursive Text";
+  src: url("/fonts/recursive-text.86bc049c.woff2") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Recursive Mono";
+  src: url("/fonts/recursive-mono.114d3264.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+</style>
 </head>
 <body>
-<main id="app"></main>
+<div id="app"></div>
 <script type="module" src="./src/main.ts"></script>
 </body>
 </html>

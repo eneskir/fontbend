@@ -2,22 +2,51 @@ import type { CatalogFont } from "../core/catalog";
 
 const faces = new Map<string, Promise<void>>();
 
-/** Loads a font file once under a family name of its own; a failed load can be tried again. */
-function load(family: string, path: string): Promise<void> {
+/** Loads a font once under a family name of its own; a failed load can be tried again. */
+function load(family: string, source: () => Promise<string | ArrayBuffer>): Promise<void> {
   let loading = faces.get(family);
   if (!loading) {
-    const face = new FontFace(family, `url("${new URL(path, document.baseURI).href}")`);
-    loading = face.load().then((f) => void document.fonts.add(f));
+    loading = source().then((s) => new FontFace(family, s).load()).then((f) => void document.fonts.add(f));
     loading.catch(() => faces.delete(family));
     faces.set(family, loading);
   }
   return loading;
 }
 
-/** The whole variable font, for the preview. */
+const url = (path: string) => new URL(path, document.baseURI).href;
+
+let worker: Worker | null = null;
+let nextJob = 0;
+const jobs = new Map<number, { ok: (b: ArrayBuffer) => void; no: (e: Error) => void }>();
+
+function stretched(path: string): Promise<ArrayBuffer> {
+  if (!worker) {
+    worker = new Worker(new URL("./stretch.worker.ts", import.meta.url), { type: "module" });
+    worker.onmessage = (e: MessageEvent<{ id: number; bytes?: Uint8Array; error?: string }>) => {
+      const job = jobs.get(e.data.id);
+      jobs.delete(e.data.id);
+      if (e.data.bytes) job?.ok(e.data.bytes.buffer as ArrayBuffer);
+      else job?.no(new Error(e.data.error ?? "stretch failed"));
+    };
+  }
+  const w = worker;
+  return fetch(url(path))
+    .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status} ${path}`))))
+    .then((buf) => new Promise<ArrayBuffer>((ok, no) => {
+      const id = nextJob++;
+      jobs.set(id, { ok, no });
+      w.postMessage({ id, bytes: new Uint8Array(buf) }, [buf]);
+    }));
+}
+
+/** The whole variable font as it ships, for the preview while the stretched one is made. */
 export const previewFamily = (font: CatalogFont) => `fb-${font.id}`;
-export const loadPreview = (font: CatalogFont) => load(previewFamily(font), font.files.upright.path);
+export const loadPreview = (font: CatalogFont) => load(previewFamily(font), async () => `url("${url(font.files.upright.path)}")`);
+
+/** The same font rewritten so its axes reach past their own ends (core/stretch). */
+export const stretchedFamily = (font: CatalogFont) => `fb-x-${font.id}`;
+export const loadStretched = (font: CatalogFont) => load(stretchedFamily(font), () => stretched(font.files.upright.path));
 
 /** A few kilobytes that draw only the letters of the family name, for the font list. */
 export const nameFamily = (font: CatalogFont) => `fb-name-${font.id}`;
-export const loadName = (font: CatalogFont) => load(nameFamily(font), font.nameFile);
+export const loadName = (font: CatalogFont) => load(nameFamily(font), async () => `url("${url(font.nameFile)}")`);

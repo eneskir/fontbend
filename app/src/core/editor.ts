@@ -1,4 +1,4 @@
-import { clampToAxis } from "./axis";
+import { clampToReach } from "./axis";
 import type { CatalogFont } from "./catalog";
 import type { FontSettings } from "./settings";
 import type { SampleId } from "./samples";
@@ -34,7 +34,7 @@ export function selectFont(state: EditorState, font: CatalogFont): EditorState {
 export function setAxis(state: EditorState, tag: string, value: number): EditorState {
   const axis = state.font.axes.find((a) => a.tag === tag);
   if (!axis) return state;
-  const v = clampToAxis(axis, value);
+  const v = clampToReach(axis, value);
   const { [tag]: _old, ...rest } = state.settings.axes;
   const axes = v === axis.default ? rest : { ...rest, [tag]: v };
   return { ...state, settings: { ...state.settings, axes } };

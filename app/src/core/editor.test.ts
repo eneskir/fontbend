@@ -24,10 +24,11 @@ describe("editor state", () => {
     expect(setAxis(heavy, "wght", 900).settings.axes).toEqual({});
   });
 
-  it("keeps a value inside the axis range", () => {
-    expect(setAxis(startEditing(fraunces), "wght", 5).settings.axes).toEqual({ wght: 100 });
-    expect(setAxis(startEditing(fraunces), "wght", 5000).settings.axes).toEqual({});
-    expect(setAxis(startEditing(fraunces), "SOFT", -10).settings.axes).toEqual({});
+  it("lets a value go past the font's own range, up to the reach", () => {
+    expect(setAxis(startEditing(fraunces), "wght", 1200).settings.axes).toEqual({ wght: 1200 });
+    expect(setAxis(startEditing(fraunces), "wght", 5000).settings.axes).toEqual({ wght: 1300 });
+    expect(setAxis(startEditing(fraunces), "wght", -5000).settings.axes).toEqual({ wght: -300 });
+    expect(setAxis(startEditing(fraunces), "SOFT", -10).settings.axes).toEqual({ SOFT: -10 });
   });
 
   it("ignores an axis the font does not have", () => {

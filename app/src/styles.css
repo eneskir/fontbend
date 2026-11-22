@@ -140,7 +140,7 @@ ul { list-style: none; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; min-height: 32px; }
 .panel-head.is-sub { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
 .count { margin-left: 8px; font-family: var(--mono); color: var(--changed); }
-.simple-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.simple-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } /* fixed columns: labels appearing must not move the cards */
 .card { padding: 8px 12px 4px; background: var(--paper); }
 .axis-list { display: flex; flex-direction: column; gap: 16px; }
 
@@ -148,6 +148,10 @@ ul { list-style: none; }
 .slider-label { font-weight: 500; }
 .slider-tag { margin-left: 2px; font-family: var(--mono); font-size: 12px; color: var(--ink-muted); font-weight: 400; }
 .slider-delta { font-family: var(--mono); font-size: 12px; color: var(--changed); }
+.slider-zone { font-size: 12px; color: var(--ink-muted); display: none; }
+.is-beyond .slider-zone { display: inline; }
+/* A card has no room for it next to the value; the dashed ruler says it there. */
+.card .is-beyond .slider-zone { display: none; }
 .slider-value { margin-left: auto; font-family: var(--mono); }
 /* The handle's centre sits where the native thumb's centre is: 6px in from each end. */
 .slider-track { position: relative; height: 22px; --x: calc(6px + var(--at) * (100% - 12px)); }
@@ -155,9 +159,10 @@ ul { list-style: none; }
 .slider-track input { appearance: none; position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 1; }
 .slider-track input::-webkit-slider-thumb { appearance: none; width: 12px; height: 22px; }
 .slider-track input::-moz-range-thumb { width: 12px; height: 22px; border: 0; }
-.slider-base { position: absolute; left: 6px; right: 6px; top: 12px; height: 1px; background: var(--line-strong); }
+/* Solid over the font's own range, dashed past it (not red: red is for errors only). */
+.slider-beyond { position: absolute; left: 6px; right: 6px; top: 12px; height: 1px; background: repeating-linear-gradient(to right, var(--line-strong) 0 3px, transparent 3px 7px); }
+.slider-base { position: absolute; left: calc(6px + var(--own-min) * (100% - 12px)); right: calc(6px + (1 - var(--own-max)) * (100% - 12px)); top: 12px; height: 1px; background: var(--line-strong); }
 .slider-tick { position: absolute; top: 13px; left: calc(6px + var(--at) * (100% - 12px) - 0.5px); width: 1px; height: 6px; background: var(--line-strong); }
-.slider-tick.is-mid { height: 4px; }
 .slider-handle, .slider-original { position: absolute; top: 2px; width: 10px; height: 10px; }
 .slider-handle { left: calc(var(--x) - 5px); background: var(--ink); mask: var(--tri) center / contain no-repeat; }
 .slider-original { left: calc(6px + var(--original) * (100% - 12px) - 5px); background: var(--ink-muted); mask: var(--tri-hollow) center / contain no-repeat; display: none; }

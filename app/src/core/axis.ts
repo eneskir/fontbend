@@ -6,7 +6,26 @@ export type Axis = {
   readonly max: number;
 };
 
-/** Pulls a value back inside the axis range. */
-export function clampToAxis(axis: Axis, value: number): number {
-  return Math.min(axis.max, Math.max(axis.min, value));
+/** How far past its own range Fontbend lets an axis go: this share of each side's span. */
+export const STRETCH = 0.5;
+
+/**
+ * The range a slider covers: each side grows by half its span, and a side with no range of
+ * its own (default at an end) borrows the other side's span, so every axis can go both ways.
+ */
+export function reach(axis: Axis, extra = STRETCH): { readonly min: number; readonly max: number } {
+  const { min, default: def, max } = axis;
+  return {
+    min: min < def ? min - extra * (def - min) : def - extra * (max - def),
+    max: max > def ? max + extra * (max - def) : def + extra * (def - min),
+  };
 }
+
+/** Pulls a value back inside the reach of the axis. */
+export function clampToReach(axis: Axis, value: number): number {
+  const r = reach(axis);
+  return Math.min(r.max, Math.max(r.min, value));
+}
+
+/** Whether a value lies past the font's own range. */
+export const isBeyond = (axis: Axis, value: number) => value < axis.min || value > axis.max;

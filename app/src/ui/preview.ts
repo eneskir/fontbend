@@ -2,7 +2,7 @@ import { variationSettings } from "../core/editor";
 import { SAMPLES, SAMPLE_IDS, SIZES, WATERFALL, type SampleId } from "../core/samples";
 import type { Store } from "../store";
 import { h } from "./dom";
-import { loadPreview, previewFamily } from "./faces";
+import { loadPreview, loadStretched, previewFamily, stretchedFamily } from "./faces";
 
 /** The centre: the sample at the chosen size, smaller sizes under it, then a paragraph. */
 export function preview(store: Store): HTMLElement {
@@ -80,6 +80,13 @@ export function preview(store: Store): HTMLElement {
       sample.style.setProperty("--family", `"${previewFamily(font)}"`);
       canvas.classList.remove("is-loading");
       status.textContent = "";
+      // The shipped font shows at once; the stretched one, which can also draw values past the
+      // font's own range, takes its place when ready (up to about 0.7 s).
+      loadStretched(font).then(() => {
+        if (store.get().font === font) sample.style.setProperty("--family", `"${stretchedFamily(font)}"`);
+      }, () => {
+        if (store.get().font === font) status.textContent = `Values past ${font.family}'s own range cannot be shown; inside it everything works.`;
+      });
     }, () => {
       if (store.get().font !== font) return;
       canvas.classList.replace("is-loading", "is-failed");

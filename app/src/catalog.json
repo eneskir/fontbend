@@ -1,0 +1,852 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "repository": "google/fonts",
+    "commit": "06bfe0d62a98375cb09c942fa18e68bd32cff057"
+  },
+  "fonts": [
+    {
+      "id": "roboto-flex",
+      "category": "sans",
+      "family": "Roboto Flex",
+      "version": "3.200",
+      "copyright": "Copyright 2017 The Roboto Flex Project Authors (https://github.com/TypeNetwork/Roboto-Flex)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "opsz",
+          "min": 8.0,
+          "default": 14.0,
+          "max": 144.0
+        },
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 400.0,
+          "max": 1000.0
+        },
+        {
+          "tag": "GRAD",
+          "min": -200.0,
+          "default": 0.0,
+          "max": 150.0
+        },
+        {
+          "tag": "wdth",
+          "min": 25.0,
+          "default": 100.0,
+          "max": 151.0
+        },
+        {
+          "tag": "slnt",
+          "min": -10.0,
+          "default": 0.0,
+          "max": 0.0
+        },
+        {
+          "tag": "XOPQ",
+          "min": 27.0,
+          "default": 96.0,
+          "max": 175.0
+        },
+        {
+          "tag": "YOPQ",
+          "min": 25.0,
+          "default": 79.0,
+          "max": 135.0
+        },
+        {
+          "tag": "XTRA",
+          "min": 323.0,
+          "default": 468.0,
+          "max": 603.0
+        },
+        {
+          "tag": "YTUC",
+          "min": 528.0,
+          "default": 712.0,
+          "max": 760.0
+        },
+        {
+          "tag": "YTLC",
+          "min": 416.0,
+          "default": 514.0,
+          "max": 570.0
+        },
+        {
+          "tag": "YTAS",
+          "min": 649.0,
+          "default": 750.0,
+          "max": 854.0
+        },
+        {
+          "tag": "YTDE",
+          "min": -305.0,
+          "default": -203.0,
+          "max": -98.0
+        },
+        {
+          "tag": "YTFI",
+          "min": 560.0,
+          "default": 738.0,
+          "max": 788.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2017 The Roboto Flex Project Authors (https://github.com/TypeNetwork/Roboto-Flex)",
+      "files": {
+        "upright": {
+          "path": "fonts/roboto-flex/roboto-flex.9b523f7d.ttf",
+          "source": "ofl/robotoflex/RobotoFlex[GRAD,XOPQ,XTRA,YOPQ,YTAS,YTDE,YTFI,YTLC,YTUC,opsz,slnt,wdth,wght].ttf",
+          "bytes": 1787292
+        }
+      },
+      "licenseFile": "fonts/roboto-flex/OFL.txt"
+    },
+    {
+      "id": "recursive",
+      "category": "sans",
+      "family": "Recursive",
+      "version": "1.085",
+      "copyright": "Copyright 2019 The Recursive Project Authors (github.com/arrowtype/recursive)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "MONO",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 1.0
+        },
+        {
+          "tag": "CASL",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 1.0
+        },
+        {
+          "tag": "wght",
+          "min": 300.0,
+          "default": 300.0,
+          "max": 1000.0
+        },
+        {
+          "tag": "slnt",
+          "min": -15.0,
+          "default": 0.0,
+          "max": 0.0
+        },
+        {
+          "tag": "CRSV",
+          "min": 0.0,
+          "default": 0.5,
+          "max": 1.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2020 The Recursive Project Authors (https://github.com/arrowtype/recursive)",
+      "files": {
+        "upright": {
+          "path": "fonts/recursive/recursive.653221ca.ttf",
+          "source": "ofl/recursive/Recursive[CASL,CRSV,MONO,slnt,wght].ttf",
+          "bytes": 2379132
+        }
+      },
+      "licenseFile": "fonts/recursive/OFL.txt"
+    },
+    {
+      "id": "commissioner",
+      "category": "sans",
+      "family": "Commissioner",
+      "version": "1.001",
+      "copyright": "Copyright 2019 The Commissioner Project Authors (github.com/kosbarts/Commissioner)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 100.0,
+          "max": 900.0
+        },
+        {
+          "tag": "slnt",
+          "min": -12.0,
+          "default": 0.0,
+          "max": 0.0
+        },
+        {
+          "tag": "FLAR",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        {
+          "tag": "VOLM",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2019 The Commissioner Project Authors (https://github.com/kosbarts/Commissioner)",
+      "files": {
+        "upright": {
+          "path": "fonts/commissioner/commissioner.db01279a.ttf",
+          "source": "ofl/commissioner/Commissioner[FLAR,VOLM,slnt,wght].ttf",
+          "bytes": 742232
+        }
+      },
+      "licenseFile": "fonts/commissioner/OFL.txt"
+    },
+    {
+      "id": "bricolage-grotesque",
+      "category": "sans",
+      "family": "Bricolage Grotesque",
+      "version": "1.001",
+      "copyright": "Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "opsz",
+          "min": 12.0,
+          "default": 96.0,
+          "max": 96.0
+        },
+        {
+          "tag": "wght",
+          "min": 200.0,
+          "default": 800.0,
+          "max": 800.0
+        },
+        {
+          "tag": "wdth",
+          "min": 75.0,
+          "default": 100.0,
+          "max": 100.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)",
+      "files": {
+        "upright": {
+          "path": "fonts/bricolage-grotesque/bricolage-grotesque.413e7357.ttf",
+          "source": "ofl/bricolagegrotesque/BricolageGrotesque[opsz,wdth,wght].ttf",
+          "bytes": 408496
+        }
+      },
+      "licenseFile": "fonts/bricolage-grotesque/OFL.txt"
+    },
+    {
+      "id": "instrument-sans",
+      "category": "sans",
+      "family": "Instrument Sans",
+      "version": "1.000",
+      "copyright": "Copyright 2022 The Instrument Sans Project Authors (https://github.com/Instrument/instrument-sans)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wdth",
+          "min": 75.0,
+          "default": 100.0,
+          "max": 100.0
+        },
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2022 The Instrument Sans Project Authors (https://github.com/Instrument/instrument-sans)",
+      "files": {
+        "upright": {
+          "path": "fonts/instrument-sans/instrument-sans.b24f1812.ttf",
+          "source": "ofl/instrumentsans/InstrumentSans[wdth,wght].ttf",
+          "bytes": 194336
+        },
+        "italic": {
+          "path": "fonts/instrument-sans/instrument-sans-italic.a74203cc.ttf",
+          "source": "ofl/instrumentsans/InstrumentSans-Italic[wdth,wght].ttf",
+          "bytes": 202128
+        }
+      },
+      "licenseFile": "fonts/instrument-sans/OFL.txt"
+    },
+    {
+      "id": "nunito",
+      "category": "sans",
+      "family": "Nunito",
+      "version": "3.602",
+      "copyright": "Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 200.0,
+          "default": 200.0,
+          "max": 1000.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)",
+      "files": {
+        "upright": {
+          "path": "fonts/nunito/nunito.bb55a5ca.ttf",
+          "source": "ofl/nunito/Nunito[wght].ttf",
+          "bytes": 276932
+        },
+        "italic": {
+          "path": "fonts/nunito/nunito-italic.b520cc87.ttf",
+          "source": "ofl/nunito/Nunito-Italic[wght].ttf",
+          "bytes": 281832
+        }
+      },
+      "licenseFile": "fonts/nunito/OFL.txt"
+    },
+    {
+      "id": "inter",
+      "category": "sans",
+      "family": "Inter",
+      "version": "4.001",
+      "copyright": "Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "axes": [
+        {
+          "tag": "opsz",
+          "min": 14.0,
+          "default": 14.0,
+          "max": 32.0
+        },
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 400.0,
+          "max": 900.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)",
+      "files": {
+        "upright": {
+          "path": "fonts/inter/inter.29160a80.ttf",
+          "source": "ofl/inter/Inter[opsz,wght].ttf",
+          "bytes": 876576
+        },
+        "italic": {
+          "path": "fonts/inter/inter-italic.acd98e64.ttf",
+          "source": "ofl/inter/Inter-Italic[opsz,wght].ttf",
+          "bytes": 906596
+        }
+      },
+      "licenseFile": "fonts/inter/OFL.txt"
+    },
+    {
+      "id": "geologica",
+      "category": "sans",
+      "family": "Geologica",
+      "version": "1.010",
+      "copyright": "Copyright 2020 The Geologica Project Authors (https://github.com/googlefonts/geologica)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 100.0,
+          "max": 900.0
+        },
+        {
+          "tag": "CRSV",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 1.0
+        },
+        {
+          "tag": "SHRP",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        {
+          "tag": "slnt",
+          "min": -12.0,
+          "default": 0.0,
+          "max": 0.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2020 The Geologisk Project Authors (https://github.com/monokromskriftforlag/geologisk)",
+      "files": {
+        "upright": {
+          "path": "fonts/geologica/geologica.9124d9e8.ttf",
+          "source": "ofl/geologica/Geologica[CRSV,SHRP,slnt,wght].ttf",
+          "bytes": 348640
+        }
+      },
+      "licenseFile": "fonts/geologica/OFL.txt"
+    },
+    {
+      "id": "science-gothic",
+      "category": "sans",
+      "family": "Science Gothic",
+      "version": "1.035",
+      "copyright": "Copyright © 2025 The Science Gothic Project Authors (https://github.com/googlefonts/science-gothic/blob/main/AUTHORS.txt)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "axes": [
+        {
+          "tag": "CTRS",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 85.0
+        },
+        {
+          "tag": "slnt",
+          "min": -10.0,
+          "default": 0.0,
+          "max": 0.0
+        },
+        {
+          "tag": "wdth",
+          "min": 50.0,
+          "default": 100.0,
+          "max": 200.0
+        },
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 400.0,
+          "max": 900.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2024 Font Detective LLC <https://github.com/googlefonts/science-gothic/OFL.txt>",
+      "files": {
+        "upright": {
+          "path": "fonts/science-gothic/science-gothic.246e4d33.ttf",
+          "source": "ofl/sciencegothic/ScienceGothic[CTRS,slnt,wdth,wght].ttf",
+          "bytes": 2726388
+        }
+      },
+      "licenseFile": "fonts/science-gothic/OFL.txt"
+    },
+    {
+      "id": "literata",
+      "category": "serif",
+      "family": "Literata",
+      "version": "3.103",
+      "copyright": "Copyright 2017 The Literata Project Authors (https://github.com/googlefonts/literata)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "opsz",
+          "min": 7.0,
+          "default": 12.0,
+          "max": 72.0
+        },
+        {
+          "tag": "wght",
+          "min": 200.0,
+          "default": 400.0,
+          "max": 900.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2017 The Literata Project Authors (https://github.com/googlefonts/literata)",
+      "files": {
+        "upright": {
+          "path": "fonts/literata/literata.b41138c9.ttf",
+          "source": "ofl/literata/Literata[opsz,wght].ttf",
+          "bytes": 955132
+        },
+        "italic": {
+          "path": "fonts/literata/literata-italic.d483dfae.ttf",
+          "source": "ofl/literata/Literata-Italic[opsz,wght].ttf",
+          "bytes": 902728
+        }
+      },
+      "licenseFile": "fonts/literata/OFL.txt"
+    },
+    {
+      "id": "fraunces",
+      "category": "serif",
+      "family": "Fraunces",
+      "version": "1.000",
+      "copyright": "Copyright 2020 The Fraunces Project Authors (github.com/undercasetype/Fraunces)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "opsz",
+          "min": 9.0,
+          "default": 9.0,
+          "max": 144.0
+        },
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 900.0,
+          "max": 900.0
+        },
+        {
+          "tag": "SOFT",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        {
+          "tag": "WONK",
+          "min": 0.0,
+          "default": 1.0,
+          "max": 1.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": true,
+      "licenseCopyright": "Copyright 2018 The Fraunces Project Authors (https://github.com/undercasetype/Fraunces)",
+      "files": {
+        "upright": {
+          "path": "fonts/fraunces/fraunces.177ff6c0.ttf",
+          "source": "ofl/fraunces/Fraunces[SOFT,WONK,opsz,wght].ttf",
+          "bytes": 360440
+        },
+        "italic": {
+          "path": "fonts/fraunces/fraunces-italic.b24448c4.ttf",
+          "source": "ofl/fraunces/Fraunces-Italic[SOFT,WONK,opsz,wght].ttf",
+          "bytes": 414904
+        }
+      },
+      "licenseFile": "fonts/fraunces/OFL.txt"
+    },
+    {
+      "id": "playfair",
+      "category": "serif",
+      "family": "Playfair",
+      "version": "2.203",
+      "copyright": "Copyright 2005 The Playfair Project Authors (https://github.com/clauseggers/Playfair)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "axes": [
+        {
+          "tag": "opsz",
+          "min": 5.0,
+          "default": 5.0,
+          "max": 1200.0
+        },
+        {
+          "tag": "wdth",
+          "min": 87.5,
+          "default": 112.5,
+          "max": 112.5
+        },
+        {
+          "tag": "wght",
+          "min": 300.0,
+          "default": 300.0,
+          "max": 900.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2005 The Playfair Project Authors (https://github.com/googlefonts/Playfair)",
+      "files": {
+        "upright": {
+          "path": "fonts/playfair/playfair.33cfecbc.ttf",
+          "source": "ofl/playfair/Playfair[opsz,wdth,wght].ttf",
+          "bytes": 1776724
+        },
+        "italic": {
+          "path": "fonts/playfair/playfair-italic.ae0d7a72.ttf",
+          "source": "ofl/playfair/Playfair-Italic[opsz,wdth,wght].ttf",
+          "bytes": 1783732
+        }
+      },
+      "licenseFile": "fonts/playfair/OFL.txt"
+    },
+    {
+      "id": "newsreader",
+      "category": "serif",
+      "family": "Newsreader",
+      "version": "1.003",
+      "copyright": "Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 200.0,
+          "default": 400.0,
+          "max": 800.0
+        },
+        {
+          "tag": "opsz",
+          "min": 6.0,
+          "default": 18.0,
+          "max": 72.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": true,
+      "licenseCopyright": "Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)",
+      "files": {
+        "upright": {
+          "path": "fonts/newsreader/newsreader.8a08d13f.ttf",
+          "source": "ofl/newsreader/Newsreader[opsz,wght].ttf",
+          "bytes": 451664
+        },
+        "italic": {
+          "path": "fonts/newsreader/newsreader-italic.79666861.ttf",
+          "source": "ofl/newsreader/Newsreader-Italic[opsz,wght].ttf",
+          "bytes": 495684
+        }
+      },
+      "licenseFile": "fonts/newsreader/OFL.txt"
+    },
+    {
+      "id": "montagu-slab",
+      "category": "slab",
+      "family": "Montagu Slab",
+      "version": "1.000",
+      "copyright": "Copyright 2021 The Montagu Slab Project Authors (https://github.com/floriankarsten/montagu-slab)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 700.0,
+          "max": 700.0
+        },
+        {
+          "tag": "opsz",
+          "min": 16.0,
+          "default": 144.0,
+          "max": 144.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2020 The Montagu Slab Project Authors (https://github.com/floriankarsten/montagu-slab)",
+      "files": {
+        "upright": {
+          "path": "fonts/montagu-slab/montagu-slab.26fe25e6.ttf",
+          "source": "ofl/montaguslab/MontaguSlab[opsz,wght].ttf",
+          "bytes": 529316
+        }
+      },
+      "licenseFile": "fonts/montagu-slab/OFL.txt"
+    },
+    {
+      "id": "big-shoulders",
+      "category": "display",
+      "family": "Big Shoulders",
+      "version": "2.002",
+      "copyright": "Copyright 2019 The Big Shoulders Project Authors (https://github.com/xotypeco/big_shoulders)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 100.0,
+          "max": 900.0
+        },
+        {
+          "tag": "opsz",
+          "min": 10.0,
+          "default": 72.0,
+          "max": 72.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2019 The Big Shoulders Project Authors (https://github.com/xotypeco/big_shoulders)",
+      "files": {
+        "upright": {
+          "path": "fonts/big-shoulders/big-shoulders.4b4b24aa.ttf",
+          "source": "ofl/bigshoulders/BigShoulders[opsz,wght].ttf",
+          "bytes": 320800
+        }
+      },
+      "licenseFile": "fonts/big-shoulders/OFL.txt"
+    },
+    {
+      "id": "shantell-sans",
+      "category": "display",
+      "family": "Shantell Sans",
+      "version": "1.011",
+      "copyright": "Copyright 2022 The Shantell Sans Project Authors (https://github.com/arrowtype/shantell-sans)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://openfontlicense.org",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 300.0,
+          "default": 300.0,
+          "max": 800.0
+        },
+        {
+          "tag": "INFM",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        {
+          "tag": "BNCE",
+          "min": -100.0,
+          "default": 0.0,
+          "max": 100.0
+        },
+        {
+          "tag": "SPAC",
+          "min": 0.0,
+          "default": 0.0,
+          "max": 100.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2022 The Shantell Sans Project Authors (https://github.com/arrowtype/shantell-sans)",
+      "files": {
+        "upright": {
+          "path": "fonts/shantell-sans/shantell-sans.d98a7913.ttf",
+          "source": "ofl/shantellsans/ShantellSans[BNCE,INFM,SPAC,wght].ttf",
+          "bytes": 1284736
+        },
+        "italic": {
+          "path": "fonts/shantell-sans/shantell-sans-italic.269eb724.ttf",
+          "source": "ofl/shantellsans/ShantellSans-Italic[BNCE,INFM,SPAC,wght].ttf",
+          "bytes": 1532432
+        }
+      },
+      "licenseFile": "fonts/shantell-sans/OFL.txt"
+    },
+    {
+      "id": "martian-mono",
+      "category": "mono",
+      "family": "Martian Mono",
+      "version": "1.000",
+      "copyright": "Copyright 2020 The Martian Mono Project Authors (https://github.com/evilmartians/mono)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 400.0,
+          "max": 800.0
+        },
+        {
+          "tag": "wdth",
+          "min": 75.0,
+          "default": 112.5,
+          "max": 112.5
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2021 The Martian Mono Project Authors (https://github.com/evilmartians/mono)",
+      "files": {
+        "upright": {
+          "path": "fonts/martian-mono/martian-mono.c3467843.ttf",
+          "source": "ofl/martianmono/MartianMono[wdth,wght].ttf",
+          "bytes": 148460
+        }
+      },
+      "licenseFile": "fonts/martian-mono/OFL.txt"
+    },
+    {
+      "id": "jetbrains-mono",
+      "category": "mono",
+      "family": "JetBrains Mono",
+      "version": "2.211",
+      "copyright": "Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 100.0,
+          "default": 400.0,
+          "max": 800.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)",
+      "files": {
+        "upright": {
+          "path": "fonts/jetbrains-mono/jetbrains-mono.48715a42.ttf",
+          "source": "ofl/jetbrainsmono/JetBrainsMono[wght].ttf",
+          "bytes": 187208
+        },
+        "italic": {
+          "path": "fonts/jetbrains-mono/jetbrains-mono-italic.85ae2a5c.ttf",
+          "source": "ofl/jetbrainsmono/JetBrainsMono-Italic[wght].ttf",
+          "bytes": 191556
+        }
+      },
+      "licenseFile": "fonts/jetbrains-mono/OFL.txt"
+    },
+    {
+      "id": "sono",
+      "category": "mono",
+      "family": "Sono",
+      "version": "2.112",
+      "copyright": "Copyright 2020 The Sono Project Authors (https://github.com/sursly/sono)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: https://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 200.0,
+          "default": 200.0,
+          "max": 800.0
+        },
+        {
+          "tag": "MONO",
+          "min": 0.0,
+          "default": 1.0,
+          "max": 1.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": false,
+      "licenseCopyright": "Copyright 2020 The Sono Project Authors (https://github.com/sursly/sono)",
+      "files": {
+        "upright": {
+          "path": "fonts/sono/sono.247ca641.ttf",
+          "source": "ofl/sono/Sono[MONO,wght].ttf",
+          "bytes": 154620
+        }
+      },
+      "licenseFile": "fonts/sono/OFL.txt"
+    },
+    {
+      "id": "caveat",
+      "category": "handwriting",
+      "family": "Caveat",
+      "version": "2.000",
+      "copyright": "Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)",
+      "licenseDescription": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL",
+      "axes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 700.0
+        }
+      ],
+      "missingTurkish": [],
+      "fiLigatureWithoutLocl": true,
+      "licenseCopyright": "Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)",
+      "files": {
+        "upright": {
+          "path": "fonts/caveat/caveat.0bdb6b66.ttf",
+          "source": "ofl/caveat/Caveat[wght].ttf",
+          "bytes": 403648
+        }
+      },
+      "licenseFile": "fonts/caveat/OFL.txt"
+    }
+  ]
+}

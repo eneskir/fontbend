@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
+import { checksumOk, fraunces } from "./fixtures";
+import { readTables, view } from "./sfnt";
 import { axisPieces, decodeDeltas, encodeDeltas, planAxis, pointsLength, stretchFont, type AxisPlan, type Piece } from "./stretch";
 
 const ONE = 16384;
@@ -79,21 +81,18 @@ describe("packed numbers", () => {
 });
 
 describe("a real font", () => {
-  const file = Object.values(import.meta.glob<string>("../../public/catalog/fraunces/fraunces.*.ttf", { query: "?inline", import: "default", eager: true }))[0]!;
-  const input = Uint8Array.from(atob(file.slice(file.indexOf(",") + 1)), (c) => c.charCodeAt(0));
+  const input = fraunces;
   const { bytes, axes } = stretchFont(input);
-  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const tables = new Map<string, number>();
-  for (let i = 0; i < v.getUint16(4); i++) tables.set(String.fromCharCode(...bytes.subarray(12 + i * 16, 16 + i * 16)), v.getUint32(12 + i * 16 + 8));
+  const tables = readTables(bytes);
 
   it("reaches past every axis end and says how far", () => {
-    const fvar = tables.get("fvar")!;
-    const first = v.getUint16(fvar + 4), size = v.getUint16(fvar + 10);
+    const fvar = view(tables.get("fvar")!);
+    const first = fvar.getUint16(4), size = fvar.getUint16(10);
     axes.forEach((a, i) => {
       expect(a.reachMin).toBeLessThan(a.min);
       expect(a.reachMax).toBeGreaterThan(a.max);
-      expect(v.getInt32(fvar + first + i * size + 4) / 65536).toBeCloseTo(a.reachMin, 3);
-      expect(v.getInt32(fvar + first + i * size + 12) / 65536).toBeCloseTo(a.reachMax, 3);
+      expect(fvar.getInt32(first + i * size + 4) / 65536).toBeCloseTo(a.reachMin, 3);
+      expect(fvar.getInt32(first + i * size + 12) / 65536).toBeCloseTo(a.reachMax, 3);
     });
     expect(axes.find((a) => a.tag === "wght")).toMatchObject({ min: 100, default: 900, max: 900, reachMin: -300, reachMax: 1300 });
   });
@@ -104,10 +103,7 @@ describe("a real font", () => {
   });
 
   it("is a well-formed file: checksums add up and the same input gives the same bytes", () => {
-    let sum = 0;
-    for (let i = 0; i < bytes.length; i += 4) sum = (sum + v.getUint32(i)) >>> 0;
-    expect(bytes.length % 4).toBe(0);
-    expect(sum).toBe(0xb1b0afba);
+    expect(checksumOk(bytes)).toBe(true);
     expect(stretchFont(input).bytes).toEqual(bytes);
   });
 });

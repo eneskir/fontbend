@@ -45,7 +45,7 @@ export function buildFont(
   // Inside the font's own range the shipped file is used: it keeps HVAR and MVAR exactly.
   const stretch = needsStretched(source.axes, settings);
   const font = stretch ? source.stretched : source.original;
-  if (!font) throw new BuildError("NEEDS_STRETCHED", "This font is still being prepared for values past its own range. Try again in a moment.");
+  if (!font) throw new BuildError("NEEDS_STRETCHED", "Values past the font's own range need the stretched font, and none was given.");
 
   const pins: Record<string, number> = {};
   const ranges: Record<string, readonly [number, number]> = {};
@@ -62,7 +62,7 @@ export function buildFont(
   }
 
   const tables = new Map(readTables(instance));
-  const need = (tag: string) => tables.get(tag) ?? (() => { throw new BuildError("INSTANCE_FAILED", `The made font has no ${tag} table.`); })();
+  const need = (tag: string) => tables.get(tag) ?? (() => { throw new BuildError("INSTANCE_FAILED", `The new font file has no ${tag} table.`); })();
   tables.set("name", writeNames(need("name"), { ...names, variable: tables.has("fvar") }));
   const { os2, head } = writeStyleBits(need("OS/2"), need("head"), names.style);
   tables.set("OS/2", os2);

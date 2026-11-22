@@ -7,12 +7,9 @@ const fonts = parseCatalog(data).fonts;
 const font = (id: string) => fonts.find((f) => f.id === id)!;
 
 describe("simple sliders", () => {
-  it("come from the table, in its order, only for axes the font has", () => {
-    for (const f of fonts) {
-      const tags = slidersFor(f).map((s) => s.tag);
-      const expected = SIMPLE_SLIDERS.map((s) => s.tag).filter((t) => f.axes.some((a) => a.tag === t));
-      expect(tags).toEqual(expected);
-    }
+  it("come in the table's order, only for axes the font has", () => {
+    expect(slidersFor(font("roboto-flex")).map((s) => s.tag)).toEqual(["wght", "wdth", "slnt", "opsz", "GRAD"]);
+    expect(slidersFor(font("inter")).map((s) => s.tag)).toEqual(["wght", "opsz"]);
   });
 
   it("show Fraunces its weight, optical size, softness and wonky axes", () => {

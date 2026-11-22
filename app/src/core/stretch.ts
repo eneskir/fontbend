@@ -19,6 +19,8 @@
  * inside the old range and fades back toward the default past it.
  */
 
+import { STRETCH, reach } from "./axis";
+
 export type StretchedAxis = {
   readonly tag: string;
   readonly default: number;
@@ -37,7 +39,7 @@ const SHARED_POINTS = 0x8000, TUPLE_COUNT = 0x0fff;
 type Side = { ne: number | null };
 export type AxisPlan = { tag: string; lo: number; def: number; hi: number; newLo: number; newHi: number; pos: Side; neg: Side };
 
-export function stretchFont(input: Uint8Array, extra = 0.5): { bytes: Uint8Array; axes: StretchedAxis[] } {
+export function stretchFont(input: Uint8Array, extra = STRETCH): { bytes: Uint8Array; axes: StretchedAxis[] } {
   const tables = readTables(input);
   const need = (tag: string) => tables.get(tag) ?? fail(`no ${tag} table`);
   const plan = planAxes(need("fvar"), extra);
@@ -89,9 +91,7 @@ function planAxes(fvar: Uint8Array, extra: number): AxisPlan[] {
 }
 
 export function planAxis(tag: string, lo: number, def: number, hi: number, extra: number): AxisPlan {
-  // Each side grows by its own span; a side with no range borrows the other side's.
-  const newHi = hi > def ? hi + extra * (hi - def) : def + extra * (def - lo);
-  const newLo = lo < def ? lo - extra * (def - lo) : def - extra * (hi - def);
+  const { min: newLo, max: newHi } = reach({ tag, min: lo, default: def, max: hi }, extra);
   return {
     tag, lo, def, hi, newLo, newHi,
     pos: { ne: hi > def ? (hi - def) / (newHi - def) : null },

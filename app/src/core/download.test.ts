@@ -42,7 +42,9 @@ describe("madeNames", () => {
     const n = madeNames(font, "My Roboto Flex", roboto, { wdth: 75, wght: 700, slnt: -10 });
     expect(n.style).toBe("Italic");
     expect(fileStem(n)).toBe("MyRobotoFlex-CondensedBoldOblique");
-    expect(downloadFiles(n, new Uint8Array(1), new Uint8Array(1)).map((f) => f.name)).toEqual(["MyRobotoFlex-CondensedBoldOblique.ttf", "OFL.txt"]);
+    const one = new Uint8Array(1);
+    expect(downloadFiles(n, { ttf: one, woff2: one }, one).map((f) => f.name)).toEqual(["MyRobotoFlex-CondensedBoldOblique.ttf", "MyRobotoFlex-CondensedBoldOblique.woff2", "OFL.txt"]);
+    expect(downloadFiles(n, { woff2: one }, one).map((f) => f.name)).toEqual(["MyRobotoFlex-CondensedBoldOblique.woff2", "OFL.txt"]);
   });
 });
 

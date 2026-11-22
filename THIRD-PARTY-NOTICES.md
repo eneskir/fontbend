@@ -47,6 +47,11 @@ Code from these packages is served with the app and runs in the user's browser.
 |---|---|---|---|---|
 | harfbuzzjs, the `harfbuzz-subset.wasm` build | 1.6.4 | MIT | [harfbuzz/harfbuzzjs](https://github.com/harfbuzz/harfbuzzjs) | makes the font files people download (`app/src/core/harfbuzz.ts`); license text in `app/public/licenses/harfbuzz.txt` |
 | HarfBuzz, compiled into that wasm file | 15.0.0 | Old MIT | [harfbuzz/harfbuzz](https://github.com/harfbuzz/harfbuzz) at the commit harfbuzzjs 1.6.4 pins | same file as above, with its copyright notice |
+| woff2-encoder | 2.0.0 | MIT | [itskyedo/woff2-encoder](https://github.com/itskyedo/woff2-encoder) | makes the WOFF2 files people download (`app/src/ui/woff2.worker.ts`); license text in `app/public/licenses/woff2.txt` |
+| WOFF2, compiled into woff2-encoder | commit 4721483 (2022) | MIT | [google/woff2](https://github.com/google/woff2) | same file as above |
+| Brotli, compiled into woff2-encoder | 1.0.3 | MIT | [google/brotli](https://github.com/google/brotli) | same file as above |
+
+woff2-encoder also carries Brotli's decoder, whose versions before 1.0.9 mishandle some crafted input (CVE-2020-8927). Fontbend only encodes fonts it has just made and never decodes WOFF2 with it.
 
 ## Build tools
 

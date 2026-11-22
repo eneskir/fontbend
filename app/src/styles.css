@@ -1,29 +1,20 @@
-/* Tokens from the Figma design (V7). Blue only means "changed from the original"; red only errors. */
+/* Tokens from the Figma design (V7), light then dark. Blue only means "changed from the original"; red only errors.
+   Dark is the default; the Theme menu sets data-theme="light". */
 :root {
-  --paper: #FAFAF7;
-  --surface: #EFEEE9;
-  --line: #E2E0DA;
-  --line-strong: #82807A;
-  --ink: #161616;
-  --ink-muted: #5E5D58;
-  --red: #C0261F;
-  --changed: #0062E6;
+  color-scheme: dark;
+  --paper: light-dark(#FAFAF7, #1A1A18);
+  --surface: light-dark(#EFEEE9, #232320);
+  --line: light-dark(#E2E0DA, #34332F);
+  --line-strong: light-dark(#82807A, #7D7B74);
+  --ink: light-dark(#161616, #ECEAE4);
+  --ink-muted: light-dark(#5E5D58, #A6A49D);
+  --red: light-dark(#C0261F, #F0675C);
+  --changed: light-dark(#0062E6, #3D8EFF);
   --mono: "Recursive Mono", ui-monospace, monospace;
   --tri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 1h10L5 10z'/%3E%3C/svg%3E");
   --tri-hollow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.25 1.75h7.5L5 8.75z' fill='none' stroke='%23000' stroke-width='1.25' stroke-linejoin='miter'/%3E%3C/svg%3E");
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #1A1A18;
-    --surface: #232320;
-    --line: #34332F;
-    --line-strong: #7D7B74;
-    --ink: #ECEAE4;
-    --ink-muted: #A6A49D;
-    --red: #F0675C;
-    --changed: #3D8EFF;
-  }
-}
+:root[data-theme="light"] { color-scheme: light; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 [hidden] { display: none !important; }
@@ -78,7 +69,22 @@ ul { list-style: none; }
 .text-button:disabled { color: var(--ink-muted); cursor: default; }
 
 /* Left: fonts */
-.drawer { display: flex; flex-direction: column; gap: 8px; padding: 8px; background: var(--surface); border-right: 1px solid var(--line); }
+.drawer-column { display: flex; flex-direction: column; min-height: 0; background: var(--surface); border-right: 1px solid var(--line); }
+.drawer { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
+/* Foot of the drawer (design: Help, Theme, language); Theme opens a menu of three choices. */
+.drawer-foot { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 8px; }
+.foot-button { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px 0 4px; border-radius: 2px; color: var(--ink-muted); font-weight: 500; }
+.foot-button:hover, .foot-button[aria-expanded="true"] { background: var(--paper); color: var(--ink); }
+.icon { flex: none; width: 16px; height: 16px; background: currentColor; }
+.icon-theme { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='5.25' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M8 2.75a5.25 5.25 0 0 1 0 10.5z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.menu { position: fixed; inset: auto auto 0 0; margin: 0; width: 160px; padding: 8px; background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+.menu-options { display: flex; flex-direction: column; border: 0; }
+.menu-options legend { padding: 0 8px 4px; }
+.menu-option { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px; border-radius: 2px; cursor: pointer; }
+.menu-option:hover { background: var(--surface); }
+.menu-option input { appearance: none; flex: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--ink); border-radius: 50%; cursor: inherit; }
+.menu-option input:checked { background: radial-gradient(var(--ink) 0 3px, transparent 3.5px); }
+.menu-option:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: -2px; }
 .drawer-title { padding: 6px 4px; }
 .field { height: 32px; width: 100%; padding: 0 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 2px; }
 .field::placeholder { color: var(--ink-muted); }
@@ -230,12 +236,10 @@ ul { list-style: none; }
 label.file { cursor: pointer; }
 label.file:has(:disabled) { cursor: default; }
 .check { appearance: none; flex: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--ink); border-radius: 2px; cursor: inherit; }
-.check:checked { background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23FAFAF7' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / 16px no-repeat; }
+.check:checked { background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%231A1A18' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / 16px no-repeat; }
 .file-size.is-failed { color: var(--red); }
-/* The tick is paper colored; a data URL can't read the token, so dark gets its own. */
-@media (prefers-color-scheme: dark) {
-  .check:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%231A1A18' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E"); }
-}
+/* The tick is paper colored; a data URL can't read the token, so light gets its own. */
+:root[data-theme="light"] .check:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23FAFAF7' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E"); }
 .file-size { margin-left: auto; color: var(--ink-muted); white-space: nowrap; }
 .lock { flex: none; width: 16px; height: 16px; background: var(--ink-muted); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5.25 7.5V5.5a2.75 2.75 0 0 1 5.5 0v2' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Crect x='3.5' y='7.5' width='9' height='6.25'/%3E%3C/svg%3E") center / contain no-repeat; }
 .license { border-top: 1px solid var(--line); }
@@ -260,7 +264,8 @@ label.file:has(:disabled) { cursor: default; }
 @media (max-width: 760px) {
   #app { height: auto; }
   .workspace { display: flex; flex-direction: column; }
-  .drawer { max-height: 240px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .drawer-column { border-right: 0; border-bottom: 1px solid var(--line); }
+  .drawer { max-height: 240px; }
   .canvas-bar { padding: 8px 16px; }
   .stage { padding: 16px 16px 32px; }
   .panel { border-left: 0; border-top: 1px solid var(--line); }

@@ -118,8 +118,8 @@ ul { list-style: none; }
   mask: var(--tri) center / contain no-repeat;
   pointer-events: none;
 }
-.status-row { display: flex; align-items: center; gap: 8px; padding-top: 24px; }
-.status-row:has(.status:empty) { display: none; }
+/* The row keeps its place when empty, so a message appearing or leaving never moves the sample. */
+.status-row { display: flex; align-items: center; gap: 8px; min-height: 32px; margin-top: 8px; }
 .is-failed .status { color: var(--red); }
 .is-loading .sample, .is-failed .sample { visibility: hidden; }
 
@@ -127,7 +127,7 @@ ul { list-style: none; }
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding-top: 32px;
+  padding-top: 8px;
   font-family: var(--family), sans-serif;
   font-variation-settings: var(--axes);
 }

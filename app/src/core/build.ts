@@ -70,8 +70,8 @@ export function buildFont(
   hb: Instancer,
   source: BuildSource,
   settings: Readonly<Record<string, AxisSetting>>,
-  /** `styleName` names the PostScript name and file ("CondensedBold"); `style` is what families group by. */
-  names: { family: string; style: Style; styleName?: string },
+  /** `code` is the settings in the name ("wght1100 opsz72"); `style` is what families group by. */
+  names: { family: string; style: Style; code?: string },
   subset: Subset = "all",
 ): BuiltFont {
   // Inside the font's own range the shipped file is used: it keeps HVAR and MVAR exactly.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogFont } from "./catalog";
 import { defaultFamily, downloadFiles, fileStem, madeNames } from "./download";
-import { styleName } from "./styleName";
+import { isSloped, settingsCode } from "./settingsCode";
 import { crc32, makeZip } from "./zip";
 
 const roboto = [
@@ -11,24 +11,30 @@ const roboto = [
 ];
 const font = { family: "Roboto Flex" } as CatalogFont;
 
-describe("styleName", () => {
-  it("names width, weight and slope in that order", () => {
-    expect(styleName(roboto, { wdth: 75, wght: 700, slnt: -10 })).toBe("CondensedBoldOblique");
-    expect(styleName(roboto, { wght: 640 })).toBe("SemiBold");
+describe("settingsCode", () => {
+  it("writes every moved axis by tag and value, common axes first", () => {
+    expect(settingsCode(roboto, { wdth: 75, wght: 700, slnt: -10 })).toBe("wght700 wdth75 slnt-10");
+    expect(settingsCode([{ tag: "opsz", min: 9, default: 9, max: 144 }, ...roboto], { opsz: 72, wght: 1100 })).toBe("wght1100 opsz72");
   });
-  it("calls the default instance Regular and an upright italic axis Italic", () => {
-    expect(styleName(roboto, {})).toBe("Regular");
-    expect(styleName([{ tag: "ital", min: 0, default: 0, max: 1 }], { ital: 1 })).toBe("Italic");
+  it("leaves out axes at their default, so an unmoved font has no code", () => {
+    expect(settingsCode(roboto, {})).toBe("");
+    expect(settingsCode(roboto, { wght: 400, wdth: 75 })).toBe("wdth75");
+    expect(settingsCode([{ tag: "wght", min: 100, default: 900, max: 900 }], { wght: 900 })).toBe("");
   });
-  it("names values past the font's range by the nearest step", () => {
-    expect(styleName(roboto, { wght: 1400, wdth: 0 })).toBe("UltraCondensedBlack");
+  it("keeps two decimals and writes a range from end to end", () => {
+    expect(settingsCode([{ tag: "CASL", min: 0, default: 0, max: 1 }], { CASL: 0.333333 })).toBe("CASL0.33");
+    expect(settingsCode(roboto, { wght: [300, 700] })).toBe("wght300-700");
   });
-  it("names nothing for an axis left as a range", () => {
-    expect(styleName(roboto, { wght: [300, 700] })).toBe("Regular");
-    expect(styleName(roboto, { wght: [300, 700], wdth: 125 })).toBe("Expanded");
+  it("gives two settings two codes, also when they differ by a fraction", () => {
+    expect(settingsCode(roboto, { wght: 700.5 })).not.toBe(settingsCode(roboto, { wght: 700 }));
   });
-  it("reads the default of a font that does not start at 400", () => {
-    expect(styleName([{ tag: "wght", min: 100, default: 900, max: 900 }], {})).toBe("Black");
+});
+
+describe("isSloped", () => {
+  it("leans with any slant or an italic axis past its middle", () => {
+    expect(isSloped(roboto, { slnt: -10 })).toBe(true);
+    expect(isSloped(roboto, {})).toBe(false);
+    expect(isSloped([{ tag: "ital", min: 0, default: 0, max: 1 }], { ital: 1 })).toBe(true);
   });
 });
 
@@ -41,10 +47,11 @@ describe("madeNames", () => {
   it("groups a leaning font as Italic and names its file in full", () => {
     const n = madeNames(font, "My Roboto Flex", roboto, { wdth: 75, wght: 700, slnt: -10 });
     expect(n.style).toBe("Italic");
-    expect(fileStem(n)).toBe("MyRobotoFlex-CondensedBoldOblique");
+    expect(fileStem(n)).toBe("MyRobotoFlex-wght700wdth75slnt-10");
+    expect(fileStem(madeNames(font, "My Roboto Flex", roboto, {}))).toBe("MyRobotoFlex-Regular");
     const one = new Uint8Array(1);
-    expect(downloadFiles(n, { ttf: one, woff2: one }, one).map((f) => f.name)).toEqual(["MyRobotoFlex-CondensedBoldOblique.ttf", "MyRobotoFlex-CondensedBoldOblique.woff2", "OFL.txt"]);
-    expect(downloadFiles(n, { woff2: one }, one).map((f) => f.name)).toEqual(["MyRobotoFlex-CondensedBoldOblique.woff2", "OFL.txt"]);
+    expect(downloadFiles(n, { ttf: one, woff2: one }, one).map((f) => f.name)).toEqual(["MyRobotoFlex-wght700wdth75slnt-10.ttf", "MyRobotoFlex-wght700wdth75slnt-10.woff2", "OFL.txt"]);
+    expect(downloadFiles(n, { woff2: one }, one).map((f) => f.name)).toEqual(["MyRobotoFlex-wght700wdth75slnt-10.woff2", "OFL.txt"]);
   });
 });
 

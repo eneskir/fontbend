@@ -70,12 +70,14 @@ export function preview(store: Store): HTMLElement {
     h("div", { class: "row" }, h("span", { class: "size meta" }, "16"), h("div", {}, paragraph, source)),
     measure);
 
+  // The controls and the sentence sit on a band of their own; the stage under it holds only the sample.
   const canvas = h("main", { class: "canvas" },
-    h("div", { class: "toolbar" },
-      h("label", { class: "field-group" }, h("span", { class: "meta" }, "Sample"), sampleSelect),
-      h("label", { class: "field-group" }, h("span", { class: "meta" }, "Size"), sizeSelect)),
-    h("div", { class: "status-row" }, status, retry),
-    sample);
+    h("div", { class: "canvas-bar" },
+      h("div", { class: "toolbar" },
+        h("label", { class: "field-group" }, h("span", { class: "meta" }, "Sample"), sampleSelect),
+        h("label", { class: "field-group" }, h("span", { class: "meta" }, "Size"), sizeSelect)),
+      h("div", { class: "status-row" }, status, retry)),
+    h("div", { class: "stage" }, sample));
 
   const lineText = () => store.get().text ?? SAMPLES[store.get().sample].line;
   const fillText = () => {

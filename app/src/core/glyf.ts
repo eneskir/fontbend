@@ -51,6 +51,39 @@ export function readGlyph(font: Uint8Array, gid: number): Glyph | null {
   return data ? parseGlyph(data) : null;
 }
 
+const WORDS = 1, XY_VALUES = 2, SCALE = 8, MORE = 0x20, XY_SCALE = 0x40, TWO_BY_TWO = 0x80, SCALED_OFFSET = 0x800;
+
+/**
+ * A glyph's outline with composites resolved into their parts' points. Null when the glyph is
+ * missing, or a part is placed by matching points (rare; its place would need the parts' points).
+ */
+export function outline(tables: Map<string, Uint8Array>, gid: number, depth = 0): Glyph | null {
+  const g = glyphData(tables, gid);
+  if (!g || depth > 8) return null;
+  if (g.length === 0 || view(g).getInt16(0) >= 0) return parseGlyph(g);
+  const v = view(g), points: Point[] = [], ends: number[] = [];
+  let at = 10, flags: number;
+  do {
+    flags = v.getUint16(at);
+    const part = v.getUint16(at + 2);
+    at += 4;
+    const dx = flags & WORDS ? v.getInt16(at) : v.getInt8(at), dy = flags & WORDS ? v.getInt16(at + 2) : v.getInt8(at + 1);
+    at += flags & WORDS ? 4 : 2;
+    if (!(flags & XY_VALUES)) return null;
+    const f2 = () => { const n = v.getInt16(at) / 16384; at += 2; return n; };
+    let a = 1, b = 0, c = 0, d = 1;
+    if (flags & SCALE) a = d = f2();
+    else if (flags & XY_SCALE) { a = f2(); d = f2(); }
+    else if (flags & TWO_BY_TWO) { a = f2(); b = f2(); c = f2(); d = f2(); }
+    const p = outline(tables, part, depth + 1);
+    if (!p) return null;
+    const [ox, oy] = flags & SCALED_OFFSET ? [a * dx + c * dy, b * dx + d * dy] : [dx, dy];
+    for (const e of p.ends) ends.push(points.length + e);
+    for (const q of p.points) points.push({ x: a * q.x + c * q.y + ox, y: b * q.x + d * q.y + oy, on: q.on });
+  } while (flags & MORE);
+  return { points, ends };
+}
+
 export type Segment = { x0: number; y0: number; cx: number | null; cy: number | null; x1: number; y1: number };
 
 /** Each contour as lines and quadratic curves, with the on-curve points TrueType implies between two off-curve ones. */

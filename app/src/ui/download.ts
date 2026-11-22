@@ -106,7 +106,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     save.disabled = now !== "ready";
     woff2Row.meta.classList.toggle("is-failed", now === "woff2-failed");
     if (now !== "ready") zipSize.textContent = "";
-    if (now === "making") { ttfRow.meta.textContent = woff2Row.meta.textContent = licenseSize.textContent = ""; check.update(null, ""); }
+    if (now === "making") { ttfRow.meta.textContent = woff2Row.meta.textContent = licenseSize.textContent = ""; check.update(null, "", false); }
     if (now === "woff2") woff2Row.meta.textContent = "";
     if (now === "woff2-failed") woff2Row.meta.textContent = "failed";
   };
@@ -129,14 +129,14 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     made = zip = null;
     state("making");
     try {
-      const [ttf, license] = await Promise.all([
+      const [{ bytes: ttf, turkishFix }, license] = await Promise.all([
         makeFont(s.font, s.settings.axes, n, s.settings.subset),
         fetchBytes(s.font.licenseFile).catch(() => { throw new MakeError("LOAD_FAILED", "The license file didn't load. Check your connection and try again."); }),
       ]);
       if (id !== job) return;
       made = { ttf, license };
       ttfRow.meta.textContent = size(ttf.length);
-      check.update(ttf, `${fileStem(n)}.ttf`);
+      check.update(ttf, `${fileStem(n)}.ttf`, turkishFix);
       licenseSize.textContent = size(license.length);
     } catch (err) {
       if (id === job) fail("failed", err instanceof MakeError ? err : new MakeError("INSTANCE_FAILED", String(err)));

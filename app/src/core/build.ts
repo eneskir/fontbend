@@ -8,6 +8,7 @@ import { writeNames, writeStyleBits, type Style } from "./names";
 import type { AxisSetting } from "./settings";
 import { subsetCodePoints, type Subset } from "./subsets";
 import { readTables, view, writeFont } from "./sfnt";
+import { fixTurkish } from "./turkish";
 
 export type BuildErrorCode = "NEEDS_STRETCHED" | "FONT_DAMAGED" | "INSTANCE_FAILED";
 
@@ -18,6 +19,9 @@ export class BuildError extends Error {
     this.code = code;
   }
 }
+
+/** The made file, and whether Turkish text got its ligatures turned off (core/turkish). */
+export type BuiltFont = { readonly bytes: Uint8Array; readonly turkishFix: boolean };
 
 export type BuildSource = {
   /** The font file as it ships. */
@@ -49,6 +53,19 @@ function isWholeFont(font: Uint8Array, variable: boolean): boolean {
   }
 }
 
+/**
+ * The GSUB table with the fi ligatures that lose i's dot turned off for Turkish, or null when the
+ * font needs no fix. A table the fix cannot rewrite (offsets past 64 KB, feature variations on the
+ * ligatures, parameters of an unknown format) is left as HarfBuzz made it.
+ */
+function turkishFix(tables: Map<string, Uint8Array>): Uint8Array | null {
+  try {
+    return fixTurkish(tables).gsub;
+  } catch {
+    return null;
+  }
+}
+
 export function buildFont(
   hb: Instancer,
   source: BuildSource,
@@ -56,7 +73,7 @@ export function buildFont(
   /** `styleName` names the PostScript name and file ("CondensedBold"); `style` is what families group by. */
   names: { family: string; style: Style; styleName?: string },
   subset: Subset = "all",
-): Uint8Array {
+): BuiltFont {
   // Inside the font's own range the shipped file is used: it keeps HVAR and MVAR exactly.
   const stretch = needsStretched(source.axes, settings);
   const font = stretch ? source.stretched : source.original;
@@ -86,5 +103,7 @@ export function buildFont(
   tables.set("head", head);
   // A digital signature no longer matches once the font changed.
   tables.delete("DSIG");
-  return writeFont(instance, tables);
+  const turkish = turkishFix(tables);
+  if (turkish) tables.set("GSUB", turkish);
+  return { bytes: writeFont(instance, tables), turkishFix: turkish !== null };
 }

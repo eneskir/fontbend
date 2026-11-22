@@ -1,4 +1,4 @@
-import { needsStretched } from "../core/build";
+import { needsStretched, type BuiltFont } from "../core/build";
 import type { CatalogFont } from "../core/catalog";
 import type { MadeNames } from "../core/download";
 import type { AxisSetting } from "../core/settings";
@@ -16,14 +16,14 @@ export class MakeError extends Error {
   }
 }
 
-const build = jobWorker<BuildReply, Uint8Array>(
+const build = jobWorker<BuildReply, BuiltFont>(
   () => new Worker(new URL("./build.worker.ts", import.meta.url), { type: "module" }),
-  (r) => ("bytes" in r ? r.bytes : new MakeError(r.error, r.message)),
+  (r) => ("bytes" in r ? { bytes: r.bytes, turkishFix: r.turkishFix } : new MakeError(r.error, r.message)),
   () => new MakeError("WORKER_STOPPED", "The font builder stopped. Try again."),
 );
 
 /** Makes the font file in a worker; the stretched font is waited for only when a value needs it. */
-export async function makeFont(font: CatalogFont, settings: Readonly<Record<string, AxisSetting>>, names: MadeNames, subset: Subset): Promise<Uint8Array> {
+export async function makeFont(font: CatalogFont, settings: Readonly<Record<string, AxisSetting>>, names: MadeNames, subset: Subset): Promise<BuiltFont> {
   const [original, stretched] = await Promise.all([
     fetchBytes(font.files.upright.path),
     needsStretched(font.axes, settings) ? stretchedFont(font).then((b) => new Uint8Array(b)) : Promise.resolve(null),

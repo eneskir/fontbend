@@ -219,7 +219,9 @@ ul { list-style: none; }
 .check-sample { font-size: 24px; line-height: 32px; overflow-wrap: anywhere; }
 .notdef { display: inline-block; fill: currentColor; }
 .notdef-fallback { display: inline-block; width: 0.5em; height: 0.7em; border: 1px solid currentColor; }
-.check-groups li { display: flex; align-items: center; justify-content: space-between; min-height: 32px; }
+.check-groups li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; min-height: 32px; }
+.check-groups li > span { line-height: 32px; }
+.check-note { flex-basis: 100%; margin-bottom: 4px; color: var(--ink-muted); }
 .check-count { font-family: var(--mono); font-size: 14px; }
 .check-count.is-complete { color: var(--ink-muted); }
 .back-button { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; height: 32px; padding: 0 8px 0 0; font-weight: 500; }

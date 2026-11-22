@@ -7,9 +7,9 @@ import type { Instancer } from "./harfbuzz";
 import { writeNames, writeStyleBits, type Style } from "./names";
 import type { AxisSetting } from "./settings";
 import { subsetCodePoints, type Subset } from "./subsets";
-import { readTables, writeFont } from "./sfnt";
+import { readTables, view, writeFont } from "./sfnt";
 
-export type BuildErrorCode = "NEEDS_STRETCHED" | "INSTANCE_FAILED";
+export type BuildErrorCode = "NEEDS_STRETCHED" | "FONT_DAMAGED" | "INSTANCE_FAILED";
 
 export class BuildError extends Error {
   readonly code: BuildErrorCode;
@@ -36,6 +36,19 @@ export function needsStretched(axes: readonly Axis[], settings: Readonly<Record<
   });
 }
 
+/** A TrueType or OpenType file whose tables all lie inside it, with the tables a font needs to be made. */
+function isWholeFont(font: Uint8Array, variable: boolean): boolean {
+  try {
+    const version = view(font).getUint32(0);
+    if (version !== 0x00010000 && version !== 0x74727565 && version !== 0x4f54544f) return false; // 1.0, "true", "OTTO"
+    const t = readTables(font);
+    return ["head", "name", "OS/2", "cmap", "hmtx", ...(variable ? ["fvar"] : [])].every((tag) => t.has(tag))
+      && (t.has("glyf") || t.has("CFF ") || t.has("CFF2"));
+  } catch {
+    return false; // the table directory itself is cut off
+  }
+}
+
 export function buildFont(
   hb: Instancer,
   source: BuildSource,
@@ -48,6 +61,8 @@ export function buildFont(
   const stretch = needsStretched(source.axes, settings);
   const font = stretch ? source.stretched : source.original;
   if (!font) throw new BuildError("NEEDS_STRETCHED", "Values past the font's own range need the stretched font, and none was given.");
+  // HarfBuzz makes a font even from a cut-off file, so a damaged one is stopped here.
+  if (!isWholeFont(font, source.axes.length > 0)) throw new BuildError("FONT_DAMAGED", "The font file arrived damaged. Reload the page and try again.");
 
   const pins: Record<string, number> = {};
   const ranges: Record<string, readonly [number, number]> = {};

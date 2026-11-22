@@ -1,7 +1,10 @@
 name: Check
 
 on:
+  # "edited" reruns the job when the title changes; the default types would leave an
+  # edited title unchecked when the pull request is squashed.
   pull_request:
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: read

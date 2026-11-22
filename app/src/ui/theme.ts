@@ -1,11 +1,11 @@
 /**
- * Fontbend opens dark. The Theme menu at the foot of the drawer picks Dark, Light or System (the
- * computer's setting); the pick is remembered on this device only.
+ * Fontbend opens dark. The Theme menu at the foot of the drawer picks Match system, Light or Dark;
+ * the pick is remembered on this device only.
  */
 import { h } from "./dom";
 
 export type Theme = "dark" | "light" | "system";
-const THEMES: readonly [Theme, string][] = [["dark", "Dark"], ["light", "Light"], ["system", "System"]];
+const THEMES: readonly [Theme, string][] = [["system", "Match system"], ["light", "Light"], ["dark", "Dark"]];
 const KEY = "fontbend.theme";
 const lightSystem = window.matchMedia("(prefers-color-scheme: light)");
 

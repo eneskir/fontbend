@@ -77,13 +77,15 @@ ul { list-style: none; }
 .foot-button:hover, .foot-button[aria-expanded="true"] { background: var(--paper); color: var(--ink); }
 .icon { flex: none; width: 16px; height: 16px; background: currentColor; }
 .icon-theme { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='5.25' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M8 2.75a5.25 5.25 0 0 1 0 10.5z'/%3E%3C/svg%3E") center / contain no-repeat; }
-.menu { position: fixed; inset: auto auto 0 0; margin: 0; width: 160px; padding: 8px; background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+/* Menu as the design draws it: a heading, then choices with a tick on the chosen one (radios underneath for keyboard and screen readers). */
+.menu { position: fixed; inset: auto auto 0 0; margin: 0; width: 248px; padding: 4px; background: var(--paper); color: var(--ink); border: 1px solid var(--line-strong); }
 .menu-options { display: flex; flex-direction: column; border: 0; }
-.menu-options legend { padding: 0 8px 4px; }
-.menu-option { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px; border-radius: 2px; cursor: pointer; }
+.menu-options legend { padding: 0 8px 0 32px; line-height: 24px; }
+.menu-option { position: relative; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px; border-radius: 2px; font-weight: 500; cursor: pointer; }
 .menu-option:hover { background: var(--surface); }
-.menu-option input { appearance: none; flex: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--ink); border-radius: 50%; cursor: inherit; }
-.menu-option input:checked { background: radial-gradient(var(--ink) 0 3px, transparent 3.5px); }
+.menu-option input { position: absolute; opacity: 0; pointer-events: none; }
+.menu-option::before { content: ""; flex: none; width: 16px; height: 16px; }
+.menu-option:has(:checked)::before { background: var(--ink); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
 .menu-option:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: -2px; }
 .drawer-title { padding: 6px 4px; }
 .field { height: 32px; width: 100%; padding: 0 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 2px; }

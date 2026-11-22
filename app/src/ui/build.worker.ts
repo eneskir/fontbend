@@ -16,7 +16,7 @@ export type BuildRequest = {
   names: MadeNames;
   subset: Subset;
 };
-export type BuildReply = { id: number; bytes: Uint8Array } | { id: number; error: string; message: string };
+export type BuildReply = { id: number; bytes: Uint8Array; turkishFix: boolean } | { id: number; error: string; message: string };
 
 /** Why HarfBuzz did not load, for the code the panel shows: the user's sentence stays the same. */
 class LoadError extends Error {
@@ -45,8 +45,8 @@ scope.onmessage = async (e: MessageEvent<BuildRequest>) => {
     return;
   }
   try {
-    const bytes = buildFont(maker, { original, stretched, axes }, settings, names, subset);
-    scope.postMessage({ id, bytes } satisfies BuildReply, [bytes.buffer]);
+    const { bytes, turkishFix } = buildFont(maker, { original, stretched, axes }, settings, names, subset);
+    scope.postMessage({ id, bytes, turkishFix } satisfies BuildReply, [bytes.buffer]);
   } catch (err) {
     const reply: BuildReply = err instanceof BuildError
       ? { id, error: err.code, message: err.message }

@@ -15,7 +15,7 @@ const axes = [
   { tag: "WONK", min: 0, default: 1, max: 1 },
 ];
 const names = { family: "Fraunces Fontbend", style: "Regular" as const };
-const make = (subset: "all" | "western" | "basic") => buildFont(hb, { original: fraunces, stretched: null, axes }, { wght: 500 }, names, subset);
+const make = (subset: "all" | "western" | "basic") => buildFont(hb, { original: fraunces, stretched: null, axes }, { wght: 500 }, names, subset).bytes;
 const chars = (font: Uint8Array) => codePoints(readTables(font).get("cmap")!);
 const glyphCount = (font: Uint8Array) => view(readTables(font).get("maxp")!).getUint16(4);
 const has = (font: Uint8Array, text: string) => [...text].map((ch) => chars(font).has(ch.codePointAt(0)!));

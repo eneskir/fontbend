@@ -84,8 +84,8 @@ export function characterCheck(store: Store, back: () => void) {
     into.setAttribute("aria-label", letters.filter((l) => r.chars.has(l.codePointAt(0)!)).join(" ") || "none of the letters");
   };
 
-  /** Called with the made TTF once it is ready, or null while it is being made. */
-  const update = (ttf: Uint8Array | null, fileName: string) => {
+  /** Called with the made TTF once it is ready, or null while it is being made; `turkishFix` from core/turkish. */
+  const update = (ttf: Uint8Array | null, fileName: string, turkishFix: boolean) => {
     const s = store.get();
     subtitle.textContent = `Characters: ${subsetLabel(s.settings.subset, s.font.glyphs)}`;
     details.disabled = !ttf;
@@ -99,7 +99,8 @@ export function characterCheck(store: Store, back: () => void) {
     draw(sample, SAMPLE, r);
     count.textContent = `${r.glyphs} / ${s.font.glyphs} glyphs`;
     groups.replaceChildren(...r.groups.map((g) =>
-      h("li", {}, h("span", { class: "label" }, g.name), h("span", { class: g.have === g.total ? "check-count is-complete" : "check-count" }, `${g.have} of ${g.total}`))));
+      h("li", {}, h("span", { class: "label" }, g.name), h("span", { class: g.have === g.total ? "check-count is-complete" : "check-count" }, `${g.have} of ${g.total}`),
+        ...(g.name === "Turkish" && turkishFix ? [h("p", { class: "meta check-note" }, "In Turkish text, f and i no longer join, so the i keeps its dot.")] : []))));
     const tr = r.groups.find((g) => g.name === "Turkish")!;
     turkishPart.hidden = tr.have === tr.total;
     draw(turkish, TURKISH, r);

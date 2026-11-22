@@ -21,7 +21,7 @@ const names = { family: "Fraunces Fontbend", style: "Regular" as const };
 const winName = (font: Uint8Array, id: number) => readNames(readTables(font).get("name")!).find((r) => r.platform === 3 && r.id === id)?.text;
 
 describe("buildFont", () => {
-  const regular = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, names);
+  const regular = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, names).bytes;
 
   it("makes a static font from values inside the range without the stretched font", () => {
     const t = readTables(regular);
@@ -54,7 +54,7 @@ describe("buildFont", () => {
   });
 
   it("names and marks an italic as italic, in every place a system reads it", () => {
-    const italic = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, { family: "Fraunces Fontbend", style: "Italic" });
+    const italic = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, { family: "Fraunces Fontbend", style: "Italic" }).bytes;
     expect(winName(italic, 1)).toBe("Fraunces Fontbend");
     expect(winName(italic, 2)).toBe("Italic");
     expect(winName(italic, 4)).toBe("Fraunces Fontbend Italic");
@@ -78,8 +78,8 @@ describe("buildFont", () => {
     expect(needsStretched(axes, { wght: 1300 })).toBe(true);
     expect(needsStretched(axes, { wght: [500, 900] })).toBe(false);
     expect(() => buildFont(hb, { original, stretched: null, axes }, { wght: 1300 }, names)).toThrow(BuildError);
-    const heavy = buildFont(hb, { original, stretched, axes }, { wght: 1300 }, names);
-    const black = buildFont(hb, { original, stretched, axes }, { wght: 900 }, names);
+    const heavy = buildFont(hb, { original, stretched, axes }, { wght: 1300 }, names).bytes;
+    const black = buildFont(hb, { original, stretched, axes }, { wght: 900 }, names).bytes;
     expect(readTables(heavy).has("fvar")).toBe(false);
     expect(view(readTables(heavy).get("OS/2")!).getUint16(4)).toBe(1000); // usWeightClass stops at 1000
     expect(readTables(heavy).get("glyf")).not.toEqual(readTables(black).get("glyf"));
@@ -87,7 +87,7 @@ describe("buildFont", () => {
   });
 
   it("keeps an axis variable when a range is chosen", () => {
-    const font = buildFont(hb, { original, stretched: null, axes }, { wght: [400, 700] }, names);
+    const font = buildFont(hb, { original, stretched: null, axes }, { wght: [400, 700] }, names).bytes;
     const fvar = readTables(font).get("fvar")!;
     const v = view(fvar);
     const first = v.getUint16(4), size = v.getUint16(10);

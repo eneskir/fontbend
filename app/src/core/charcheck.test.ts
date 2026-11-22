@@ -12,7 +12,7 @@ import type { Subset } from "./subsets";
 
 const hb = await loadInstancer(await initWasm({}));
 const axes = [{ tag: "wght", min: 100, default: 900, max: 900 }];
-const made = (subset: Subset) => buildFont(hb, { original: fraunces, stretched: null, axes }, { wght: 500 }, { family: "Fraunces Fontbend", style: "Regular" }, subset);
+const made = (subset: Subset) => buildFont(hb, { original: fraunces, stretched: null, axes }, { wght: 500 }, { family: "Fraunces Fontbend", style: "Regular" }, subset).bytes;
 const counts = (font: Uint8Array) => checkCharacters(codePoints(readTables(font).get("cmap")!)).map((g) => `${g.name} ${g.have}/${g.total}`);
 
 describe("character check", () => {

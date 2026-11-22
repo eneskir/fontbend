@@ -4,6 +4,7 @@ import { SUBSETS, type Subset } from "../core/subsets";
 import { makeZip } from "../core/zip";
 import type { Store } from "../store";
 import { h } from "./dom";
+import { characterCheck, subsetLabel } from "./charcheck";
 import { fetchBytes, previewFamily, stretchedFamily } from "./faces";
 import { MakeError, makeFont, makeWoff2, stopWoff2 } from "./maker";
 
@@ -27,6 +28,14 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     return { box, name, meta, el: h("li", {}, h("label", { class: "file" }, box, name, meta)) };
   };
   const ttfRow = row("ttf"), woff2Row = row("woff2");
+  // Details swaps the panel for the Character check view; Back and closing the panel swap it back.
+  const showCheck = (on: boolean) => {
+    main.hidden = on;
+    check.panel.hidden = !on;
+    (on ? check.backButton : check.details).focus();
+  };
+  const check = characterCheck(store, () => showCheck(false));
+  check.details.addEventListener("click", () => showCheck(true));
   const subsetOptions = SUBSETS.map((s) => h("option", { value: s }));
   const subsetSelect = h("select", { class: "input", id: "characters", onchange: () => store.update((s) => setSubset(s, subsetSelect.value as Subset)) }, ...subsetOptions);
   const licenseSize = h("span", { class: "file-size" });
@@ -41,7 +50,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
   const zipSize = h("span", { class: "button-meta" });
   const save = h("button", { class: "primary-button is-wide", type: "button", disabled: true, onclick: () => saveZip() }, "Download ZIP", zipSize);
 
-  const panel = h("section", { class: "download", id: "download", popover: "auto", role: "dialog", "aria-labelledby": "download-title" },
+  const main = h("div", { class: "download-main" },
     h("div", { class: "download-head" }, h("h2", { id: "download-title", class: "title" }, "Download"), preview),
     h("div", { class: "download-field" }, h("label", { class: "meta", for: "font-name" }, "Font name"), nameInput),
     h("div", { class: "download-field" },
@@ -51,11 +60,13 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
         h("li", { class: "file is-locked" }, h("span", { class: "lock", "aria-hidden": "true" }), h("span", { class: "file-name" }, "OFL.txt"), h("span", { class: "meta" }, "Required by the license"), licenseSize)),
       h("p", { class: "meta" }, "Install the TTF on your computer. Use the WOFF2 on websites.")),
     h("div", { class: "download-field" }, h("label", { class: "meta", for: "characters" }, "Characters"), h("span", { class: "select-field" }, subsetSelect)),
+    check.row,
     h("details", { class: "license" },
       h("summary", { class: "label" }, "Free for commercial work (SIL OFL 1.1)"),
       h("p", {}, "You can use and change this font in any project, logos and games included. Keep the copyright lines in the font, and don't sell the font file on its own."),
       h("p", { class: "meta" }, "Fontbend writes “Made with Fontbend” into the font's description field.")),
     progress, notice, save);
+  const panel = h("section", { class: "download", id: "download", popover: "auto", role: "dialog", "aria-labelledby": "download-title" }, main, check.panel);
 
   let names: MadeNames | null = null;
   let made: Made | null = null;
@@ -76,8 +87,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     const stem = fileStem(names);
     ttfRow.name.textContent = `${stem}.ttf`;
     woff2Row.name.textContent = `${stem}.woff2`;
-    const label: Record<Subset, string> = { all: `All ${s.font.glyphs} glyphs`, western: "Western European", basic: "Basic Latin" };
-    subsetOptions.forEach((o, i) => { o.textContent = label[SUBSETS[i]!]; });
+    subsetOptions.forEach((o, i) => { o.textContent = subsetLabel(SUBSETS[i]!, s.font.glyphs); });
     subsetSelect.value = s.settings.subset;
     for (const [r, f] of [[ttfRow, "ttf"], [woff2Row, "woff2"]] as const) {
       r.box.checked = s.settings.formats.includes(f);
@@ -96,7 +106,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     save.disabled = now !== "ready";
     woff2Row.meta.classList.toggle("is-failed", now === "woff2-failed");
     if (now !== "ready") zipSize.textContent = "";
-    if (now === "making") ttfRow.meta.textContent = woff2Row.meta.textContent = licenseSize.textContent = "";
+    if (now === "making") { ttfRow.meta.textContent = woff2Row.meta.textContent = licenseSize.textContent = ""; check.update(null, ""); }
     if (now === "woff2") woff2Row.meta.textContent = "";
     if (now === "woff2-failed") woff2Row.meta.textContent = "failed";
   };
@@ -126,6 +136,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
       if (id !== job) return;
       made = { ttf, license };
       ttfRow.meta.textContent = size(ttf.length);
+      check.update(ttf, `${fileStem(n)}.ttf`);
       licenseSize.textContent = size(license.length);
     } catch (err) {
       if (id === job) fail("failed", err instanceof MakeError ? err : new MakeError("INSTANCE_FAILED", String(err)));
@@ -175,7 +186,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
   panel.addEventListener("toggle", (e) => {
     const open = (e as ToggleEvent).newState === "open";
     button.setAttribute("aria-expanded", String(open));
-    if (open) { show(); void make(); } else { clearTimeout(timer); job++; stopWoff2(); }
+    if (open) { show(); void make(); } else { clearTimeout(timer); job++; stopWoff2(); main.hidden = false; check.panel.hidden = true; }
   });
   button.setAttribute("aria-expanded", "false");
 

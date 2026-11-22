@@ -192,6 +192,17 @@ ul { list-style: none; }
 }
 .download:popover-open { display: flex; }
 .download-head { display: flex; flex-direction: column; gap: 12px; }
+.download-main, .check-view { display: flex; flex-direction: column; gap: 16px; }
+.download-main[hidden], .check-view[hidden] { display: none; }
+.field-head { display: flex; align-items: center; justify-content: space-between; margin-right: -8px; }
+.check-sample { font-size: 24px; line-height: 32px; overflow-wrap: anywhere; }
+.notdef { display: inline-block; fill: currentColor; }
+.notdef-fallback { display: inline-block; width: 0.5em; height: 0.7em; border: 1px solid currentColor; }
+.check-groups li { display: flex; align-items: center; justify-content: space-between; min-height: 32px; }
+.check-count { font-family: var(--mono); font-size: 14px; }
+.check-count.is-complete { color: var(--ink-muted); }
+.back-button { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; height: 32px; padding: 0 8px 0 0; font-weight: 500; }
+.back-button::before { content: ""; width: 10px; height: 10px; background: currentColor; mask: var(--tri) center / 8px no-repeat; transform: rotate(90deg); }
 .download-name { font-size: 32px; line-height: 40px; overflow-wrap: anywhere; }
 .download-field { display: flex; flex-direction: column; gap: 4px; }
 .input { height: 40px; width: 100%; padding: 0 8px; background: var(--surface); border: 0; border-radius: 2px; font-weight: 500; }

@@ -42,10 +42,11 @@ describe("editor state", () => {
     expect(s.settings.axes).toEqual({});
   });
 
-  it("starts the new font from its defaults and keeps text and size", () => {
-    const s = { ...setAxis(startEditing(fraunces), "wght", 640), text: "Merhaba", size: 48 };
+  it("starts the new font from its defaults and name, and keeps text and size", () => {
+    const s = { ...setAxis(startEditing(fraunces), "wght", 640), text: "Merhaba", size: 48, name: "Big Sign" };
     const next = selectFont(s, inter);
     expect(next.settings.axes).toEqual({});
+    expect(next.name).toBeNull();
     expect(next.settings.source).toEqual({ kind: "catalog", id: "inter" });
     expect([next.text, next.size]).toEqual(["Merhaba", 48]);
     expect(selectFont(s, fraunces)).toBe(s);

@@ -19,7 +19,7 @@ let worker: Worker | null = null;
 let nextJob = 0;
 const jobs = new Map<number, { ok: (b: ArrayBuffer) => void; no: (e: Error) => void }>();
 
-function stretched(path: string): Promise<ArrayBuffer> {
+function stretch(path: string): Promise<ArrayBuffer> {
   if (!worker) {
     worker = new Worker(new URL("./stretch.worker.ts", import.meta.url), { type: "module" });
     worker.onmessage = (e: MessageEvent<{ id: number; bytes?: Uint8Array; error?: string }>) => {
@@ -43,9 +43,26 @@ function stretched(path: string): Promise<ArrayBuffer> {
 export const previewFamily = (font: CatalogFont) => `fb-${font.id}`;
 export const loadPreview = (font: CatalogFont) => load(previewFamily(font), async () => `url("${url(font.files.upright.path)}")`);
 
+const stretchedBytes = new Map<string, Promise<ArrayBuffer>>();
+
+/** The stretched font's bytes, made once per font: the preview draws with them and downloads are built from them. */
+export function stretchedFont(font: CatalogFont): Promise<ArrayBuffer> {
+  let made = stretchedBytes.get(font.id);
+  if (!made) {
+    made = stretch(font.files.upright.path);
+    made.catch(() => stretchedBytes.delete(font.id));
+    stretchedBytes.set(font.id, made);
+  }
+  return made;
+}
+
 /** The same font rewritten so its axes reach past their own ends (core/stretch). */
 export const stretchedFamily = (font: CatalogFont) => `fb-x-${font.id}`;
-export const loadStretched = (font: CatalogFont) => load(stretchedFamily(font), () => stretched(font.files.upright.path));
+export const loadStretched = (font: CatalogFont) => load(stretchedFamily(font), () => stretchedFont(font));
+
+/** A file the app serves, as bytes. */
+export const fetchBytes = (path: string) =>
+  fetch(url(path)).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`${r.status} ${path}`)))).then((b) => new Uint8Array(b));
 
 /** A few kilobytes that draw only the letters of the family name, for the font list. */
 export const nameFamily = (font: CatalogFont) => `fb-name-${font.id}`;

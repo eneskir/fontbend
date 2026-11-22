@@ -11,10 +11,12 @@ export type EditorState = {
   /** What the user typed into the preview; replaces the sample's first line when set. */
   readonly text: string | null;
   readonly size: number;
+  /** The name the user gave the font they are making; null keeps the suggestion. */
+  readonly name: string | null;
 };
 
 export function startEditing(font: CatalogFont, sample: SampleId = "pangram"): EditorState {
-  return { font, settings: freshSettings(font), sample, text: null, size: 96 };
+  return { font, settings: freshSettings(font), sample, text: null, size: 96, name: null };
 }
 
 const freshSettings = (font: CatalogFont): FontSettings => ({
@@ -25,9 +27,9 @@ const freshSettings = (font: CatalogFont): FontSettings => ({
   formats: ["ttf", "woff2"],
 });
 
-/** Switching fonts starts from the new font's defaults and keeps the text and size. */
+/** Switching fonts starts from the new font's defaults and name, and keeps the text and size. */
 export function selectFont(state: EditorState, font: CatalogFont): EditorState {
-  return font.id === state.font.id ? state : { ...state, font, settings: freshSettings(font) };
+  return font.id === state.font.id ? state : { ...state, font, settings: freshSettings(font), name: null };
 }
 
 /** A value equal to the default is dropped, so "changed" means "has an entry". */

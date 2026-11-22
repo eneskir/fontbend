@@ -42,6 +42,16 @@ export function setAxis(state: EditorState, tag: string, value: number): EditorS
   return { ...state, settings: { ...state.settings, axes } };
 }
 
+export type Format = FontSettings["formats"][number];
+
+/** Turns a file format on or off for the download; the last one left stays on. */
+export function setFormat(state: EditorState, format: Format, on: boolean): EditorState {
+  const now = state.settings.formats;
+  if (now.includes(format) === on) return state;
+  const formats = on ? (["ttf", "woff2"] as const).filter((f) => f === format || now.includes(f)) : now.filter((f) => f !== format);
+  return formats.length === 0 ? state : { ...state, settings: { ...state.settings, formats } };
+}
+
 export function resetAxes(state: EditorState): EditorState {
   return { ...state, settings: { ...state.settings, axes: {} } };
 }

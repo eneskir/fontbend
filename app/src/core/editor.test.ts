@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseCatalog } from "./catalog";
-import { axisValue, resetAxes, selectFont, setAxis, startEditing, variationSettings } from "./editor";
+import { axisValue, resetAxes, selectFont, setAxis, setFormat, startEditing, variationSettings } from "./editor";
 import { decodeSettings, encodeSettings } from "./settings";
 import data from "../catalog.json";
 
@@ -50,6 +50,15 @@ describe("editor state", () => {
     expect(next.settings.source).toEqual({ kind: "catalog", id: "inter" });
     expect([next.text, next.size]).toEqual(["Merhaba", 48]);
     expect(selectFont(s, fraunces)).toBe(s);
+  });
+
+  it("turns download formats on and off, keeping one and the TTF-first order", () => {
+    const s = startEditing(fraunces);
+    const ttfOnly = setFormat(s, "woff2", false);
+    expect(ttfOnly.settings.formats).toEqual(["ttf"]);
+    expect(setFormat(ttfOnly, "ttf", false)).toBe(ttfOnly);
+    expect(setFormat(setFormat(s, "ttf", false), "ttf", true).settings.formats).toEqual(["ttf", "woff2"]);
+    expect(setFormat(s, "ttf", true)).toBe(s);
   });
 
   it("resets every axis", () => {

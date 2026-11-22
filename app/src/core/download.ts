@@ -25,6 +25,12 @@ export function madeNames(font: CatalogFont, typed: string, axes: readonly Axis[
 
 export const fileStem = (names: MadeNames) => postScriptName(names.family, names.styleName);
 
-export function downloadFiles(names: MadeNames, ttf: Uint8Array, license: Uint8Array): ZipEntry[] {
-  return [{ name: `${fileStem(names)}.ttf`, bytes: ttf }, { name: "OFL.txt", bytes: license }];
+/** The ZIP's files: the formats the user kept, TTF first, then the license, which always goes. */
+export function downloadFiles(names: MadeNames, fonts: { readonly ttf?: Uint8Array; readonly woff2?: Uint8Array }, license: Uint8Array): ZipEntry[] {
+  const stem = fileStem(names);
+  return [
+    ...(fonts.ttf ? [{ name: `${stem}.ttf`, bytes: fonts.ttf }] : []),
+    ...(fonts.woff2 ? [{ name: `${stem}.woff2`, bytes: fonts.woff2 }] : []),
+    { name: "OFL.txt", bytes: license },
+  ];
 }

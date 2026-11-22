@@ -37,8 +37,8 @@ export function readNames(name: Uint8Array): NameRecord[] {
   return out;
 }
 
-/** A PostScript name: printable ASCII without spaces or []{}<>/%, at most 63 characters. */
-export const postScriptName = (family: string, style: Style) =>
+/** A PostScript name, also the downloaded file's name: ASCII letters and digits, a hyphen, at most 63 characters. */
+export const postScriptName = (family: string, style: string) =>
   `${family.replace(/[^A-Za-z0-9]/g, "") || "Fontbend"}-${style}`.slice(0, 63);
 
 /**
@@ -46,11 +46,11 @@ export const postScriptName = (family: string, style: Style) =>
  * with a line added, and the signature. Records it does not name (license, designer, the names
  * STAT and fvar point to) stay as they were, on every platform.
  */
-export function writeNames(name: Uint8Array, opts: { family: string; style: Style; variable: boolean }): Uint8Array {
+export function writeNames(name: Uint8Array, opts: { family: string; style: Style; styleName?: string; variable: boolean }): Uint8Array {
   const old = readNames(name);
   const winText = (id: number) => old.find((r) => r.platform === 3 && r.id === id)?.text;
   const kept = keptRecords(name);
-  const ps = postScriptName(opts.family, opts.style);
+  const ps = postScriptName(opts.family, opts.styleName ?? opts.style);
   const fresh = new Map<number, string>([
     [0, [winText(0), COPYRIGHT_LINE].filter(Boolean).join("\n")],
     [1, opts.family],

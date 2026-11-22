@@ -39,7 +39,8 @@ export function buildFont(
   hb: Instancer,
   source: BuildSource,
   settings: Readonly<Record<string, AxisSetting>>,
-  names: { family: string; style: Style },
+  /** `styleName` names the PostScript name and file ("CondensedBold"); `style` is what families group by. */
+  names: { family: string; style: Style; styleName?: string },
 ): Uint8Array {
   // Inside the font's own range the shipped file is used: it keeps HVAR and MVAR exactly.
   const stretch = needsStretched(source.axes, settings);

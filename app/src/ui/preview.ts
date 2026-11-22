@@ -85,12 +85,12 @@ export function preview(store: Store): HTMLElement {
       loadStretched(font).then(() => {
         if (store.get().font === font) sample.style.setProperty("--family", `"${stretchedFamily(font)}"`);
       }, () => {
-        if (store.get().font === font) status.textContent = `Values past ${font.family}'s own range cannot be shown; inside it everything works.`;
+        if (store.get().font === font) status.textContent = `Fontbend couldn't stretch ${font.family}, so values past its own range show at the range's end.`;
       });
     }, () => {
       if (store.get().font !== font) return;
       canvas.classList.replace("is-loading", "is-failed");
-      status.textContent = `${font.family} did not load. Check the connection and try again.`;
+      status.textContent = `${font.family} didn't load. Check your connection and try again.`;
       retry.hidden = false;
     });
   }

@@ -97,8 +97,8 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
   const fail = (now: "failed" | "woff2-failed", e: MakeError) => {
     errorTitle.textContent = now === "failed" ? "Couldn't make the font file" : "Couldn't make the WOFF2 file";
     errorBody.textContent = now === "failed" ? e.message
-      : /memory|RangeError/i.test(e.message) ? "Not enough memory in this tab. Download the TTF alone, or close other tabs and try again."
-      : "Download the TTF alone, or try again.";
+      : /memory|RangeError/i.test(e.message) ? "Not enough memory in this tab. Download only the TTF, or close other tabs and try again."
+      : "Download only the TTF, or try again.";
     errorCode.textContent = `Code ${now === "failed" ? "FB-BUILD-01" : "FB-BUILD-02"} (${e.code})`;
     state(now);
   };

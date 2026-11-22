@@ -55,8 +55,6 @@ ul { list-style: none; }
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
-.app-name { padding: 0 8px; font-size: 16px; line-height: 24px; font-weight: 600; }
-.divider { width: 1px; height: 20px; background: var(--line); }
 .doc-name { padding: 0 8px; font-size: 14px; line-height: 20px; font-weight: 500; }
 
 .workspace { display: grid; grid-template-columns: 288px minmax(0, 1fr) 400px; flex: 1; min-height: 0; }

@@ -15,15 +15,15 @@ export type CatalogFont = {
   readonly licenseFile: string;
   /** The default instance cut to the letters of the family name, for the font list. */
   readonly nameFile: string;
-  /** liga joins f and i and no Turkish locl rule stops it; the Turkish check looks at whether the dot survives. */
+  /** liga joins f and i and no Turkish locl rule stops it, so 'fi' may lose the dot of a Turkish i. */
   readonly fiLigatureNoTurkishRule: boolean;
 };
 
 export type Catalog = { readonly source: { readonly repository: string; readonly commit: string }; readonly fonts: readonly CatalogFont[] };
 
 const CATEGORIES: readonly Category[] = ["sans", "serif", "slab", "display", "mono", "handwriting"];
-const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-const TAG = /^[A-Za-z0-9]{4}$/;
+export const ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+export const TAG = /^[A-Za-z0-9]{4}$/;
 
 type Raw = Record<string, unknown>;
 const isObject = (v: unknown): v is Raw => typeof v === "object" && v !== null && !Array.isArray(v);

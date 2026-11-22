@@ -53,7 +53,7 @@ export async function loadInstancer(wasm: BufferSource | WebAssembly.Instance): 
       hb.hb_blob_destroy(blob);
       const input = hb.hb_subset_input_create_or_fail();
       try {
-        if (!input) throw new Error("HarfBuzz could not start a subset");
+        if (!input) throw new Error("HarfBuzz could not set up the instance");
         hb.hb_subset_input_keep_everything(input);
         hb.hb_subset_input_set_flags(input, hb.hb_subset_input_get_flags(input) | SET_OVERLAPS_FLAG);
         hb.hb_subset_input_pin_all_axes_to_default(input, face);

@@ -95,17 +95,15 @@ function writeFvar(fvar: Uint8Array, plan: AxisPlan[]): Uint8Array {
   return out;
 }
 
-const f2 = (x: number) => Math.round(x);
-
 /** One axis's (start, peak, end) in F2Dot14 units after the range grows. */
 function remap(s: number, p: number, e: number, a: AxisPlan): [number, number, number] {
   if (p > 0) {
     const ne = a.pos.ne ?? 1;
-    return [f2(s * ne), f2(p * ne), e === ONE && p === ONE ? ONE : f2(e * ne)];
+    return [Math.round(s * ne), Math.round(p * ne), e === ONE && p === ONE ? ONE : Math.round(e * ne)];
   }
   if (p < 0) {
     const ne = a.neg.ne ?? 1;
-    return [s === -ONE && p === -ONE ? -ONE : f2(s * ne), f2(p * ne), f2(e * ne)];
+    return [s === -ONE && p === -ONE ? -ONE : Math.round(s * ne), Math.round(p * ne), Math.round(e * ne)];
   }
   return [s, p, e];
 }
@@ -165,12 +163,12 @@ export function axisPieces(s: number, p: number, e: number, a: AxisPlan): Piece[
   const ne = (sign > 0 ? a.pos.ne : a.neg.ne) ?? fail("a tuple peaks on a side with no range");
   const inner = sign > 0 ? s : -e;
   if (inner < 0) fail("a tuple crosses the default");
-  const knee = f2(ONE * ne);
+  const knee = Math.round(ONE * ne);
   // From the default: one ramp, steeper by 1/ne. From an intermediate master: the old shape up
   // to the old end, then a ramp that carries the line from the default through the old end.
   const pieces = inner === 0
     ? [on(sign, 0, ONE, ONE, 1 / ne)]
-    : [on(sign, f2(inner * ne), knee, ONE, 1), on(sign, knee, ONE, ONE, 1 / ne)];
+    : [on(sign, Math.round(inner * ne), knee, ONE, 1), on(sign, knee, ONE, ONE, 1 / ne)];
   // A side with no range of its own continues this side's line through the default.
   if (sign < 0 && a.pos.ne === null && a.newHi > a.def) pieces.push(on(1, 0, ONE, ONE, -(a.newHi - a.def) / (a.def - a.lo)));
   if (sign > 0 && a.neg.ne === null && a.newLo < a.def) pieces.push(on(-1, 0, ONE, ONE, -(a.def - a.newLo) / (a.hi - a.def)));
@@ -256,16 +254,16 @@ function concat(a: Uint8Array, b: Uint8Array): Uint8Array {
 /** Byte length of a packed point number list starting at `at`. */
 export function pointsLength(data: Uint8Array, at: number): number {
   let i = at;
-  let count = data[i++] ?? fail("point numbers run past the end");
+  let count = data[i++] ?? fail("point number list has no count");
   if (count & 0x80) count = ((count & 0x7f) << 8) | (data[i++] ?? 0);
   let seen = 0;
   while (seen < count) {
-    const control = data[i++] ?? fail("point numbers run past the end");
+    const control = data[i++] ?? fail("point number list ends before its runs do");
     const run = (control & 0x7f) + 1;
     i += control & 0x80 ? run * 2 : run;
     seen += run;
   }
-  if (i > data.length) fail("point numbers run past the end");
+  if (i > data.length) fail("point number run is longer than the data");
   return i - at;
 }
 
@@ -329,8 +327,8 @@ function writeAvar(avar: Uint8Array, plan: AxisPlan[]): Uint8Array {
     const map = new Map<number, number>([[-ONE, -ONE], [0, 0], [ONE, ONE]]);
     for (let i = 0; i < n; i++, at += 4) {
       const from = v.getInt16(at), to = v.getInt16(at + 2);
-      if (from > 0 && a.pos.ne !== null) map.set(f2(from * a.pos.ne), f2(to * a.pos.ne));
-      else if (from < 0 && a.neg.ne !== null) map.set(f2(from * a.neg.ne), f2(to * a.neg.ne));
+      if (from > 0 && a.pos.ne !== null) map.set(Math.round(from * a.pos.ne), Math.round(to * a.pos.ne));
+      else if (from < 0 && a.neg.ne !== null) map.set(Math.round(from * a.neg.ne), Math.round(to * a.neg.ne));
     }
     maps.push([...map].sort((x, y) => x[0] - y[0]));
   }

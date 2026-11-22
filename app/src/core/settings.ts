@@ -1,7 +1,9 @@
 /**
- * Everything the user chose for one font. History and share links store it as text,
- * so the text carries a version: a link made today must still open after the model grows.
+ * Everything the user chose for one font. History and share links (phase 8) will store it as
+ * text, so the text carries a version: a link made today must still open after the model grows.
  */
+import { ID, TAG } from "./catalog";
+
 export type AxisSetting = number | readonly [min: number, max: number];
 
 export type FontSettings = {
@@ -16,13 +18,12 @@ export type FontSettings = {
 
 export type Decoded = { readonly ok: true; readonly settings: FontSettings } | { readonly ok: false; readonly error: string };
 
-const TAG = /^[A-Za-z0-9]{4}$/;
 const NUMBER = "-?\\d+(?:\\.\\d+)?";
 const VALUE = new RegExp(`^(${NUMBER})(?:\\.\\.(${NUMBER}))?$`);
-const FORMATS = ["ttf", "woff2"] as const;
+export const FORMATS = ["ttf", "woff2"] as const;
 const RESERVED = new Set(["v", "f", "sub", "out"]);
 
-/** Short, readable text for a link: v=1&f=fraunces&wght=640&wdth=75..120&sub=latin&out=ttf,woff2 */
+/** Short, readable text for a link, keys sorted: v=1&f=fraunces&wdth=75..120&wght=640&sub=latin&out=ttf%2Cwoff2 */
 export function encodeSettings(s: FontSettings): string {
   const p = new URLSearchParams();
   p.set("v", String(s.schemaVersion));
@@ -45,7 +46,7 @@ export function decodeSettings(text: string): Decoded {
   const f = p.get("f") ?? "";
   const local = /^local:([0-9a-f]{64})$/.exec(f);
   const source = local ? { kind: "local" as const, sha256: local[1]! }
-    : /^[a-z0-9]+(-[a-z0-9]+)*$/.test(f) ? { kind: "catalog" as const, id: f } : undefined;
+    : ID.test(f) ? { kind: "catalog" as const, id: f } : undefined;
   if (!source) return err(`bad font ${JSON.stringify(f)}`);
 
   const axes: Record<string, AxisSetting> = {};

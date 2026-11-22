@@ -1,6 +1,6 @@
 import { clampToReach } from "./axis";
 import type { CatalogFont } from "./catalog";
-import type { FontSettings } from "./settings";
+import { FORMATS, type FontSettings } from "./settings";
 import type { SampleId } from "./samples";
 
 /** The one owner of what the editor shows; every view is derived from it. */
@@ -15,8 +15,8 @@ export type EditorState = {
   readonly name: string | null;
 };
 
-export function startEditing(font: CatalogFont, sample: SampleId = "pangram"): EditorState {
-  return { font, settings: freshSettings(font), sample, text: null, size: 96, name: null };
+export function startEditing(font: CatalogFont): EditorState {
+  return { font, settings: freshSettings(font), sample: "pangram", text: null, size: 96, name: null };
 }
 
 const freshSettings = (font: CatalogFont): FontSettings => ({
@@ -24,7 +24,7 @@ const freshSettings = (font: CatalogFont): FontSettings => ({
   source: { kind: "catalog", id: font.id },
   axes: {},
   subset: "all",
-  formats: ["ttf", "woff2"],
+  formats: FORMATS,
 });
 
 /** Switching fonts starts from the new font's defaults and name, and keeps the text and size. */
@@ -48,7 +48,7 @@ export type Format = FontSettings["formats"][number];
 export function setFormat(state: EditorState, format: Format, on: boolean): EditorState {
   const now = state.settings.formats;
   if (now.includes(format) === on) return state;
-  const formats = on ? (["ttf", "woff2"] as const).filter((f) => f === format || now.includes(f)) : now.filter((f) => f !== format);
+  const formats = on ? FORMATS.filter((f) => f === format || now.includes(f)) : now.filter((f) => f !== format);
   return formats.length === 0 ? state : { ...state, settings: { ...state.settings, formats } };
 }
 
@@ -60,7 +60,7 @@ export function resetAxes(state: EditorState): EditorState {
 export function axisValue(state: EditorState, tag: string): number {
   const set = state.settings.axes[tag];
   if (set !== undefined) return typeof set === "number" ? set : set[0];
-  return state.font.axes.find((a) => a.tag === tag)?.default ?? 0;
+  return state.font.axes.find((a) => a.tag === tag)!.default;
 }
 
 /** CSS font-variation-settings for every axis, so the browser never picks one by itself. */

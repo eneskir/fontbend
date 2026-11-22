@@ -12,7 +12,7 @@ const EMBEDDED_PEAK = 0x8000, INTERMEDIATE = 0x4000, PRIVATE_POINTS = 0x2000, TU
 const SHARED_POINTS = 0x8000, TUPLE_COUNT = 0x0fff;
 
 type FvarAxis = { tag: string; min: number; def: number; max: number };
-type Tuple = { peak: number[]; start: number[] | null; end: number[] | null; points: number[] | null; dx: number[]; dy: number[] };
+export type Tuple = { peak: number[]; start: number[] | null; end: number[] | null; points: number[] | null; dx: number[]; dy: number[] };
 
 /** The glyph of a character as a function of axis values (user units, by tag); null when missing or a composite. */
 export function variableGlyph(font: Uint8Array, char: number): ((values: Readonly<Record<string, number>>) => Glyph) | null {
@@ -79,7 +79,7 @@ function mapAvar(pairs: [number, number][], n: number): number {
 }
 
 /** The tuples of one glyph, each with the points it moves (null: all of them) and their deltas. */
-function readTuples(gvar: Uint8Array, gid: number, pointCount: number): Tuple[] {
+export function readTuples(gvar: Uint8Array, gid: number, pointCount: number): Tuple[] {
   const v = view(gvar);
   const axisCount = v.getUint16(4), sharedAt = v.getUint32(8);
   const long = (v.getUint16(14) & 1) === 1, dataAt = v.getUint32(16);
@@ -143,7 +143,7 @@ function scalar(t: Tuple, coords: number[]): number {
 }
 
 /** A tuple's deltas for every outline point, interpolating the points it leaves out (IUP). */
-function deltasFor(t: Tuple, glyph: Glyph): [number[], number[]] {
+export function deltasFor(t: Tuple, glyph: Glyph): [number[], number[]] {
   const n = glyph.points.length;
   if (!t.points) return [t.dx.slice(0, n), t.dy.slice(0, n)];
   const dx = new Array<number>(n).fill(0), dy = new Array<number>(n).fill(0), touched = new Array<boolean>(n).fill(false);

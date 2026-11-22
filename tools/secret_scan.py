@@ -72,7 +72,11 @@ def main() -> int:
             continue
         try:
             text = path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError:
+            # A text file that is not UTF-8 breaks the repository's rule and could hide a secret.
+            findings.append((rel, 0, "not-utf8"))
+            continue
+        except OSError:
             continue
         scanned += 1
         for lineno, line in enumerate(text.splitlines(), 1):

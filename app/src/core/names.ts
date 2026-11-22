@@ -107,6 +107,31 @@ function pack(records: RawRecord[]): Uint8Array {
   return out;
 }
 
+/**
+ * STAT for a made font, or null when it needs none. Windows adds the name of every STAT value
+ * that is not elidable to the family ("My Fraunces 72pt"), so the values of axes the font no
+ * longer varies go; a static font keeps no STAT at all.
+ */
+export function pruneStat(stat: Uint8Array, fvar: Uint8Array | undefined): Uint8Array | null {
+  if (!fvar) return null;
+  const f = view(fvar);
+  const variable = new Set(Array.from({ length: f.getUint16(8) }, (_, i) => tag(fvar, f.getUint16(4) + i * f.getUint16(10))));
+  const out = stat.slice();
+  const v = view(out), axisSize = v.getUint16(4), axesAt = v.getUint32(8), count = v.getUint16(12), valuesAt = v.getUint32(14);
+  const axisTag = (i: number) => tag(out, axesAt + i * axisSize);
+  const kept = Array.from({ length: count }, (_, i) => v.getUint16(valuesAt + i * 2)).filter((offset) => {
+    const at = valuesAt + offset;
+    const axes = v.getUint16(at) === 4 ? Array.from({ length: v.getUint16(at + 2) }, (_, k) => v.getUint16(at + 4 + k * 6)) : [v.getUint16(at + 2)];
+    return axes.every((a) => variable.has(axisTag(a)));
+  });
+  // The offsets list shrinks in place; the values it no longer points to stay as unused bytes.
+  kept.forEach((offset, i) => v.setUint16(valuesAt + i * 2, offset));
+  v.setUint16(12, kept.length);
+  return out;
+}
+
+const tag = (bytes: Uint8Array, at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
+
 /** OS/2 fsSelection and head macStyle for one style: italic or regular, never bold. */
 export function writeStyleBits(os2: Uint8Array, head: Uint8Array, style: Style): { os2: Uint8Array; head: Uint8Array } {
   const ITALIC = 0x01, BOLD = 0x20, REGULAR = 0x40, OBLIQUE = 0x200;

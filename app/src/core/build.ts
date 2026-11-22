@@ -4,7 +4,7 @@
  */
 import { isBeyond, type Axis } from "./axis";
 import type { Instancer } from "./harfbuzz";
-import { writeNames, writeStyleBits, type Style } from "./names";
+import { pruneStat, writeNames, writeStyleBits, type Style } from "./names";
 import type { AxisSetting } from "./settings";
 import { subsetCodePoints, type Subset } from "./subsets";
 import { readTables, view, writeFont } from "./sfnt";
@@ -101,6 +101,9 @@ export function buildFont(
   const { os2, head } = writeStyleBits(need("OS/2"), need("head"), names.style);
   tables.set("OS/2", os2);
   tables.set("head", head);
+  const stat = tables.get("STAT") && pruneStat(tables.get("STAT")!, tables.get("fvar"));
+  if (stat) tables.set("STAT", stat);
+  else tables.delete("STAT");
   // A digital signature no longer matches once the font changed.
   tables.delete("DSIG");
   const turkish = turkishFix(tables);

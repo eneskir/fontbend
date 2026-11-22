@@ -2,6 +2,7 @@ import { needsStretched } from "../core/build";
 import type { CatalogFont } from "../core/catalog";
 import type { MadeNames } from "../core/download";
 import type { AxisSetting } from "../core/settings";
+import type { Subset } from "../core/subsets";
 import type { BuildReply, BuildRequest } from "./build.worker";
 import type { Woff2Reply, Woff2Request } from "./woff2.worker";
 import { StretchError, fetchBytes, stretchedFont } from "./faces";
@@ -22,7 +23,7 @@ const build = jobWorker<BuildReply, Uint8Array>(
 );
 
 /** Makes the font file in a worker; the stretched font is waited for only when a value needs it. */
-export async function makeFont(font: CatalogFont, settings: Readonly<Record<string, AxisSetting>>, names: MadeNames): Promise<Uint8Array> {
+export async function makeFont(font: CatalogFont, settings: Readonly<Record<string, AxisSetting>>, names: MadeNames, subset: Subset): Promise<Uint8Array> {
   const [original, stretched] = await Promise.all([
     fetchBytes(font.files.upright.path),
     needsStretched(font.axes, settings) ? stretchedFont(font).then((b) => new Uint8Array(b)) : Promise.resolve(null),
@@ -31,7 +32,7 @@ export async function makeFont(font: CatalogFont, settings: Readonly<Record<stri
       ? new MakeError("STRETCH_FAILED", `Fontbend couldn't stretch ${font.family} past its own range. Bring the values back inside it to download.`)
       : new MakeError("LOAD_FAILED", `${font.family} didn't load. Check your connection and try again.`);
   });
-  return build({ original, stretched, axes: font.axes, settings: { ...settings }, names } satisfies Omit<BuildRequest, "id">);
+  return build({ original, stretched, axes: font.axes, settings: { ...settings }, names, subset } satisfies Omit<BuildRequest, "id">);
 }
 
 let woff2: { worker: Worker; id: number; no: (e: MakeError) => void } | null = null;

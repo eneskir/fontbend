@@ -10,6 +10,8 @@ export type CatalogFont = {
   readonly family: string;
   readonly version: string;
   readonly copyright: string;
+  /** How many glyphs the upright file has: what "all glyphs" means for this font. */
+  readonly glyphs: number;
   readonly axes: readonly Axis[];
   readonly files: { readonly upright: FontFile; readonly italic?: FontFile };
   readonly licenseFile: string;
@@ -44,7 +46,7 @@ export function parseCatalog(data: unknown): Catalog {
     const at = isObject(raw) && typeof raw.id === "string" ? raw.id : `font ${index}`;
     const fail = (why: string) => problems.push(`${at}: ${why}`);
     if (!isObject(raw)) return fail("not an object"), [];
-    const { id, category, family, version, copyright, licenseCopyright, licenseDescription, axes, files, licenseFile, nameFile, missingTurkish, fiLigatureWithoutLocl } = raw;
+    const { id, category, family, version, copyright, licenseCopyright, licenseDescription, glyphs, axes, files, licenseFile, nameFile, missingTurkish, fiLigatureWithoutLocl } = raw;
     const before = problems.length;
     if (typeof id !== "string" || !ID.test(id)) fail("id must be lowercase words joined by hyphens");
     else if (seen.has(id)) fail("id used twice");
@@ -55,6 +57,7 @@ export function parseCatalog(data: unknown): Catalog {
       fail("declares a Reserved Font Name");
     }
     if (typeof licenseDescription !== "string" || !/SIL Open Font License, Version 1\.1/.test(licenseDescription)) fail("license is not SIL OFL 1.1");
+    if (!Number.isInteger(glyphs) || (glyphs as number) < 1) fail(`bad glyph count ${String(glyphs)}`);
     if (!Array.isArray(missingTurkish) || missingTurkish.length > 0) fail(`missing Turkish letters ${JSON.stringify(missingTurkish)}`);
     const parsedAxes = Array.isArray(axes) ? axes.flatMap((a: unknown) => {
       if (isObject(a) && typeof a.tag === "string" && TAG.test(a.tag) && typeof a.min === "number" && typeof a.default === "number" && typeof a.max === "number" && a.min <= a.default && a.default <= a.max) {
@@ -75,7 +78,7 @@ export function parseCatalog(data: unknown): Catalog {
     if (problems.length > before) return [];
     return [{
       id: id as string, category: category as Category, family: family as string, version: String(version), copyright: copyright as string,
-      axes: parsedAxes, files: italic ? { upright: upright!, italic } : { upright: upright! }, licenseFile: licenseFile as string, nameFile: nameFile as string,
+      glyphs: glyphs as number, axes: parsedAxes, files: italic ? { upright: upright!, italic } : { upright: upright! }, licenseFile: licenseFile as string, nameFile: nameFile as string,
       fiLigatureNoTurkishRule: fiLigatureWithoutLocl === true,
     }];
   });

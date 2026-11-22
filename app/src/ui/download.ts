@@ -1,5 +1,6 @@
 import { FAMILY_MAX, defaultFamily, downloadFiles, fileStem, madeNames, type MadeNames } from "../core/download";
-import { setFormat, variationSettings, type Format } from "../core/editor";
+import { setFormat, setSubset, variationSettings, type Format } from "../core/editor";
+import { SUBSETS, type Subset } from "../core/subsets";
 import { makeZip } from "../core/zip";
 import type { Store } from "../store";
 import { h } from "./dom";
@@ -26,6 +27,8 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     return { box, name, meta, el: h("li", {}, h("label", { class: "file" }, box, name, meta)) };
   };
   const ttfRow = row("ttf"), woff2Row = row("woff2");
+  const subsetOptions = SUBSETS.map((s) => h("option", { value: s }));
+  const subsetSelect = h("select", { class: "input", id: "characters", onchange: () => store.update((s) => setSubset(s, subsetSelect.value as Subset)) }, ...subsetOptions);
   const licenseSize = h("span", { class: "file-size" });
   const progressText = h("p", { class: "meta" });
   const progress = h("div", { class: "download-progress", hidden: true }, h("div", { class: "progress-bar" }), progressText);
@@ -47,6 +50,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
         ttfRow.el, woff2Row.el,
         h("li", { class: "file is-locked" }, h("span", { class: "lock", "aria-hidden": "true" }), h("span", { class: "file-name" }, "OFL.txt"), h("span", { class: "meta" }, "Required by the license"), licenseSize)),
       h("p", { class: "meta" }, "Install the TTF on your computer. Use the WOFF2 on websites.")),
+    h("div", { class: "download-field" }, h("label", { class: "meta", for: "characters" }, "Characters"), h("span", { class: "select-field" }, subsetSelect)),
     h("details", { class: "license" },
       h("summary", { class: "label" }, "Free for commercial work (SIL OFL 1.1)"),
       h("p", {}, "You can use and change this font in any project, logos and games included. Keep the copyright lines in the font, and don't sell the font file on its own."),
@@ -72,6 +76,9 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     const stem = fileStem(names);
     ttfRow.name.textContent = `${stem}.ttf`;
     woff2Row.name.textContent = `${stem}.woff2`;
+    const label: Record<Subset, string> = { all: `All ${s.font.glyphs} glyphs`, western: "Western European", basic: "Basic Latin" };
+    subsetOptions.forEach((o, i) => { o.textContent = label[SUBSETS[i]!]; });
+    subsetSelect.value = s.settings.subset;
     for (const [r, f] of [[ttfRow, "ttf"], [woff2Row, "woff2"]] as const) {
       r.box.checked = s.settings.formats.includes(f);
       // The last format left can't be turned off: a ZIP with only the license is no download.
@@ -113,7 +120,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     state("making");
     try {
       const [ttf, license] = await Promise.all([
-        makeFont(s.font, s.settings.axes, n),
+        makeFont(s.font, s.settings.axes, n, s.settings.subset),
         fetchBytes(s.font.licenseFile).catch(() => { throw new MakeError("LOAD_FAILED", "The license file didn't load. Check your connection and try again."); }),
       ]);
       if (id !== job) return;
@@ -173,7 +180,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
   button.setAttribute("aria-expanded", "false");
 
   store.subscribe((now, before) => {
-    const remake = now.font !== before.font || now.settings.axes !== before.settings.axes || now.name !== before.name;
+    const remake = now.font !== before.font || now.settings.axes !== before.settings.axes || now.settings.subset !== before.settings.subset || now.name !== before.name;
     const repack = now.settings.formats !== before.settings.formats;
     if (!remake && !repack) return;
     show();

@@ -6,6 +6,7 @@ import { isBeyond, type Axis } from "./axis";
 import type { Instancer } from "./harfbuzz";
 import { writeNames, writeStyleBits, type Style } from "./names";
 import type { AxisSetting } from "./settings";
+import { subsetCodePoints, type Subset } from "./subsets";
 import { readTables, writeFont } from "./sfnt";
 
 export type BuildErrorCode = "NEEDS_STRETCHED" | "INSTANCE_FAILED";
@@ -41,6 +42,7 @@ export function buildFont(
   settings: Readonly<Record<string, AxisSetting>>,
   /** `styleName` names the PostScript name and file ("CondensedBold"); `style` is what families group by. */
   names: { family: string; style: Style; styleName?: string },
+  subset: Subset = "all",
 ): Uint8Array {
   // Inside the font's own range the shipped file is used: it keeps HVAR and MVAR exactly.
   const stretch = needsStretched(source.axes, settings);
@@ -56,7 +58,7 @@ export function buildFont(
 
   let instance: Uint8Array;
   try {
-    instance = hb.instance(font, pins, ranges);
+    instance = hb.instance(font, pins, ranges, subsetCodePoints(subset));
   } catch (err) {
     throw new BuildError("INSTANCE_FAILED", `The font could not be made with these settings (${err instanceof Error ? err.message : String(err)}).`);
   }

@@ -94,6 +94,7 @@ def describe(path: str) -> dict:
         "version": re.sub(r"^Version\s+", "", name.getDebugName(5) or "").split(";")[0],
         "copyright": name.getDebugName(0) or "",
         "licenseDescription": name.getDebugName(13) or "",
+        "glyphs": font["maxp"].numGlyphs,
         "axes": [{"tag": a.axisTag, "min": a.minValue, "default": a.defaultValue, "max": a.maxValue} for a in font["fvar"].axes],
         "missingTurkish": [c for c in TURKISH if ord(c) not in cmap],
         "fiLigatureWithoutLocl": fi_ligature_without_locl(font),

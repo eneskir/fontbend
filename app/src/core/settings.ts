@@ -3,6 +3,7 @@
  * text, so the text carries a version: a link made today must still open after the model grows.
  */
 import { ID, TAG } from "./catalog";
+import { SUBSETS, type Subset } from "./subsets";
 
 export type AxisSetting = number | readonly [min: number, max: number];
 
@@ -12,7 +13,7 @@ export type FontSettings = {
   readonly source: { readonly kind: "catalog"; readonly id: string } | { readonly kind: "local"; readonly sha256: string };
   /** Axes left out keep the font's default. A range keeps the axis variable. */
   readonly axes: Readonly<Record<string, AxisSetting>>;
-  readonly subset: "all" | "latin";
+  readonly subset: Subset;
   readonly formats: readonly ("ttf" | "woff2")[];
 };
 
@@ -23,7 +24,7 @@ const VALUE = new RegExp(`^(${NUMBER})(?:\\.\\.(${NUMBER}))?$`);
 export const FORMATS = ["ttf", "woff2"] as const;
 const RESERVED = new Set(["v", "f", "sub", "out"]);
 
-/** Short, readable text for a link, keys sorted: v=1&f=fraunces&wdth=75..120&wght=640&sub=latin&out=ttf%2Cwoff2 */
+/** Short, readable text for a link, keys sorted: v=1&f=fraunces&wdth=75..120&wght=640&sub=western&out=ttf%2Cwoff2 */
 export function encodeSettings(s: FontSettings): string {
   const p = new URLSearchParams();
   p.set("v", String(s.schemaVersion));
@@ -61,10 +62,10 @@ export function decodeSettings(text: string): Decoded {
   }
 
   const subset = p.get("sub");
-  if (subset !== "all" && subset !== "latin") return err(`bad subset ${subset ?? "(none)"}`);
+  if (!SUBSETS.includes(subset as Subset)) return err(`bad subset ${subset ?? "(none)"}`);
   const formats = (p.get("out") ?? "").split(",");
   if (!formats.every((x): x is (typeof FORMATS)[number] => (FORMATS as readonly string[]).includes(x)) || new Set(formats).size !== formats.length) {
     return err(`bad formats ${p.get("out") ?? "(none)"}`);
   }
-  return { ok: true, settings: { schemaVersion: 1, source, axes, subset, formats } };
+  return { ok: true, settings: { schemaVersion: 1, source, axes, subset: subset as Subset, formats } };
 }

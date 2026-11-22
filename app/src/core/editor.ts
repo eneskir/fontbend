@@ -1,6 +1,7 @@
 import { clampToReach } from "./axis";
 import type { CatalogFont } from "./catalog";
 import { FORMATS, type FontSettings } from "./settings";
+import type { Subset } from "./subsets";
 import type { SampleId } from "./samples";
 
 /** The one owner of what the editor shows; every view is derived from it. */
@@ -50,6 +51,10 @@ export function setFormat(state: EditorState, format: Format, on: boolean): Edit
   if (now.includes(format) === on) return state;
   const formats = on ? FORMATS.filter((f) => f === format || now.includes(f)) : now.filter((f) => f !== format);
   return formats.length === 0 ? state : { ...state, settings: { ...state.settings, formats } };
+}
+
+export function setSubset(state: EditorState, subset: Subset): EditorState {
+  return state.settings.subset === subset ? state : { ...state, settings: { ...state.settings, subset } };
 }
 
 export function resetAxes(state: EditorState): EditorState {

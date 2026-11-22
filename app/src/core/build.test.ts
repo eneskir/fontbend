@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import initWasm from "harfbuzzjs/dist/harfbuzz-subset.wasm?init";
 import { BuildError, buildFont, needsStretched } from "./build";
 import { loadInstancer } from "./harfbuzz";
-import { SIGNATURE, postScriptName, readNames } from "./names";
+import { SIGNATURE, menuFamily, postScriptName, readNames } from "./names";
 import { checksumOk, fraunces as original } from "./fixtures";
 import { readTables, view } from "./sfnt";
 import { stretchFont } from "./stretch";
@@ -62,6 +62,19 @@ describe("buildFont", () => {
     const t = readTables(italic);
     expect(view(t.get("OS/2")!).getUint16(62) & 0x261).toBe(0x01); // fsSelection: ITALIC, not BOLD, REGULAR or OBLIQUE
     expect(view(t.get("head")!).getUint16(44) & 0x3).toBe(0x2); // macStyle: italic, not bold
+  });
+
+  it("names a moved font by its settings, so Windows keeps each download apart", () => {
+    const black = buildFont(hb, { original, stretched, axes }, { wght: 1100, opsz: 72 }, { family: "My Fraunces", style: "Regular", code: "wght1100 opsz72" }).bytes;
+    expect(winName(black, 1)).toBe("My Fraunces wght1100 opsz72");
+    expect(winName(black, 2)).toBe("Regular");
+    expect(winName(black, 4)).toBe("My Fraunces wght1100 opsz72");
+    expect(winName(black, 6)).toBe("MyFraunces-wght1100opsz72");
+    // Apps that read typographic names group every download of the family and show the settings as the style.
+    expect(winName(black, 16)).toBe("My Fraunces");
+    expect(winName(black, 17)).toBe("wght1100 opsz72");
+    const italic = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, { family: "My Fraunces", style: "Italic", code: "wght500" }).bytes;
+    expect([1, 2, 4, 6, 16, 17].map((id) => winName(italic, id))).toEqual(["My Fraunces wght500", "Italic", "My Fraunces wght500 Italic", "MyFraunces-wght500", "My Fraunces", "wght500 Italic"]);
   });
 
   it("stops a damaged font file with a sentence the user can act on", () => {
@@ -128,5 +141,24 @@ describe("postScriptName", () => {
     expect(postScriptName("Çok güzel", "Regular")).toBe("okgzel-Regular");
     expect(postScriptName("#$%", "Regular")).toBe("Fontbend-Regular");
     expect(postScriptName("x".repeat(80), "Regular")).toHaveLength(63);
+  });
+  it("spells the settings out, and gives a code too long for 63 characters a digest of its own", () => {
+    expect(postScriptName("My Fraunces", "Regular", "wght1100 opsz72")).toBe("MyFraunces-wght1100opsz72");
+    const long = (w: number) => `wght${w} wdth75 opsz72 GRAD-200 XOPQ27 YOPQ25 XTRA323 YTUC528 YTLC416`;
+    const [a, b] = [postScriptName("My Roboto Flex", "Regular", long(700)), postScriptName("My Roboto Flex", "Regular", long(701))];
+    expect(a.length).toBeLessThanOrEqual(63);
+    expect(a).toMatch(/^MyRobotoFlex-[0-9A-F]{4}$/);
+    expect(a).not.toBe(b);
+  });
+});
+
+describe("menuFamily", () => {
+  it("shows the family and the settings, within the 31 characters Windows' menus read", () => {
+    expect(menuFamily("My Fraunces", "")).toBe("My Fraunces");
+    expect(menuFamily("My Fraunces", "wght1100 opsz72")).toBe("My Fraunces wght1100 opsz72");
+    const [a, b] = [menuFamily("My Roboto Flex", "wght700 wdth75 opsz72"), menuFamily("My Roboto Flex", "wght700 wdth75 opsz73")];
+    expect(a).toMatch(/^My Roboto Flex [0-9A-F]{4}$/);
+    expect(a).not.toBe(b);
+    expect(menuFamily("x".repeat(31), "wght700")).toHaveLength(31);
   });
 });

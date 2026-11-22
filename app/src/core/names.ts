@@ -37,29 +37,62 @@ export function readNames(name: Uint8Array): NameRecord[] {
   return out;
 }
 
-/** A PostScript name, also the downloaded file's name: ASCII letters and digits, a hyphen, at most 63 characters. */
-export const postScriptName = (family: string, style: string) =>
-  `${family.replace(/[^A-Za-z0-9]/g, "") || "Fontbend"}-${style}`.slice(0, 63);
+/** Windows' font menus and GDI read at most 31 characters of a family name. */
+const MENU_MAX = 31;
+
+/** Four hex digits standing for a settings code too long to spell out. */
+const digest = (code: string) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < code.length; i++) h = Math.imul(h ^ code.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(16).padStart(8, "0").slice(-4).toUpperCase();
+};
 
 /**
- * The name table of a built font: the family the user chose, one style, the original copyright
- * with a line added, and the signature. Records it does not name (license, designer, the names
- * STAT and fvar point to) stay as they were, on every platform.
+ * A PostScript name, also the downloaded file's name: the family's ASCII letters and digits, a
+ * hyphen, then the settings code without spaces (or the style when nothing moved); at most 63
+ * characters, so a code that does not fit becomes its digest and the name stays its own.
  */
-export function writeNames(name: Uint8Array, opts: { family: string; style: Style; styleName?: string; variable: boolean }): Uint8Array {
+export function postScriptName(family: string, style: string, code = ""): string {
+  const fam = family.replace(/[^A-Za-z0-9]/g, "") || "Fontbend";
+  const tail = code.replace(/ /g, "") || style;
+  const full = `${fam}-${tail}`;
+  return full.length <= 63 ? full : `${fam.slice(0, 63 - 5)}-${digest(tail)}`;
+}
+
+/** The family as Windows' menus show it: the family and the code, or the code's digest when that is too long. */
+export function menuFamily(family: string, code: string): string {
+  if (!code) return family;
+  const full = `${family} ${code}`;
+  return full.length <= MENU_MAX ? full : `${family.slice(0, MENU_MAX - 5).trimEnd()} ${digest(code)}`;
+}
+
+/**
+ * The name table of a built font: the family the user chose with the settings code, one style,
+ * the original copyright with a line added, and the signature. Windows' menus list the family
+ * with the code ("My Fraunces wght1100 opsz72"); apps that read typographic names (16, 17) group
+ * every download of one family and show the code as the style. Records it does not name (license,
+ * designer, the names STAT and fvar point to) stay as they were, on every platform.
+ */
+export function writeNames(name: Uint8Array, opts: { family: string; style: Style; code?: string; variable: boolean }): Uint8Array {
   const old = readNames(name);
   const winText = (id: number) => old.find((r) => r.platform === 3 && r.id === id)?.text;
   const kept = keptRecords(name);
-  const ps = postScriptName(opts.family, opts.styleName ?? opts.style);
+  const code = opts.code ?? "";
+  const ps = postScriptName(opts.family, opts.style, code);
+  const full = code ? `${opts.family} ${code}` : opts.family;
   const fresh = new Map<number, string>([
     [0, [winText(0), COPYRIGHT_LINE].filter(Boolean).join("\n")],
-    [1, opts.family],
+    [1, menuFamily(opts.family, code)],
     [2, opts.style],
     [3, `${ps};Fontbend`],
-    [4, opts.style === "Regular" ? opts.family : `${opts.family} ${opts.style}`],
+    [4, opts.style === "Regular" ? full : `${full} ${opts.style}`],
     [6, ps],
     [10, SIGNATURE],
   ]);
+  if (code) {
+    fresh.set(16, opts.family);
+    fresh.set(17, opts.style === "Regular" ? code : `${code} ${opts.style}`);
+  }
   if (opts.variable) fresh.set(25, ps.replace(/-.*$/, ""));
   const records = [
     ...kept,

@@ -17,8 +17,6 @@ export type CatalogFont = {
   readonly licenseFile: string;
   /** The default instance cut to the letters of the family name, for the font list. */
   readonly nameFile: string;
-  /** liga joins f and i and no Turkish locl rule stops it, so 'fi' may lose the dot of a Turkish i. */
-  readonly fiLigatureNoTurkishRule: boolean;
 };
 
 export type Catalog = { readonly source: { readonly repository: string; readonly commit: string }; readonly fonts: readonly CatalogFont[] };
@@ -46,7 +44,7 @@ export function parseCatalog(data: unknown): Catalog {
     const at = isObject(raw) && typeof raw.id === "string" ? raw.id : `font ${index}`;
     const fail = (why: string) => problems.push(`${at}: ${why}`);
     if (!isObject(raw)) return fail("not an object"), [];
-    const { id, category, family, version, copyright, licenseCopyright, licenseDescription, glyphs, axes, files, licenseFile, nameFile, missingTurkish, fiLigatureWithoutLocl } = raw;
+    const { id, category, family, version, copyright, licenseCopyright, licenseDescription, glyphs, axes, files, licenseFile, nameFile, missingTurkish } = raw;
     const before = problems.length;
     if (typeof id !== "string" || !ID.test(id)) fail("id must be lowercase words joined by hyphens");
     else if (seen.has(id)) fail("id used twice");
@@ -85,7 +83,6 @@ export function parseCatalog(data: unknown): Catalog {
     return [{
       id: id as string, category: category as Category, family: family as string, version: String(version), copyright: copyright as string,
       glyphs: glyphs as number, axes: parsedAxes, files: italic ? { upright: upright!, italic } : { upright: upright! }, licenseFile: licenseFile as string, nameFile: nameFile as string,
-      fiLigatureNoTurkishRule: fiLigatureWithoutLocl === true,
     }];
   });
   if (problems.length > 0) throw new Error(`catalog.json has ${problems.length} problem(s):\n${problems.join("\n")}`);

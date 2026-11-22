@@ -10,11 +10,6 @@ describe("catalog.json", () => {
     expect(parseCatalog(data).fonts).toHaveLength(20);
   });
 
-  it("marks only the fonts whose fi ligature has no Turkish rule", () => {
-    const flagged = parseCatalog(data).fonts.filter((f) => f.fiLigatureNoTurkishRule).map((f) => f.id);
-    expect(flagged.sort()).toEqual(["caveat", "fraunces", "newsreader"]);
-  });
-
   it("refuses a font with a Reserved Font Name", () => {
     const rfn = withFont({ licenseCopyright: `${first.licenseCopyright}, with Reserved Font Name "Roboto".` });
     expect(() => parseCatalog(rfn)).toThrow(/Reserved Font Name/);

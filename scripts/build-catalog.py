@@ -12,9 +12,8 @@ The font list shows each name in its own font. Loading the 20 upright fonts for 
 cost about 16 MB, so each font also gets <id>-name.<hash>.woff2: its default instance cut down to the
 letters of its own name, a few kilobytes.
 
-The script records facts (axes, copyright, version, Turkish letters, the fi ligature, where
-letters break past an axis's own range); it
-does not judge them. app/src/core/catalog.ts decides what may enter the catalog, and its
+The script records facts (axes, copyright, version, Turkish letters, where letters break past an
+axis's own range); it does not judge them. app/src/core/catalog.ts decides what may enter the catalog, and its
 tests run on the written catalog.json. Running the script again on the same checkout
 changes nothing.
 
@@ -51,39 +50,9 @@ FONTS = (
 )
 # Letters Turkish text needs beyond Basic Latin, including the circumflex vowels.
 TURKISH = "ÇçĞğİıÖöŞşÜüÂâÎîÛû"
-LANG_TAGS = {"TRK", "AZE", "CRT"}  # languages that keep the dot on i
 
 OUT_FONTS = os.path.join("app", "public", "catalog")
 OUT_CATALOG = os.path.join("app", "src", "catalog.json")
-
-
-def fi_ligature_without_locl(font: TTFont) -> bool:
-    """True when liga turns f + i into one glyph and no Turkish locl feature exists to stop it.
-    Whether that glyph keeps the dot is checked by eye; the catalog flags the font either way."""
-    if "GSUB" not in font:
-        return False
-    gsub = font["GSUB"].table
-    cmap = font.getBestCmap()
-    f, i = cmap.get(ord("f")), cmap.get(ord("i"))
-    liga = False
-    for rec in gsub.FeatureList.FeatureRecord:
-        if rec.FeatureTag != "liga":
-            continue
-        for index in rec.Feature.LookupListIndex:
-            lookup = gsub.LookupList.Lookup[index]
-            for table in lookup.SubTable:
-                table = getattr(table, "ExtSubTable", table)
-                ligatures = getattr(table, "ligatures", None) or {}
-                liga = liga or any(l.Component == [i] for l in ligatures.get(f, []))
-    if not liga:
-        return False
-    for script in gsub.ScriptList.ScriptRecord:
-        for lang in script.Script.LangSysRecord:
-            if lang.LangSysTag.strip() in LANG_TAGS:
-                tags = {gsub.FeatureList.FeatureRecord[k].FeatureTag for k in lang.LangSys.FeatureIndex}
-                if "locl" in tags:
-                    return False
-    return True
 
 
 # Must match STRETCH in app/src/core/axis.ts: how far past its own range a slider reaches.
@@ -182,7 +151,6 @@ def describe(path: str) -> dict:
         "glyphs": font["maxp"].numGlyphs,
         "axes": [{"tag": a.axisTag, "min": a.minValue, "default": a.defaultValue, "max": a.maxValue} for a in font["fvar"].axes],
         "missingTurkish": [c for c in TURKISH if ord(c) not in cmap],
-        "fiLigatureWithoutLocl": fi_ligature_without_locl(font),
     }
 
 

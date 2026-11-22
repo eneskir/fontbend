@@ -10,6 +10,7 @@ Fontbend is a free, open-source browser font maker in English and Turkish; fonts
 
 - `site/` → fontbend.com, deployed from `main` by `.github/workflows/deploy.yml`.
 - `preview/` → pages not public yet, deployed on top of `site/` to preview.fontbend.pages.dev; moves to `site/` on the maintainer's call.
+- `app/` → the font maker (TypeScript, Vite), built to `dist/`; not deployed yet.
 - `scripts/build-site-font.py` → builds the fonts of `site/` and `preview/` from Recursive.
 - `tools/` → checks that CI runs.
 
@@ -18,6 +19,7 @@ Fontbend is a free, open-source browser font maker in English and Turkish; fonts
 - Before every PR → `python3 tools/secret_scan.py` (secrets, credential files, personal data).
 - PR title → `TITLE="fix: ..." python3 tools/check_pr_title.py`: Conventional Commits, 100 characters at most.
 - Touching `site/` or `preview/` → `python3 tools/check_site_cache.py site` and `python3 tools/check_site_cache.py site preview`: files cached as immutable carry the first 8 hex digits of their SHA-256 in the name, and every local link resolves.
+- Touching `app/`, `package.json` or the configs → `npm run check`, `npm test`, `npm run build`; new package → `npm install --ignore-scripts --save-exact`, then `python3 tools/check_licenses.py`.
 - Changing an immutable file → rename it; `scripts/build-site-font.py` renames the fonts and updates the pages.
 
 ## Rules

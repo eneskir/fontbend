@@ -12,6 +12,6 @@ Please don't:
 - publish a modified copy of Fontbend under the name Fontbend, or under a name or logo that looks like it
 - use the name in a way that suggests your project is the official Fontbend or is endorsed by it
 
-Fontbend writes "Made with Fontbend" into the fonts it makes. A modified copy should write its own name there instead, and can add "based on Fontbend", for example "Made with Example, based on Fontbend".
+Fontbend puts "Made with Fontbend" into the fonts it makes. A modified copy should use its own name there instead, and can add "based on Fontbend", for example "Made with Example, based on Fontbend".
 
 Questions about the name: open an issue.

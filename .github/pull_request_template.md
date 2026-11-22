@@ -8,4 +8,4 @@
 
 ## Written with
 
-<!-- The model and tool that wrote the code, for example "Claude Opus 5.5 in Claude Code", or "by hand". -->
+<!-- Who or what wrote the code: a model and tool, for example "Claude Opus 5.5 in Claude Code", or "by hand". -->

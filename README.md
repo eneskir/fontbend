@@ -8,7 +8,7 @@ Fontbend is in development. Until the first release, [fontbend.com](https://font
 
 ## How it is made
 
-Enes Kır designs Fontbend and approves every change. The code is written with Claude Code.
+Enes Kır designs Fontbend and approves every change. Claude Code writes the code.
 
 ## License
 
@@ -18,4 +18,4 @@ Enes Kır designs Fontbend and approves every change. The code is written with C
 
 ## Contributing
 
-Bug reports, translation fixes and ideas are welcome through the issue forms. Pull requests are limited to maintainers for now. See [CONTRIBUTING.md](CONTRIBUTING.md). To report a security problem, see [SECURITY.md](SECURITY.md).
+Bug reports, translation fixes and ideas are welcome through the issue forms. Pull requests from outside the project aren't accepted for now. See [CONTRIBUTING.md](CONTRIBUTING.md). To report a security problem, see [SECURITY.md](SECURITY.md).

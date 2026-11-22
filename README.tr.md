@@ -2,20 +2,20 @@
 
 [English](README.md) | Türkçe
 
-Tarayıcıda çalışan, ücretsiz ve açık kaynak bir font yapıcı. Katalogdan bir font seç, sürgülerle biçimlendir, hangi dilleri karşıladığına bak, lisansıyla birlikte indir.
+Tarayıcıda çalışan ücretsiz, açık kaynak bir font yapıcı. Katalogdan bir font seç, sürgülerle biçim ver, hangi dilleri desteklediğine bak ve lisansıyla birlikte indir.
 
 Fontbend geliştirme aşamasında. İlk sürüme kadar [fontbend.com](https://fontbend.com) bir bekleme sayfası gösteriyor.
 
-## Nasıl yapılıyor
+## Nasıl geliştiriliyor
 
-Fontbend'i Enes Kır tasarlıyor ve her değişikliği o onaylıyor. Kodu Claude Code yazıyor.
+Fontbend'i Enes Kır tasarlıyor ve her değişikliği onaylıyor. Kodu Claude Code yazıyor.
 
 ## Lisans
 
 - Kod: [MIT Lisansı](LICENSE).
-- Fontlar: her font kendi lisansını korur, liste [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) dosyasında. SIL Open Font License'lı bir fonttan yaptığın font da aynı lisansla kalır.
-- Fontbend adı ve logosu MIT Lisansı'nın kapsamında değildir. Ayrıntı: [TRADEMARKS.md](TRADEMARKS.md).
+- Fontlar: her font kendi lisansını korur. Lisanslar [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) dosyasında listeli. SIL Open Font License'lı bir fonttan yaptığın yeni font da aynı lisansı taşır.
+- Fontbend adının ve logosunun kullanımını MIT Lisansı değil, [TRADEMARKS.md](TRADEMARKS.md) belirliyor.
 
 ## Katkı
 
-Hata bildirimi, çeviri düzeltmesi ve fikirler issue formlarıyla gelebilir. Pull request şimdilik yalnız proje ekibine açık. Ayrıntı [CONTRIBUTING.md](CONTRIBUTING.md) dosyasında (İngilizce). Güvenlik sorunu bildirmek için [SECURITY.md](SECURITY.md).
+Hata bildirimlerini, çeviri düzeltmelerini ve fikirlerini issue formlarıyla gönderebilirsin. Dışarıdan pull request şimdilik kabul edilmiyor. Katkı kuralları [CONTRIBUTING.md](CONTRIBUTING.md) dosyasında (İngilizce). Bir güvenlik sorunu bulursan [SECURITY.md](SECURITY.md) dosyasına bak.

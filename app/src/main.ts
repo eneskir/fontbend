@@ -9,6 +9,7 @@ import { h } from "./ui/dom";
 import { download } from "./ui/download";
 import { fontList } from "./ui/fontList";
 import { preview } from "./ui/preview";
+import { themeMenu } from "./ui/theme";
 
 const catalog = parseCatalog(data);
 const store = createStore(startEditing(catalog.fonts[0]!));
@@ -22,6 +23,6 @@ const dl = download(store);
 
 document.getElementById("app")!.replaceChildren(
   h("header", { class: "app-bar" }, docName, h("span", { class: "bar-end" }, dl.button)),
-  h("div", { class: "workspace" }, fontList(store, catalog), preview(store), adjustPanel(store)),
+  h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, fontList(store, catalog), themeMenu()), preview(store), adjustPanel(store)),
   dl.panel,
 );

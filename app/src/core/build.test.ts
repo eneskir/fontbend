@@ -36,9 +36,11 @@ describe("buildFont", () => {
     expect(winName(regular, 2)).toBe("Regular");
     expect(winName(regular, 4)).toBe("Fraunces Fontbend");
     expect(winName(regular, 6)).toBe("FrauncesFontbend-Regular");
+    expect(winName(regular, 3)).toBe("FrauncesFontbend-Regular;Fontbend");
     expect(winName(regular, 10)).toBe(SIGNATURE);
     expect(winName(regular, 0)).toMatch(/Copyright[\s\S]*\nModified with Fontbend/);
-    expect(winName(regular, 16)).toBeUndefined();
+    // The base font's typographic and WWS names would group the new font with the original family.
+    expect(readNames(readTables(regular).get("name")!).filter((r) => [16, 17, 21, 22].includes(r.id))).toEqual([]);
     expect(winName(regular, 13)).toMatch(/SIL Open Font License/);
     // No Mac record keeps the old family name.
     expect(readNames(readTables(regular).get("name")!).filter((r) => r.id === 1).map((r) => r.text)).toEqual(["Fraunces Fontbend"]);
@@ -49,6 +51,27 @@ describe("buildFont", () => {
     expect(view(t.get("OS/2")!).getUint16(62) & 0x61).toBe(0x40);
     expect(view(t.get("head")!).getUint16(44) & 0x3).toBe(0);
     expect(t.has("DSIG")).toBe(false);
+  });
+
+  it("names and marks an italic as italic, in every place a system reads it", () => {
+    const italic = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, { family: "Fraunces Fontbend", style: "Italic" });
+    expect(winName(italic, 1)).toBe("Fraunces Fontbend");
+    expect(winName(italic, 2)).toBe("Italic");
+    expect(winName(italic, 4)).toBe("Fraunces Fontbend Italic");
+    expect(winName(italic, 6)).toBe("FrauncesFontbend-Italic");
+    const t = readTables(italic);
+    expect(view(t.get("OS/2")!).getUint16(62) & 0x261).toBe(0x01); // fsSelection: ITALIC, not BOLD, REGULAR or OBLIQUE
+    expect(view(t.get("head")!).getUint16(44) & 0x3).toBe(0x2); // macStyle: italic, not bold
+  });
+
+  it("stops a damaged font file with a sentence the user can act on", () => {
+    for (const bytes of [new Uint8Array(0), new Uint8Array(1000).fill(7), original.slice(0, original.length / 2)]) {
+      let error: unknown;
+      try { buildFont(hb, { original: bytes, stretched: null, axes }, { wght: 500 }, names); } catch (e) { error = e; }
+      expect(error).toBeInstanceOf(BuildError);
+      expect((error as BuildError).code).toBe("FONT_DAMAGED");
+      expect((error as BuildError).message).toBe("The font file arrived damaged. Reload the page and try again.");
+    }
   });
 
   it("needs the stretched font past the range, and makes the value with it", () => {

@@ -110,8 +110,7 @@ ul { list-style: none; }
   gap: 8px;
   height: 32px;
   padding: 0 8px;
-  background: var(--paper);
-  border: 1px solid var(--line);
+  background: var(--paper); /* on the band, told apart by tone (design Y1, no border) */
   border-radius: 2px;
 }
 .field-group:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }

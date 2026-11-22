@@ -13,6 +13,8 @@ export type CatalogFont = {
   readonly axes: readonly Axis[];
   readonly files: { readonly upright: FontFile; readonly italic?: FontFile };
   readonly licenseFile: string;
+  /** The default instance cut to the letters of the family name, for the font list. */
+  readonly nameFile: string;
   /** liga joins f and i and no Turkish locl rule stops it; the Turkish check looks at whether the dot survives. */
   readonly fiLigatureNoTurkishRule: boolean;
 };
@@ -42,7 +44,7 @@ export function parseCatalog(data: unknown): Catalog {
     const at = isObject(raw) && typeof raw.id === "string" ? raw.id : `font ${index}`;
     const fail = (why: string) => problems.push(`${at}: ${why}`);
     if (!isObject(raw)) return fail("not an object"), [];
-    const { id, category, family, version, copyright, licenseCopyright, licenseDescription, axes, files, licenseFile, missingTurkish, fiLigatureWithoutLocl } = raw;
+    const { id, category, family, version, copyright, licenseCopyright, licenseDescription, axes, files, licenseFile, nameFile, missingTurkish, fiLigatureWithoutLocl } = raw;
     const before = problems.length;
     if (typeof id !== "string" || !ID.test(id)) fail("id must be lowercase words joined by hyphens");
     else if (seen.has(id)) fail("id used twice");
@@ -69,10 +71,11 @@ export function parseCatalog(data: unknown): Catalog {
     if (!upright) fail("no upright file");
     if (isObject(files) && files.italic !== undefined && !italic) fail("bad italic file");
     if (typeof licenseFile !== "string") fail("no license file");
+    if (typeof nameFile !== "string") fail("no name preview file");
     if (problems.length > before) return [];
     return [{
       id: id as string, category: category as Category, family: family as string, version: String(version), copyright: copyright as string,
-      axes: parsedAxes, files: italic ? { upright: upright!, italic } : { upright: upright! }, licenseFile: licenseFile as string,
+      axes: parsedAxes, files: italic ? { upright: upright!, italic } : { upright: upright! }, licenseFile: licenseFile as string, nameFile: nameFile as string,
       fiLigatureNoTurkishRule: fiLigatureWithoutLocl === true,
     }];
   });

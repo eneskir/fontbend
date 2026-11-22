@@ -1,5 +1,5 @@
 r"""Builds the font catalog: copies the catalog fonts from a google/fonts checkout into
-app/public/fonts/ and writes app/src/catalog.json from what the font files declare.
+app/public/catalog/ and writes app/src/catalog.json from what the font files declare.
 
 Each font file is copied byte for byte, so anyone can compare it with google/fonts at the
 recorded commit. The browser previews and edits these same files: HarfBuzz instances a
@@ -8,6 +8,10 @@ first 8 hex digits of its SHA-256, so a changed font gets a new name and a long 
 never serves the old one. Each font folder also gets the font's own OFL.txt, which the
 download bundles with every font made from it.
 
+The font list shows each name in its own font. Loading 20 whole fonts for that would cost
+22 MB, so each font also gets <id>-name.<hash>.woff2: its default instance cut down to the
+letters of its own name, a few kilobytes.
+
 The script records facts (axes, copyright, version, Turkish letters, the fi ligature); it
 does not judge them. app/src/core/catalog.ts decides what may enter the catalog, and its
 tests run on the written catalog.json. Running the script again on the same checkout
@@ -15,8 +19,10 @@ changes nothing.
 
 Usage: python scripts/build-catalog.py <google/fonts checkout>
 """
-import hashlib, json, os, re, shutil, subprocess, sys
+import hashlib, io, json, os, re, subprocess, sys
+from fontTools import subset
 from fontTools.ttLib import TTFont
+from fontTools.varLib import instancer
 
 # id, folder under ofl/ in google/fonts, category. The picks and their reasons are the
 # maintainer's catalog decision of 2026-11-22.
@@ -46,7 +52,7 @@ FONTS = (
 TURKISH = "ÇçĞğİıÖöŞşÜüÂâÎîÛû"
 LANG_TAGS = {"TRK", "AZE", "CRT"}  # languages that keep the dot on i
 
-OUT_FONTS = os.path.join("app", "public", "fonts")
+OUT_FONTS = os.path.join("app", "public", "catalog")
 OUT_CATALOG = os.path.join("app", "src", "catalog.json")
 
 
@@ -94,6 +100,22 @@ def describe(path: str) -> dict:
     }
 
 
+def name_preview(path: str, text: str) -> bytes:
+    """The default instance, cut down to the letters of text, as WOFF2."""
+    font = TTFont(path, recalcTimestamp=False)
+    font = instancer.instantiateVariableFont(font, {a.axisTag: None for a in font["fvar"].axes})
+    buffer = io.BytesIO(); font.save(buffer); buffer.seek(0)  # subsetting needs a reloaded font
+    font = TTFont(buffer, recalcTimestamp=False)
+    options = subset.Options()
+    options.flavor = "woff2"
+    options.layout_features = ["kern", "liga"]
+    subsetter = subset.Subsetter(options)
+    subsetter.populate(text=text)
+    subsetter.subset(font)
+    out = io.BytesIO(); font.save(out)
+    return out.getvalue()
+
+
 def write_if_changed(path: str, data: bytes) -> None:
     if os.path.exists(path) and open(path, "rb").read() == data:
         return
@@ -132,8 +154,14 @@ def main() -> None:
             data = open(os.path.join(src, filename), "rb").read()
             target = f"{font_id}{'-italic' if style == 'italic' else ''}.{hashlib.sha256(data).hexdigest()[:8]}.ttf"
             write_if_changed(os.path.join(out_dir, target), data)
-            files[style] = {"path": f"fonts/{font_id}/{target}", "source": f"ofl/{folder}/{filename}", "bytes": len(data)}
+            files[style] = {"path": f"catalog/{font_id}/{target}", "source": f"ofl/{folder}/{filename}", "bytes": len(data)}
             keep.add(target)
+        family = describe(os.path.join(src, upright))["family"]
+        data = name_preview(os.path.join(src, upright), family)
+        target = f"{font_id}-name.{hashlib.sha256(data).hexdigest()[:8]}.woff2"
+        write_if_changed(os.path.join(out_dir, target), data)
+        name_file = f"catalog/{font_id}/{target}"
+        keep.add(target)
         # A Windows checkout may have turned the license's line ends into CRLF; the repository keeps LF.
         ofl = open(os.path.join(src, "OFL.txt"), "rb").read().replace(b"\r\n", b"\n").decode("utf-8")
         write_if_changed(os.path.join(out_dir, "OFL.txt"), ofl.encode("utf-8"))
@@ -143,7 +171,7 @@ def main() -> None:
         facts = describe(os.path.join(out_dir, os.path.basename(files["upright"]["path"])))
         # A Reserved Font Name is declared in the copyright lines above the license text.
         facts["licenseCopyright"] = ofl.split("This Font Software is licensed under")[0].strip()
-        catalog["fonts"].append({"id": font_id, "category": category, **facts, "files": files, "licenseFile": f"fonts/{font_id}/OFL.txt"})
+        catalog["fonts"].append({"id": font_id, "category": category, **facts, "files": files, "nameFile": name_file, "licenseFile": f"catalog/{font_id}/OFL.txt"})
 
     text = json.dumps(catalog, ensure_ascii=False, indent=2) + "\n"
     write_if_changed(os.path.join(root, OUT_CATALOG), text.encode("utf-8"))
@@ -154,7 +182,7 @@ def main() -> None:
     start, end = "<!-- catalog fonts: written by scripts/build-catalog.py -->", "<!-- end of catalog fonts -->"
     if notices.count(start) != 1 or notices.count(end) != 1:
         sys.exit("THIRD-PARTY-NOTICES.md: catalog font markers missing")
-    rows = [f"| {f['family']} | {f['version']} | SIL Open Font License 1.1 | [google/fonts](https://github.com/google/fonts/tree/{commit}/ofl/{f['files']['upright']['source'].split('/')[1]}) | `app/public/fonts/{f['id']}/`, license text in `OFL.txt` there |" for f in catalog["fonts"]]
+    rows = [f"| {f['family']} | {f['version']} | SIL Open Font License 1.1 | [google/fonts](https://github.com/google/fonts/tree/{commit}/ofl/{f['files']['upright']['source'].split('/')[1]}) | `app/public/catalog/{f['id']}/`, license text in `OFL.txt` there |" for f in catalog["fonts"]]
     table = "\n".join(["| Font | Version | License | Source | Where |", "|---|---|---|---|---|", *rows])
     head, rest = notices.split(start)
     updated = head + start + "\n" + table + "\n" + end + rest.split(end, 1)[1]

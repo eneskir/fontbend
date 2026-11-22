@@ -18,9 +18,9 @@ All cuts are upright (slnt 0) with CRSV 0.5, so no cursive letter forms appear.
 A font is named <name>.<hash>.woff2, where <hash> is the first 8 hex digits of its SHA-256.
 site/_headers lets browsers and Cloudflare keep .woff2 files for a year without asking
 again, so a changed font must get a new name or visitors keep the old one. The script
-writes the new file, points every page of its tree at it and then removes the previous
-file. Every page of a tree names each of that tree's fonts exactly twice, in the preload
-link and in the @font-face rule. The build is reproducible: the same source gives the
+writes the new file, points every page of its tree at it and only then removes the
+previous file, so a page never names a deleted font. Every page of a tree names each of
+that tree's fonts exactly twice, in the preload link and in the @font-face rule. The build is reproducible: the same source gives the
 same bytes, so running it again changes nothing.
 
 Usage: python scripts/build-site-font.py <folder with the Recursive .ttf and OFL.txt>
@@ -57,7 +57,6 @@ FONTS = (
     Font("recursive-text", "app", {"CASL": 0.25, "MONO": 0.3, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, TEXT),
     Font("recursive-mono", "app", {"CASL": 0.25, "MONO": 1, "slnt": 0, "CRSV": 0.5, "wght": 400}, TEXT),
 )
-# Every page names each font of its tree twice: the preload link and the @font-face rule.
 EXPECTED_REFS = 2
 
 
@@ -127,6 +126,7 @@ def main() -> None:
 
     built = [(spec, build(sources[0], spec)) for spec in FONTS]
 
+    written = []
     for spec, data in built:
         name = spec.name + "." + hashlib.sha256(data).hexdigest()[:8] + ".woff2"
         fonts_dir = os.path.join(repo_root, spec.tree, "fonts")
@@ -134,9 +134,7 @@ def main() -> None:
         write_atomic(os.path.join(fonts_dir, name), data)
         for page, html in pages[spec.tree].items():
             pages[spec.tree][page] = font_ref(spec.name).sub("/fonts/" + name, html)
-        for old in glob.glob(os.path.join(fonts_dir, spec.name + "*.woff2")):
-            if font_ref(spec.name).fullmatch("/fonts/" + os.path.basename(old)) and os.path.basename(old) != name:
-                os.remove(old)
+        written.append((fonts_dir, spec.name, name))
         print(f"{spec.tree}/fonts/{name} {len(data)}")
 
     for tree in pages:
@@ -145,6 +143,10 @@ def main() -> None:
                 current = f.read().decode("utf-8")
             if current != html:
                 write_atomic(page, html.encode("utf-8"))
+    for fonts_dir, font_name, name in written:
+        for old in glob.glob(os.path.join(fonts_dir, font_name + "*.woff2")):
+            if font_ref(font_name).fullmatch("/fonts/" + os.path.basename(old)) and os.path.basename(old) != name:
+                os.remove(old)
     # The preview is deployed on top of site/, so one copy of the license serves both.
     # A Windows checkout may have turned its line ends into CRLF; the repository keeps LF.
     with open(license_file, "rb") as f:

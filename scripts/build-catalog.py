@@ -12,14 +12,15 @@ The font list shows each name in its own font. Loading the 20 upright fonts for 
 cost about 16 MB, so each font also gets <id>-name.<hash>.woff2: its default instance cut down to the
 letters of its own name, a few kilobytes.
 
-The script records facts (axes, copyright, version, Turkish letters, the fi ligature); it
+The script records facts (axes, copyright, version, Turkish letters, the fi ligature, where
+letters break past an axis's own range); it
 does not judge them. app/src/core/catalog.ts decides what may enter the catalog, and its
 tests run on the written catalog.json. Running the script again on the same checkout
 changes nothing.
 
 Usage: python scripts/build-catalog.py <google/fonts checkout>
 """
-import hashlib, io, json, os, re, subprocess, sys
+import hashlib, io, json, os, re, subprocess, sys, unicodedata
 from fontTools import subset
 from fontTools.ttLib import TTFont
 from fontTools.varLib import instancer
@@ -83,6 +84,90 @@ def fi_ligature_without_locl(font: TTFont) -> bool:
                 if "locl" in tags:
                     return False
     return True
+
+
+# Must match STRETCH in app/src/core/axis.ts: how far past its own range a slider reaches.
+STRETCH = 0.5
+
+
+def outlines(font: TTFont) -> dict:
+    """Points and contour ends of each letter and figure (Unicode L* and Nd) the font maps.
+    A flipped bracket or logic sign is not what the breakage warning is about."""
+    glyf = font["glyf"]
+    names = sorted({g for c, g in font.getBestCmap().items() if unicodedata.category(chr(c))[0] == "L" or unicodedata.category(chr(c)) == "Nd"})
+    out = {}
+    for n in names:
+        if glyf[n].numberOfContours == 0:
+            continue
+        coords, ends, _ = glyf[n].getCoordinates(glyf)
+        out[n] = (list(coords), list(ends))
+    return out
+
+
+def first_flip(base: dict, end: dict, k_from: float, k_to: float) -> float | None:
+    """The first k on the way from k_from to k_to where a contour of base + k * (end - base)
+    turns the other way than in base, or None. A contour's signed area is a quadratic in k,
+    so its roots are the exact points where it turns. Contours nearly flat in base are skipped:
+    their sign is noise."""
+    direction = 1 if k_to > k_from else -1
+    best = None
+    for name, (p0, ends) in base.items():
+        pe = end[name][0]
+        if len(pe) != len(p0):
+            continue
+        terms, start = [], 0
+        for e in ends:
+            a = b = c = 0.0
+            ring = range(start, e + 1)
+            for i in ring:
+                j = i + 1 if i < e else start
+                (x0, y0), (x1, y1) = p0[i], p0[j]
+                dx0, dy0 = pe[i][0] - x0, pe[i][1] - y0
+                dx1, dy1 = pe[j][0] - x1, pe[j][1] - y1
+                a += x0 * y1 - x1 * y0
+                b += x0 * dy1 + dx0 * y1 - x1 * dy0 - dx1 * y0
+                c += dx0 * dy1 - dx1 * dy0
+            terms.append((a, b, c))
+            start = e + 1
+        biggest = max(abs(t[0]) for t in terms) or 1
+        for a, b, c in terms:
+            if abs(a) <= 1e-3 * biggest:
+                continue
+            area = lambda k: a + b * k + c * k * k
+            if area(k_from) * a < 0:
+                return k_from
+            if c == 0:
+                roots = [-a / b] if b else []
+            else:
+                disc = b * b - 4 * a * c
+                roots = [] if disc <= 0 else [(-b - disc ** 0.5) / (2 * c), (-b + disc ** 0.5) / (2 * c)]
+            for r in roots:
+                if 0 < (r - k_from) * direction <= (k_to - k_from) * direction and (best is None or (r - best) * direction < 0):
+                    best = r
+    return best
+
+
+def break_points(path: str) -> dict:
+    """Per axis, the values past which some letters break when the axis alone moves: below its
+    own range and above it, inside the slider's reach. Past an end the app draws each outline on
+    the line from the default through that end (app/src/core/stretch.ts); a side with no range
+    of its own mirrors the other end. A letter breaks where a contour turns inside out."""
+    font = TTFont(path)
+    pins = {a.axisTag: a.defaultValue for a in font["fvar"].axes}
+    base = outlines(instancer.instantiateVariableFont(TTFont(path), pins))
+    out = {}
+    for axis in font["fvar"].axes:
+        d, lo, hi = axis.defaultValue, axis.minValue, axis.maxValue
+        for side, own, other in (("breaksBelow", lo, hi), ("breaksAbove", hi, lo)):
+            end, k_from = (own, 1.0) if own != d else (other, 0.0)
+            if end == d:
+                continue
+            span = abs(end - d)
+            limit = (own - STRETCH * span) if side == "breaksBelow" else (own + STRETCH * span)
+            k = first_flip(base, outlines(instancer.instantiateVariableFont(TTFont(path), {**pins, axis.axisTag: end})), k_from, (limit - d) / (end - d))
+            if k is not None:
+                out.setdefault(axis.axisTag, {})[side] = round(d + k * (end - d), 2)
+    return out
 
 
 def describe(path: str) -> dict:
@@ -158,6 +243,15 @@ def main() -> None:
             files[style] = {"path": f"catalog/{font_id}/{target}", "source": f"ofl/{folder}/{filename}", "bytes": len(data)}
             keep.add(target)
         facts = describe(os.path.join(out_dir, os.path.basename(files["upright"]["path"])))
+        # One slider moves both styles, so it warns where the first of the two breaks.
+        for f in files.values():
+            for tag, sides in break_points(os.path.join(root, "app", "public", f["path"])).items():
+                for axis in facts["axes"]:
+                    if axis["tag"] != tag:
+                        continue
+                    for side, value in sides.items():
+                        nearer = max if side == "breaksBelow" else min
+                        axis[side] = nearer(axis.get(side, value), value)
         data = name_preview(os.path.join(src, upright), facts["family"])
         target = f"{font_id}-name.{hashlib.sha256(data).hexdigest()[:8]}.woff2"
         write_if_changed(os.path.join(out_dir, target), data)

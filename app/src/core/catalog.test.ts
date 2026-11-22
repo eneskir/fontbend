@@ -26,4 +26,13 @@ describe("catalog.json", () => {
     expect(() => parseCatalog(withFont({ axes: [{ tag: "wght", min: 700, default: 400, max: 900 }] }))).toThrow(/axis/);
     expect(() => parseCatalog({ ...data, fonts: [first, first] })).toThrow(/twice/);
   });
+
+  it("keeps the measured break points, and refuses one inside the font's own range or past the slider's reach", () => {
+    const fraunces = parseCatalog(data).fonts.find((f) => f.id === "fraunces")!.axes.find((a) => a.tag === "wght")!;
+    expect([fraunces.breaksBelow, fraunces.breaksAbove]).toEqual([-66.18, 1247.08]);
+    const wght = (extra: Record<string, unknown>) => withFont({ axes: [{ tag: "wght", min: 100, default: 400, max: 1000, ...extra }] });
+    expect(() => parseCatalog(wght({ breaksBelow: 300 }))).toThrow(/axis/);
+    expect(() => parseCatalog(wght({ breaksAbove: 1400 }))).toThrow(/axis/);
+    expect(() => parseCatalog(wght({ breaksAbove: "1200" }))).toThrow(/axis/);
+  });
 });

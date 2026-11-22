@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clampToReach, isBeyond, reach, type Axis } from "./axis";
+import { breakPast, clampToReach, isBeyond, reach, type Axis } from "./axis";
 
 // Roboto Flex's weight and slant axes; slant's range ends at its default.
 const weight: Axis = { tag: "wght", min: 100, default: 400, max: 1000 };
@@ -31,5 +31,16 @@ describe("clampToReach", () => {
 describe("isBeyond", () => {
   it("tells values past the font's own range", () => {
     expect([isBeyond(weight, 1000), isBeyond(weight, 1001), isBeyond(slant, 0.5), isBeyond(slant, -10)]).toEqual([false, true, true, false]);
+  });
+});
+
+describe("breakPast", () => {
+  // Fraunces's weight as the catalog measures it: the default is the heaviest, letters break below -66.18 and above 1247.08.
+  const fraunces: Axis = { tag: "wght", min: 100, default: 900, max: 900, breaksBelow: -66.18, breaksAbove: 1247.08 };
+  it("names the break point a value has passed", () => {
+    expect([breakPast(fraunces, 0), breakPast(fraunces, -66.18), breakPast(fraunces, -67), breakPast(fraunces, 1247), breakPast(fraunces, 1248)]).toEqual([null, null, -66.18, null, 1247.08]);
+  });
+  it("finds none on an axis with no break point", () => {
+    expect([breakPast(weight, -50), breakPast(weight, 1300)]).toEqual([null, null]);
   });
 });

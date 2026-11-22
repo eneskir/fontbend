@@ -96,6 +96,27 @@ describe("buildFont", () => {
     expect(winName(font, 25)).toBe("FrauncesFontbend");
   });
 
+  it("leaves Windows only the typed family to name the font by", () => {
+    // DirectWrite and GDI add a STAT value's name to the family ("My Fraunces 72pt") unless it is elidable.
+    const pinnedNames = (font: Uint8Array) => {
+      const t = readTables(font), stat = t.get("STAT");
+      if (!stat) return [];
+      const fvar = t.get("fvar");
+      const v = view(stat), axisSize = v.getUint16(4), axesAt = v.getUint32(8), valuesAt = v.getUint32(14);
+      const tags = Array.from({ length: v.getUint16(6) }, (_, i) => String.fromCharCode(...stat.subarray(axesAt + i * axisSize, axesAt + i * axisSize + 4)));
+      const variable = new Set(fvar ? Array.from({ length: view(fvar).getUint16(8) }, (_, i) => String.fromCharCode(...fvar.subarray(view(fvar).getUint16(4) + i * view(fvar).getUint16(10)).subarray(0, 4))) : []);
+      return Array.from({ length: v.getUint16(12) }, (_, i) => valuesAt + v.getUint16(valuesAt + i * 2)).flatMap((at) => {
+        const format = v.getUint16(at);
+        const axes = format === 4 ? Array.from({ length: v.getUint16(at + 2) }, (_, k) => v.getUint16(at + 4 + k * 6)) : [v.getUint16(at + 2)];
+        const flags = v.getUint16(format === 4 ? at + 4 + axes.length * 6 : at + 4);
+        return (flags & 0x2) === 0 && axes.some((a) => !variable.has(tags[a]!)) ? [axes.map((a) => tags[a]).join("+")] : [];
+      });
+    };
+    expect(pinnedNames(regular)).toEqual([]);
+    expect(pinnedNames(buildFont(hb, { original, stretched, axes }, { wght: 1300, opsz: 72 }, names).bytes)).toEqual([]);
+    expect(pinnedNames(buildFont(hb, { original, stretched: null, axes }, { wght: [400, 700], opsz: 72 }, names).bytes)).toEqual([]);
+  });
+
   it("reports HarfBuzz refusing a value in the user's words", () => {
     expect(() => buildFont(hb, { original, stretched: null, axes }, { wght: [700, 400] as unknown as [number, number] }, names)).toThrow(/could not be made/);
   });

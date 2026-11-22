@@ -25,6 +25,23 @@ jobs:
           python3 tools/check_site_cache.py site
           python3 tools/check_site_cache.py site preview
 
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      # Packages' own install scripts never run; nothing Fontbend uses needs them.
+      - name: Install tools
+        run: npm ci --ignore-scripts
+
+      - name: Licenses of installed packages
+        run: python3 tools/check_licenses.py
+
+      - name: Type check, tests, build
+        run: |
+          npm run check
+          npm test
+          npm run build
+
       # The title is passed through the environment, never pasted into the command,
       # so a crafted title cannot change what runs.
       - name: Pull request title

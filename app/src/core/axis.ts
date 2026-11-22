@@ -4,6 +4,9 @@ export type Axis = {
   readonly min: number;
   readonly default: number;
   readonly max: number;
+  /** Past these values some letters break: a contour turns inside out. Measured for catalog fonts by scripts/build-catalog.py. */
+  readonly breaksBelow?: number;
+  readonly breaksAbove?: number;
 };
 
 /** How far past its own range Fontbend lets an axis go: this share of each side's span. */
@@ -29,3 +32,7 @@ export function clampToReach(axis: Axis, value: number): number {
 
 /** Whether a value lies past the font's own range. */
 export const isBeyond = (axis: Axis, value: number) => value < axis.min || value > axis.max;
+
+/** Where some letters start to break on the way to this value, or null if none do. */
+export const breakPast = (axis: Axis, value: number): number | null =>
+  axis.breaksBelow !== undefined && value < axis.breaksBelow ? axis.breaksBelow : axis.breaksAbove !== undefined && value > axis.breaksAbove ? axis.breaksAbove : null;

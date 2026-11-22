@@ -48,13 +48,15 @@
           "tag": "XOPQ",
           "min": 27.0,
           "default": 96.0,
-          "max": 175.0
+          "max": 175.0,
+          "breaksBelow": 0.81
         },
         {
           "tag": "YOPQ",
           "min": 25.0,
           "default": 79.0,
-          "max": 135.0
+          "max": 135.0,
+          "breaksBelow": 3.46
         },
         {
           "tag": "XTRA",
@@ -131,7 +133,9 @@
           "tag": "wght",
           "min": 300.0,
           "default": 300.0,
-          "max": 1000.0
+          "max": 1000.0,
+          "breaksBelow": 138.2,
+          "breaksAbove": 1248.5
         },
         {
           "tag": "slnt",
@@ -172,7 +176,9 @@
           "tag": "wght",
           "min": 100.0,
           "default": 100.0,
-          "max": 900.0
+          "max": 900.0,
+          "breaksBelow": -16.89,
+          "breaksAbove": 963.37
         },
         {
           "tag": "slnt",
@@ -300,7 +306,9 @@
           "tag": "wght",
           "min": 200.0,
           "default": 200.0,
-          "max": 1000.0
+          "max": 1000.0,
+          "breaksBelow": 8.64,
+          "breaksAbove": 1204.78
         }
       ],
       "missingTurkish": [],
@@ -340,7 +348,8 @@
           "tag": "wght",
           "min": 100.0,
           "default": 400.0,
-          "max": 900.0
+          "max": 900.0,
+          "breaksBelow": 19.77
         }
       ],
       "missingTurkish": [],
@@ -374,7 +383,9 @@
           "tag": "wght",
           "min": 100.0,
           "default": 100.0,
-          "max": 900.0
+          "max": 900.0,
+          "breaksBelow": -204.62,
+          "breaksAbove": 1244.96
         },
         {
           "tag": "CRSV",
@@ -421,7 +432,8 @@
           "tag": "CTRS",
           "min": 0.0,
           "default": 0.0,
-          "max": 85.0
+          "max": 85.0,
+          "breaksAbove": 99.17
         },
         {
           "tag": "slnt",
@@ -433,13 +445,16 @@
           "tag": "wdth",
           "min": 50.0,
           "default": 100.0,
-          "max": 200.0
+          "max": 200.0,
+          "breaksBelow": 38.0
         },
         {
           "tag": "wght",
           "min": 100.0,
           "default": 400.0,
-          "max": 900.0
+          "max": 900.0,
+          "breaksBelow": 53.51,
+          "breaksAbove": 1058.73
         }
       ],
       "missingTurkish": [],
@@ -508,13 +523,16 @@
           "tag": "opsz",
           "min": 9.0,
           "default": 9.0,
-          "max": 144.0
+          "max": 144.0,
+          "breaksAbove": 163.81
         },
         {
           "tag": "wght",
           "min": 100.0,
           "default": 900.0,
-          "max": 900.0
+          "max": 900.0,
+          "breaksBelow": -66.18,
+          "breaksAbove": 1247.08
         },
         {
           "tag": "SOFT",
@@ -560,7 +578,8 @@
           "tag": "opsz",
           "min": 5.0,
           "default": 5.0,
-          "max": 1200.0
+          "max": 1200.0,
+          "breaksAbove": 1215.61
         },
         {
           "tag": "wdth",
@@ -646,7 +665,8 @@
           "tag": "wght",
           "min": 100.0,
           "default": 700.0,
-          "max": 700.0
+          "max": 700.0,
+          "breaksBelow": 19.51
         },
         {
           "tag": "opsz",
@@ -681,7 +701,8 @@
           "tag": "wght",
           "min": 100.0,
           "default": 100.0,
-          "max": 900.0
+          "max": 900.0,
+          "breaksBelow": -18.04
         },
         {
           "tag": "opsz",
@@ -768,7 +789,8 @@
           "tag": "wght",
           "min": 100.0,
           "default": 400.0,
-          "max": 800.0
+          "max": 800.0,
+          "breaksBelow": -44.58
         },
         {
           "tag": "wdth",
@@ -837,7 +859,9 @@
           "tag": "wght",
           "min": 200.0,
           "default": 200.0,
-          "max": 800.0
+          "max": 800.0,
+          "breaksBelow": 83.39,
+          "breaksAbove": 1094.98
         },
         {
           "tag": "MONO",

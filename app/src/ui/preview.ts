@@ -1,4 +1,6 @@
-import { variationSettings } from "../core/editor";
+import { breakPast } from "../core/axis";
+import { axisValue, variationSettings } from "../core/editor";
+import { formatValue, stepFor } from "../core/sliders";
 import { SAMPLES, SAMPLE_IDS, SIZES, WATERFALL, type SampleId } from "../core/samples";
 import type { Store } from "../store";
 import { h } from "./dom";
@@ -18,6 +20,18 @@ export function preview(store: Store): HTMLElement {
   const paragraph = h("p", { class: "paragraph" });
   const source = h("p", { class: "source meta" });
   const status = h("p", { class: "status", role: "status" });
+  // A loading message wins; otherwise the line says where letters start to break, if a value has passed that point.
+  let loadMessage = "";
+  const setStatus = (message = loadMessage) => {
+    loadMessage = message;
+    const s = store.get();
+    const broken = s.font.axes.map((a) => [a, breakPast(a, axisValue(s, a.tag))] as const).find(([, p]) => p !== null);
+    if (loadMessage || !broken) { status.textContent = loadMessage; return; }
+    // Named on the slider's grid, rounded toward the original, so the value named still holds and the next one breaks.
+    const [axis, point] = broken, step = stepFor(axis);
+    const named = point! < axis.default ? Math.ceil(point! / step - 1e-9) * step : Math.floor(point! / step + 1e-9) * step;
+    status.textContent = `Some letters break past ${formatValue(named, step)}.`;
+  };
   const retry = h("button", { class: "text-button", type: "button", hidden: true, onclick: () => show() }, "Try again");
 
   const sample = h("div", { class: "sample" },
@@ -73,24 +87,24 @@ export function preview(store: Store): HTMLElement {
     const font = store.get().font;
     canvas.classList.add("is-loading");
     canvas.classList.remove("is-failed");
-    status.textContent = `Loading ${font.family}…`;
+    setStatus(`Loading ${font.family}…`);
     retry.hidden = true;
     loadPreview(font).then(() => {
       if (store.get().font !== font) return;
       sample.style.setProperty("--family", `"${previewFamily(font)}"`);
       canvas.classList.remove("is-loading");
-      status.textContent = "";
+      setStatus("");
       // The shipped font shows at once; the stretched one, which can also draw values past the
       // font's own range, takes its place when ready (up to about 0.7 s).
       loadStretched(font).then(() => {
         if (store.get().font === font) sample.style.setProperty("--family", `"${stretchedFamily(font)}"`);
       }, () => {
-        if (store.get().font === font) status.textContent = `Fontbend couldn't stretch ${font.family}, so values past its own range show at the range's end.`;
+        if (store.get().font === font) setStatus(`Fontbend couldn't stretch ${font.family}, so values past its own range show at the range's end.`);
       });
     }, () => {
       if (store.get().font !== font) return;
       canvas.classList.replace("is-loading", "is-failed");
-      status.textContent = `${font.family} didn't load. Check your connection and try again.`;
+      setStatus(`${font.family} didn't load. Check your connection and try again.`);
       retry.hidden = false;
     });
   }
@@ -102,6 +116,7 @@ export function preview(store: Store): HTMLElement {
     if (now.size !== before.size) fillSize();
     if (now.font !== before.font) fillAxes(true);
     else if (now.settings !== before.settings) fillAxes(false);
+    if (now.settings !== before.settings) setStatus();
   });
   return canvas;
 }

@@ -1,4 +1,4 @@
-import type { Axis } from "./axis";
+import { reach, type Axis } from "./axis";
 
 export type Category = "sans" | "serif" | "slab" | "display" | "mono" | "handwriting";
 
@@ -61,7 +61,13 @@ export function parseCatalog(data: unknown): Catalog {
     if (!Array.isArray(missingTurkish) || missingTurkish.length > 0) fail(`missing Turkish letters ${JSON.stringify(missingTurkish)}`);
     const parsedAxes = Array.isArray(axes) ? axes.flatMap((a: unknown) => {
       if (isObject(a) && typeof a.tag === "string" && TAG.test(a.tag) && typeof a.min === "number" && typeof a.default === "number" && typeof a.max === "number" && a.min <= a.default && a.default <= a.max) {
-        return [{ tag: a.tag, min: a.min, default: a.default, max: a.max }];
+        const axis: Axis = { tag: a.tag, min: a.min, default: a.default, max: a.max };
+        // A break point lies past the font's own range and inside the slider's reach.
+        const r = reach(axis);
+        const below = a.breaksBelow, above = a.breaksAbove;
+        const belowOk = below === undefined || (typeof below === "number" && below >= r.min && below <= a.min);
+        const aboveOk = above === undefined || (typeof above === "number" && above <= r.max && above >= a.max);
+        if (belowOk && aboveOk) return [{ ...axis, ...(below !== undefined ? { breaksBelow: below as number } : {}), ...(above !== undefined ? { breaksAbove: above as number } : {}) }];
       }
       fail(`bad axis ${JSON.stringify(a)}`);
       return [];

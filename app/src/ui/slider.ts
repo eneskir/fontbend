@@ -1,4 +1,4 @@
-import { isBeyond, reach, type Axis } from "../core/axis";
+import { breakPast, isBeyond, reach, type Axis } from "../core/axis";
 import { formatDelta, formatValue, stepFor } from "../core/sliders";
 import { h } from "./dom";
 
@@ -11,7 +11,7 @@ let next = 0;
  * so the keyboard (arrows, Page Up/Down, Home/End) and screen readers work as for any slider.
  * The ruler is solid over the font's own range and dashed past it, where Fontbend goes on
  * further than the font was drawn. The hollow marker shows the original value once the value
- * moves away from it.
+ * moves away from it. A short red mark crosses the ruler where some letters start to break.
  */
 export function slider(opts: { label: string; tag?: string; axis: Axis; showRange?: boolean; onInput: (value: number) => void }): Slider {
   const { axis } = opts;
@@ -35,6 +35,7 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; showRang
     h("span", { class: "slider-base" }),
     h("span", { class: "slider-tick", style: "--at: var(--own-min)" }),
     h("span", { class: "slider-tick", style: "--at: var(--own-max)" }),
+    ...[axis.breaksBelow, axis.breaksAbove].flatMap((b) => (b === undefined ? [] : [h("span", { class: "slider-break", style: `--at: ${at(b)}` })])),
     h("span", { class: "slider-original", "aria-hidden": "true" }),
     h("span", { class: "slider-handle", "aria-hidden": "true" }),
   );
@@ -57,7 +58,8 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; showRang
     value.textContent = formatValue(v, step);
     delta.textContent = changed ? formatDelta(v, axis.default, step) : "";
     const where = changed ? `${value.textContent}, ${delta.textContent} from the original` : `${value.textContent}, the original`;
-    input.setAttribute("aria-valuetext", beyond ? `${where}, past the font's own range` : where);
+    const past = breakPast(axis, v) !== null ? ", past the font's own range, some letters break" : beyond ? ", past the font's own range" : "";
+    input.setAttribute("aria-valuetext", where + past);
   }
   set(axis.default);
   return { el, set };

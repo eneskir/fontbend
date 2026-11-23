@@ -123,7 +123,8 @@ ul { list-style: none; }
 .menu-option.is-soon:hover { background: none; }
 /* Arabic reads right to left but lines up with the other names. */
 .menu-name[dir="rtl"] { text-align: left; }
-.menu-rule { margin: 4px 0; }
+/* hr.menu-rule: outranks the hr, .rule rule further down, whose margin 0 used to cancel this one. */
+hr.menu-rule { margin: 4px 0; }
 .menu-link { display: flex; align-items: center; height: var(--control); padding: 0 8px 0 32px; border-radius: var(--radius); font-weight: 500; color: inherit; text-decoration: none; }
 .menu-link:hover, .menu-link:focus-visible { background: var(--surface); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -151,7 +152,8 @@ ul { list-style: none; }
 .open-file { display: flex; align-items: center; min-height: 24px; font-family: var(--mono); font-size: 14px; }
 .open-question { display: flex; flex-direction: column; gap: 8px; }
 .open-allowed { display: flex; align-items: center; gap: 8px; min-height: var(--control); cursor: pointer; }
-.rule { width: 100%; height: 0; margin: 0; border: 0; border-top: 1px solid var(--line); }
+/* Every hr, not only those given the class: one left without it drew the browser's grey 2 px inset line. */
+hr, .rule { width: 100%; height: 0; margin: 0; border: 0; border-top: 1px solid var(--line); }
 .recent-missing { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
 .recent-missing .recent-meta { align-self: stretch; }
 .empty { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }

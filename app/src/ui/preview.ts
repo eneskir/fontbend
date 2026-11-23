@@ -1,14 +1,12 @@
 import { breakPast } from "../core/axis";
-import { axisValue, variationSettings } from "../core/editor";
+import { axisValue } from "../core/editor";
 import { formatValue, stepFor } from "../core/sliders";
 import { resultSentence, stemWidth } from "../core/summary";
-import { variableGlyph } from "../core/variation";
-import type { Glyph } from "../core/glyf";
-import type { CatalogFont } from "../core/catalog";
 import { SAMPLES, SAMPLE_IDS, SIZES, WATERFALL, type SampleId } from "../core/samples";
 import type { Store } from "../store";
 import { h } from "./dom";
-import { loadPreview, loadStretched, previewFamily, stretchedFamily, stretchedFont } from "./faces";
+import { drawnSettings, drawnValues, letterH, loadStems } from "./drawn";
+import { loadPreview, loadStretched, previewFamily, stretchedFamily } from "./faces";
 
 /** The centre: the sample at the chosen size, smaller sizes under it, then a paragraph. */
 export function preview(store: Store): HTMLElement {
@@ -29,11 +27,11 @@ export function preview(store: Store): HTMLElement {
   // The sample line once more at 64 px, in the user's values and the original's, to compare their widths.
   const yours = h("span", {}), original = h("span", {});
   const measure = h("div", { class: "measure", "aria-hidden": "true" }, yours, original);
-  // H as the stretched font draws it, read once per font: its stem says how thick the strokes got.
-  let stems: { font: CatalogFont; at: (values: Readonly<Record<string, number>>) => Glyph } | null = null;
+  // H as the stretched font draws it: its stem says how thick the strokes got.
   const strokeRatio = (s: ReturnType<Store["get"]>) => {
-    if (stems?.font !== s.font) return null;
-    const before = stemWidth(stems.at({})), after = stemWidth(stems.at(Object.fromEntries(s.font.axes.map((a) => [a.tag, axisValue(s, a.tag)]))));
+    const H = letterH(s.font);
+    if (!H) return null;
+    const before = stemWidth(H({})), after = stemWidth(H(drawnValues(s)));
     return before && after && after > 0 ? after / before : null;
   };
 
@@ -105,7 +103,7 @@ export function preview(store: Store): HTMLElement {
   // once it rests, so a drag stays inside one 60 fps frame.
   let rest = 0;
   const fillAxes = (now: boolean) => {
-    const axes = variationSettings(store.get());
+    const axes = drawnSettings(store.get());
     clearTimeout(rest);
     if (now) {
       main.style.removeProperty("--axes-moving");
@@ -132,12 +130,11 @@ export function preview(store: Store): HTMLElement {
       // The shipped font shows at once; the stretched one, which can also draw values past the
       // font's own range and Width and Slant the font lacks, takes its place when ready (0.7 s
       // for Fraunces, 4 s for Recursive, measured 23.11).
-      loadStretched(font).then(async () => {
-        const at = variableGlyph(new Uint8Array(await stretchedFont(font)), 0x48);
+      Promise.all([loadStretched(font), loadStems(font)]).then(() => {
         if (store.get().font !== font) return;
-        stems = at ? { font, at } : null;
         sample.style.setProperty("--family", `"${stretchedFamily(font)}"`);
-        setStatus();
+        // Width the font lacks is balanced by weight once H can be read (ui/drawn.ts).
+        fillAxes(true);
       }, () => {
         if (store.get().font === font) setStatus(`Fontbend couldn't stretch ${font.family}, so values past its own range show at the range's end.`);
       });

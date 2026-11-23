@@ -68,7 +68,12 @@ export function axisValue(state: EditorState, tag: string): number {
   return state.font.axes.find((a) => a.tag === tag)!.default;
 }
 
-/** CSS font-variation-settings for every axis, so the browser never picks one by itself. */
-export function variationSettings(state: EditorState): string {
-  return state.font.axes.map((a) => `"${a.tag}" ${axisValue(state, a.tag)}`).join(", ");
+/** Every axis's value as the sliders show it. */
+export function axisValues(state: EditorState): Record<string, number> {
+  return Object.fromEntries(state.font.axes.map((a) => [a.tag, axisValue(state, a.tag)]));
+}
+
+/** CSS font-variation-settings for every axis, so the browser never picks one by itself; `values` may differ from the sliders' (ui/drawn.ts). */
+export function variationSettings(state: EditorState, values: Readonly<Record<string, number>> = axisValues(state)): string {
+  return state.font.axes.map((a) => `"${a.tag}" ${values[a.tag] ?? axisValue(state, a.tag)}`).join(", ");
 }

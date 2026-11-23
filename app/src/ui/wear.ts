@@ -1,6 +1,6 @@
-import { variationSettings } from "../core/editor";
 import { wearSettings } from "../core/wear";
 import type { Store } from "../store";
+import { drawnSettings, loadStems } from "./drawn";
 import { loadPreview, loadStretched, previewFamily, stretchedFamily } from "./faces";
 
 /**
@@ -16,7 +16,7 @@ export function wear(store: Store, root: HTMLElement, name: HTMLElement) {
   let rest = 0;
   const axes = (now: boolean) => {
     const s = store.get();
-    name.style.setProperty("--name-axes", variationSettings(s));
+    name.style.setProperty("--name-axes", drawnSettings(s));
     clearTimeout(rest);
     const ui = () => root.style.setProperty("--wear-axes", wearSettings(s.font.axes, s.settings.axes));
     if (now) ui();
@@ -32,7 +32,7 @@ export function wear(store: Store, root: HTMLElement, name: HTMLElement) {
     const current = () => store.get().font === font;
     loadPreview(font).then(() => {
       if (current()) family(previewFamily(font));
-      return loadStretched(font).then(() => { if (current()) family(stretchedFamily(font)); });
+      return Promise.all([loadStretched(font), loadStems(font)]).then(() => { if (current()) { family(stretchedFamily(font)); axes(true); } });
     }).catch(() => undefined); // the preview says what failed; the interface keeps its own font
   };
 

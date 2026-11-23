@@ -19,13 +19,13 @@ export class MakeError extends Error {
 const build = jobWorker<BuildReply, BuiltFont>(
   () => new Worker(new URL("./build.worker.ts", import.meta.url), { type: "module" }),
   (r) => ("bytes" in r ? { bytes: r.bytes, turkishFix: r.turkishFix } : new MakeError(r.error, r.message)),
-  () => new MakeError("WORKER_STOPPED", "The font builder stopped. Try again."),
+  () => new MakeError("WORKER_STOPPED", "the font builder stopped"),
 );
 
 /** Makes the font file in a worker, from the file as it ships. */
 export async function makeFont(font: CatalogFont, settings: Readonly<Record<string, AxisSetting>>, names: MadeNames, subset: Subset): Promise<BuiltFont> {
   const original = await fetchBytes(font.files.upright.path).catch(() => {
-    throw new MakeError("LOAD_FAILED", `${font.family} didn't load. Check your connection and try again.`);
+    throw new MakeError("FONT_FAILED", `${font.family} didn't load`);
   });
   return build({ original, axes: font.axes, settings: { ...settings }, names, subset } satisfies Omit<BuildRequest, "id">);
 }

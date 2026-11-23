@@ -6,6 +6,13 @@ Tarayıcıda çalışan ücretsiz, açık kaynak bir font yapıcı. Katalogdan b
 
 Fontbend geliştirme aşamasında. İlk sürüme kadar [fontbend.com](https://fontbend.com) bir bekleme sayfası gösteriyor.
 
+## Yapay zekâ ajanları ve diğer araçlar için
+
+Uygulama kataloğunu kök adresinde yayımlar; iki dosya da her derlemede `app/src/catalog.json`'dan üretilir:
+
+- `llms.txt`: Fontbend'in ne olduğu, her fontun hangi işe yaradığı, eksenleri ve denemek için bir ayar bağlantısı.
+- `catalog.json`: alanları [README.md](README.md) dosyasında (İngilizce).
+
 ## Nasıl geliştiriliyor
 
 Fontbend'i Enes Kır tasarlıyor ve her değişikliği onaylıyor. Kodu Claude Code yazıyor.

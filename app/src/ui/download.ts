@@ -6,12 +6,23 @@ import { drawnSettings } from "./drawn";
 import { SUBSETS, type Subset } from "../core/subsets";
 import { makeZip } from "../core/zip";
 import type { Store } from "../store";
+import { num, t } from "../i18n";
 import { h } from "./dom";
 import { characterCheck, subsetLabel } from "./charcheck";
 import { fetchBytes, previewFamily, stretchedFamily } from "./faces";
 import { MakeError, makeFont, makeWoff2, stopWoff2 } from "./maker";
 
-const size = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(2)} MB`);
+const size = (n: number) => (n < 1024 * 1024 ? t("unit.kb", { n: Math.max(1, Math.round(n / 1024)) }) : t("unit.mb", { n: num(Number((n / 1024 / 1024).toFixed(2))) }));
+
+/** What a failed build says, by its code; the code itself is shown under it. */
+function failText(e: MakeError, family: string): string {
+  if (e.code === "FONT_FAILED") return t("build.fontFailed", { family });
+  if (e.code === "LICENSE_FAILED") return t("build.licenseFailed");
+  if (e.code === "STRETCH_FAILED") return t("build.stretchFailed");
+  if (e.code === "WORKER_STOPPED") return t("build.stopped");
+  if (e.code === "NETWORK" || e.code === "WASM_FAILED" || e.code === "LOAD_FAILED" || e.code.startsWith("HTTP_")) return t("build.builderFailed");
+  return t("build.other");
+}
 
 type Made = { ttf: Uint8Array; license: Uint8Array | null; woff2?: Uint8Array };
 
@@ -27,7 +38,7 @@ async function licenseFor(font: CatalogFont): Promise<Uint8Array | null> {
 
 /** The Download button in the app bar and the panel it opens: name, files, license, then the ZIP. */
 export function download(store: Store): { button: HTMLElement; panel: HTMLElement } {
-  const button = h("button", { class: "primary-button has-caret", type: "button", popovertarget: "download", "aria-haspopup": "dialog" }, "Download");
+  const button = h("button", { class: "primary-button has-caret", type: "button", popovertarget: "download", "aria-haspopup": "dialog" }, t("app.download"));
 
   const preview = h("p", { class: "download-name" });
   const nameInput = h("input", { class: "input", id: "font-name", type: "text", maxlength: FAMILY_MAX, autocomplete: "off", spellcheck: "false" });
@@ -52,31 +63,31 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
   const subsetOptions = SUBSETS.map((s) => h("option", { value: s }));
   const subsetSelect = h("select", { class: "input", id: "characters", onchange: () => store.update((s) => setSubset(s, subsetSelect.value as Subset)) }, ...subsetOptions);
   const licenseSize = h("span", { class: "file-size" });
-  const licenseRow = h("li", { class: "file is-locked" }, h("span", { class: "lock", "aria-hidden": "true" }), h("span", { class: "file-name" }, "OFL.txt"), h("span", { class: "meta" }, "Required by the license"), licenseSize);
+  const licenseRow = h("li", { class: "file is-locked" }, h("span", { class: "lock", "aria-hidden": "true" }), h("span", { class: "file-name" }, "OFL.txt"), h("span", { class: "meta" }, t("download.required")), licenseSize);
   const licenseTitle = h("summary", { class: "label" });
   const licenseText = h("p", {});
-  const signature = h("p", { class: "meta" }, "Fontbend writes “Made with Fontbend” into the font's description field.");
+  const signature = h("p", { class: "meta" }, t("download.signature"));
   const progressText = h("p", { class: "meta" });
   const progress = h("div", { class: "download-progress", hidden: true }, h("div", { class: "progress-bar" }), progressText);
   const errorTitle = h("p", { class: "label notice-title" });
   const errorBody = h("p", { class: "meta" });
   const errorCode = h("p", { class: "meta notice-code" });
-  const ttfOnly = h("button", { class: "primary-button", type: "button", onclick: () => void saveTtfOnly() }, "Download TTF only");
-  const retry = h("button", { class: "text-button", type: "button", onclick: () => void make() }, "Try again");
+  const ttfOnly = h("button", { class: "primary-button", type: "button", onclick: () => void saveTtfOnly() }, t("download.ttfOnly"));
+  const retry = h("button", { class: "text-button", type: "button", onclick: () => void make() }, t("common.tryAgain"));
   const notice = h("div", { class: "notice", role: "alert", hidden: true }, errorTitle, errorBody, errorCode, h("div", { class: "notice-actions" }, ttfOnly, retry));
   const zipSize = h("span", { class: "button-meta" });
-  const save = h("button", { class: "primary-button is-wide", type: "button", disabled: true, onclick: () => saveZip() }, "Download ZIP", zipSize);
+  const save = h("button", { class: "primary-button is-wide", type: "button", disabled: true, onclick: () => saveZip() }, t("download.zip"), zipSize);
 
   const main = h("div", { class: "download-main" },
-    h("div", { class: "download-head" }, h("h2", { id: "download-title", class: "title" }, "Download"), preview),
-    h("div", { class: "download-field" }, h("label", { class: "meta", for: "font-name" }, "Font name"), nameInput),
+    h("div", { class: "download-head" }, h("h2", { id: "download-title", class: "title" }, t("download.title")), preview),
+    h("div", { class: "download-field" }, h("label", { class: "meta", for: "font-name" }, t("download.fontName")), nameInput),
     h("div", { class: "download-field" },
-      h("p", { class: "meta" }, "Files"),
+      h("p", { class: "meta" }, t("download.files")),
       h("ul", { class: "files" },
         ttfRow.el, woff2Row.el,
         licenseRow),
-      h("p", { class: "meta" }, "Install the TTF on your computer. Use the WOFF2 on websites.")),
-    h("div", { class: "download-field" }, h("label", { class: "meta", for: "characters" }, "Characters"), h("span", { class: "select-field" }, subsetSelect)),
+      h("p", { class: "meta" }, t("download.filesHint"))),
+    h("div", { class: "download-field" }, h("label", { class: "meta", for: "characters" }, t("download.characters")), h("span", { class: "select-field" }, subsetSelect)),
     check.row,
     h("details", { class: "license" }, licenseTitle, licenseText, signature),
     progress, notice, save);
@@ -106,9 +117,9 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     const license = s.font.local?.license ?? "ofl";
     licenseRow.hidden = license === "unknown";
     signature.hidden = license === "unknown";
-    licenseTitle.textContent = license === "unknown" ? "License unknown" : "Free for commercial work (SIL OFL 1.1)";
-    licenseText.textContent = license === "unknown" ? "Fontbend can't tell which license this font has. Use the font you make only as that license allows."
-      : `You can use and change this font in any project, logos and games included. Keep the copyright lines in the font, and don't sell the font file on its own.${license === "reserved" ? " This font reserves its name, so the font you make needs a name of its own." : ""}`;
+    licenseTitle.textContent = t(license === "unknown" ? "download.licenseUnknown" : "download.licenseOfl");
+    licenseText.textContent = license === "unknown" ? t("download.unknownText")
+      : license === "reserved" ? `${t("download.oflText")} ${t("download.reservedText")}` : t("download.oflText");
     for (const [r, f] of [[ttfRow, "ttf"], [woff2Row, "woff2"]] as const) {
       r.box.checked = s.settings.formats.includes(f);
       // The last format left can't be turned off: a ZIP with only the license is no download.
@@ -119,7 +130,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
   type Now = "making" | "woff2" | "ready" | "failed" | "woff2-failed";
   const state = (now: Now) => {
     progress.hidden = now !== "making" && now !== "woff2";
-    progressText.textContent = now === "woff2" ? "Making the WOFF2 file" : "Making the font file";
+    progressText.textContent = t(now === "woff2" ? "download.makingWoff2" : "download.making");
     notice.hidden = now !== "failed" && now !== "woff2-failed";
     ttfOnly.hidden = now !== "woff2-failed";
     save.hidden = now === "woff2-failed";
@@ -128,15 +139,16 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     if (now !== "ready") zipSize.textContent = "";
     if (now === "making") { ttfRow.meta.textContent = woff2Row.meta.textContent = licenseSize.textContent = ""; check.update(null, "", false); }
     if (now === "woff2") woff2Row.meta.textContent = "";
-    if (now === "woff2-failed") woff2Row.meta.textContent = "failed";
+    if (now === "woff2-failed") woff2Row.meta.textContent = t("download.fileFailed");
   };
 
   const fail = (now: "failed" | "woff2-failed", e: MakeError) => {
-    errorTitle.textContent = now === "failed" ? "Couldn't make the font file" : "Couldn't make the WOFF2 file";
-    errorBody.textContent = now === "failed" ? e.message
-      : /memory|RangeError/i.test(e.message) ? "Not enough memory in this tab. Download only the TTF, or close other tabs and try again."
-      : "Download only the TTF, or try again.";
-    errorCode.textContent = `Code ${now === "failed" ? "FB-BUILD-01" : "FB-BUILD-02"} (${e.code})`;
+    errorTitle.textContent = t(now === "failed" ? "download.failed" : "download.woff2Failed");
+    errorBody.textContent = now === "failed" ? failText(e, store.get().font.family)
+      : /memory|RangeError/i.test(e.message) ? t("download.noMemory")
+      : t("download.woff2Retry");
+    errorCode.textContent = t("download.code", { code: now === "failed" ? "FB-BUILD-01" : "FB-BUILD-02", detail: e.code });
+    if (now === "failed") console.warn(`Fontbend couldn't make the font: ${e.code} ${e.message}`);
     state(now);
   };
 
@@ -151,7 +163,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     try {
       const [{ bytes: ttf, turkishFix }, license] = await Promise.all([
         makeFont(s.font, s.settings.axes, n, s.settings.subset),
-        licenseFor(s.font).catch(() => { throw new MakeError("LOAD_FAILED", "The license file didn't load. Check your connection and try again."); }),
+        licenseFor(s.font).catch(() => { throw new MakeError("LICENSE_FAILED", "the license file didn't load"); }),
       ]);
       if (id !== job) return;
       made = { ttf, license };

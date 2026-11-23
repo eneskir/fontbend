@@ -1,4 +1,5 @@
 /** The sentence above the sample that says, in two numbers, what the changes did to the font. */
+import { capitalize, num, t, withUnit } from "../i18n";
 import { segments, type Glyph } from "./glyf";
 
 /**
@@ -45,14 +46,15 @@ export function stemWidth(glyph: Glyph): number | null {
  * at one size, not one letter; strokes are the stem of H. A part too small to see is left out.
  */
 export function resultSentence(widthRatio: number, strokeRatio: number | null): string {
+  const pct = (n: number) => withUnit(num(n), "%");
   const percent = Math.round((widthRatio - 1) * 100);
-  const width = percent === 0 ? null : `${Math.abs(percent)}% ${percent < 0 ? "narrower" : "wider"}`;
+  const width = percent === 0 ? null : t(percent < 0 ? "summary.narrower" : "summary.wider", { percent: pct(Math.abs(percent)) });
   const stroke = strokeRatio === null ? null
-    : strokeRatio >= 1.05 ? `strokes ${strokeRatio.toFixed(1)}× thicker`
-    : strokeRatio <= 0.95 ? `strokes ${Math.min(99, Math.round((1 - strokeRatio) * 100))}% thinner` // a stroke still drawn is never 100% thinner
+    : strokeRatio >= 1.05 ? t("summary.thicker", { ratio: num(Number(strokeRatio.toFixed(1)), 1) })
+    : strokeRatio <= 0.95 ? t("summary.thinner", { percent: pct(Math.min(99, Math.round((1 - strokeRatio) * 100))) }) // a stroke still drawn is never 100% thinner
     : null;
-  if (width && stroke) return `Overall ${width}, ${stroke} than the original.`;
-  if (width) return `Overall ${width} than the original.`;
-  if (stroke) return `${stroke[0]!.toUpperCase()}${stroke.slice(1)} than the original.`;
-  return "Same width and strokes as the original.";
+  if (width && stroke) return t("summary.both", { width, stroke });
+  if (width) return t("summary.width", { width });
+  if (stroke) return capitalize(t("summary.stroke", { stroke }));
+  return t("summary.same");
 }

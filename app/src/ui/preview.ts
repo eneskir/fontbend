@@ -3,6 +3,7 @@ import { axisValue } from "../core/editor";
 import { formatValue, stepFor } from "../core/sliders";
 import { resultSentence, stemWidth } from "../core/summary";
 import { SAMPLES, SAMPLE_IDS, SIZES, WATERFALL, type SampleId } from "../core/samples";
+import { t } from "../i18n";
 import type { Store } from "../store";
 import { h } from "./dom";
 import { drawnSettings, drawnValues, letterH, loadStems } from "./drawn";
@@ -10,12 +11,12 @@ import { loadPreview, loadStretched, previewFamily, stretchedFamily } from "./fa
 
 /** The centre: the sample at the chosen size, smaller sizes under it, then a paragraph. `banner` sits over the sample. */
 export function preview(store: Store, banner: HTMLElement): HTMLElement {
-  const sampleSelect = h("select", { class: "select", "aria-label": "Sample text", onchange: () => store.update((s) => ({ ...s, sample: sampleSelect.value as SampleId, text: null })) },
-    ...SAMPLE_IDS.map((id) => h("option", { value: id }, SAMPLES[id].label)));
-  const sizeSelect = h("select", { class: "select", "aria-label": "Size", onchange: () => store.update((s) => ({ ...s, size: Number(sizeSelect.value) })) },
-    ...SIZES.map((px) => h("option", { value: px }, `${px} px`)));
+  const sampleSelect = h("select", { class: "select", "aria-label": t("preview.sampleLabel"), onchange: () => store.update((s) => ({ ...s, sample: sampleSelect.value as SampleId, text: null })) },
+    ...SAMPLE_IDS.map((id) => h("option", { value: id }, t(`sample.${id}`))));
+  const sizeSelect = h("select", { class: "select", "aria-label": t("preview.size"), onchange: () => store.update((s) => ({ ...s, size: Number(sizeSelect.value) })) },
+    ...SIZES.map((px) => h("option", { value: px }, t("preview.px", { n: px }))));
 
-  const main = h("p", { class: "line is-main", contenteditable: "true", spellcheck: "false", "aria-label": "Preview text, editable" });
+  const main = h("p", { class: "line is-main", contenteditable: "true", spellcheck: "false", "aria-label": t("preview.textLabel") });
   main.addEventListener("input", () => store.update((s) => ({ ...s, text: main.textContent ?? "" })));
   const mainSize = h("span", { class: "size meta" });
   const waterfall = WATERFALL.map((px) => h("p", { class: "line", style: `font-size: ${px}px` }));
@@ -43,7 +44,7 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
     if (loadMessage) { status.textContent = loadMessage; return; }
     const s = store.get();
     const broken = s.font.axes.map((a) => [a, breakPast(a, axisValue(s, a.tag))] as const).find(([, p]) => p !== null);
-    if (Object.keys(s.settings.axes).length === 0) result.textContent = `${s.font.family} as designed. Move a slider on the right, or pick another font.`;
+    if (Object.keys(s.settings.axes).length === 0) result.textContent = t("preview.asDesigned", { family: s.font.family });
     else {
       original.style.fontVariationSettings = s.font.axes.map((a) => `"${a.tag}" ${a.default}`).join(", ");
       const base = original.getBoundingClientRect().width;
@@ -56,11 +57,11 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
       // Named on the slider's grid, rounded toward the original, so the value named still holds and the next one breaks.
       const [axis, point] = broken, step = stepFor(axis);
       const named = point! < axis.default ? Math.ceil(point! / step - 1e-9) * step : Math.floor(point! / step + 1e-9) * step;
-      breaks.textContent = ` Some letters break past ${formatValue(named, step)}.`;
+      breaks.textContent = ` ${t("preview.breaks", { value: formatValue(named, step) })}`;
     }
     status.replaceChildren(result, breaks);
   };
-  const retry = h("button", { class: "text-button", type: "button", hidden: true, onclick: () => show() }, "Try again");
+  const retry = h("button", { class: "text-button", type: "button", hidden: true, onclick: () => show() }, t("common.tryAgain"));
 
   const sample = h("div", { class: "sample" },
     h("div", { class: "row" }, mainSize, main),
@@ -72,8 +73,8 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
   const canvas = h("main", { class: "canvas" },
     h("div", { class: "canvas-bar" },
       h("div", { class: "toolbar" },
-        h("label", { class: "field-group" }, h("span", { class: "meta" }, "Sample"), sampleSelect),
-        h("label", { class: "field-group" }, h("span", { class: "meta" }, "Size"), sizeSelect)),
+        h("label", { class: "field-group" }, h("span", { class: "meta" }, t("preview.sample")), sampleSelect),
+        h("label", { class: "field-group" }, h("span", { class: "meta" }, t("preview.size")), sizeSelect)),
       h("div", { class: "status-row" }, status, retry)),
     banner,
     h("div", { class: "stage" }, sample));
@@ -121,7 +122,7 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
     const font = store.get().font;
     canvas.classList.add("is-loading");
     canvas.classList.remove("is-failed");
-    setStatus(`Loading ${font.family}…`);
+    setStatus(t("preview.loading", { family: font.family }));
     retry.hidden = true;
     loadPreview(font).then(() => {
       if (store.get().font !== font) return;
@@ -137,12 +138,12 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
         // Width the font lacks is balanced by weight once H can be read (ui/drawn.ts).
         fillAxes(true);
       }, () => {
-        if (store.get().font === font) setStatus(`Fontbend couldn't stretch ${font.family}, so values past its own range show at the range's end.`);
+        if (store.get().font === font) setStatus(t("preview.noStretch", { family: font.family }));
       });
     }, () => {
       if (store.get().font !== font) return;
       canvas.classList.replace("is-loading", "is-failed");
-      setStatus(`${font.family} didn't load. Check your connection and try again.`);
+      setStatus(t("preview.loadFailed", { family: font.family }));
       retry.hidden = false;
     });
   }

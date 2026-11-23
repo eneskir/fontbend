@@ -2,6 +2,7 @@
  * Recent: the fonts the user changed, kept in this browser only. Each entry holds its settings as
  * share-link text (core/link), so one reader checks both, and a font file is never stored.
  */
+import { t } from "../i18n";
 
 /** Enough for a few days' work; the list stays short enough to scan. */
 export const RECENT_LIMIT = 20;
@@ -51,7 +52,7 @@ export function mergeRecent(a: readonly RecentEntry[], b: readonly RecentEntry[]
   return [...byId.values()].sort((x, y) => y.at - x.at).slice(0, RECENT_LIMIT);
 }
 
-/** Entries under "Today", "Yesterday" or `date(day)` for older days, newest first; days in the computer's time zone. */
+/** Entries under Today, Yesterday or `date(day)` for older days, newest first; days in the computer's time zone. */
 export function byDay(entries: readonly RecentEntry[], now: Date, date: (day: Date) => string): { readonly label: string; readonly entries: readonly RecentEntry[] }[] {
   const dayOf = (t: Date) => new Date(t.getFullYear(), t.getMonth(), t.getDate()).getTime();
   const today = dayOf(now), yesterday = dayOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
@@ -60,7 +61,7 @@ export function byDay(entries: readonly RecentEntry[], now: Date, date: (day: Da
     const day = dayOf(new Date(e.at));
     let group = groups.at(-1);
     if (group?.day !== day) {
-      group = { label: day === today ? "Today" : day === yesterday ? "Yesterday" : date(new Date(day)), day, entries: [] };
+      group = { label: day === today ? t("recent.today") : day === yesterday ? t("recent.yesterday") : date(new Date(day)), day, entries: [] };
       groups.push(group);
     }
     group.entries.push(e);

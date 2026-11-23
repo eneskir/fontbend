@@ -1,5 +1,6 @@
 import type { Axis } from "./axis";
 import type { CatalogFont } from "./catalog";
+import { MESSAGES, num, t, type Key } from "../i18n";
 
 /**
  * The big sliders at the top of Adjust, stacked in this order: every font has all
@@ -8,9 +9,9 @@ import type { CatalogFont } from "./catalog";
  * opposite sign of slnt.
  */
 export const BIG_SLIDERS = [
-  { key: "weight", label: "Weight", tag: "wght", unit: "", flip: false },
-  { key: "width", label: "Width", tag: "wdth", unit: "%", flip: false },
-  { key: "slant", label: "Slant", tag: "slnt", unit: "°", flip: true },
+  { key: "weight", tag: "wght", unit: "", flip: false },
+  { key: "width", tag: "wdth", unit: "%", flip: false },
+  { key: "slant", tag: "slnt", unit: "°", flip: true },
 ] as const;
 
 export type BigSlider = (typeof BIG_SLIDERS)[number] & { readonly axis: Axis };
@@ -27,16 +28,13 @@ export function fontAxes(font: CatalogFont): Axis[] {
   return font.axes.filter((a) => !a.synthetic && !BIG_SLIDERS.some((s) => s.tag === a.tag));
 }
 
-/** Plain names for axes a non-designer can read; an axis not listed shows its tag (Roboto Flex's parametric ones). */
-export const AXIS_NAMES: Readonly<Record<string, string>> = {
-  wght: "Weight", wdth: "Width", slnt: "Slant", opsz: "Optical size", GRAD: "Grade", SOFT: "Softness",
-  WONK: "Wonky", CASL: "Casual", MONO: "Monospace", CRSV: "Cursive", SHRP: "Sharpness", CTRS: "Contrast",
-  FLAR: "Flare", VOLM: "Volume", BNCE: "Bounce", INFM: "Informal", SPAC: "Spacing",
-};
-
-/** The plain name of an axis when it has one, else its tag. */
+/**
+ * The plain name of an axis a non-designer can read ("axis.<tag>" in locales), else its tag
+ * (Roboto Flex's parametric axes).
+ */
 export function axisLabel(tag: string): string {
-  return AXIS_NAMES[tag] ?? tag;
+  const key = `axis.${tag}`;
+  return key in MESSAGES.en ? t(key as Key) : tag;
 }
 
 /** Slider step: fine enough for short ranges (0 to 1), whole numbers for long ones. */
@@ -48,7 +46,7 @@ export function stepFor(axis: Axis): number {
 /** A value as the slider shows it: no more decimals than the step has, no trailing zeros. */
 export function formatValue(value: number, step: number): string {
   const decimals = step >= 1 ? 0 : step >= 0.1 ? 1 : 2;
-  return String(Number(value.toFixed(decimals)));
+  return num(Number(value.toFixed(decimals)) + 0, decimals); // + 0: no −0
 }
 
 /** How far a value is from the original, with its sign: "+300", "-25". */

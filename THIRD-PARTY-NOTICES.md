@@ -62,5 +62,6 @@ These run on the developer's computer and in CI to check and build Fontbend; non
 | TypeScript | 7.0.2 | Apache-2.0 | [microsoft/TypeScript](https://github.com/microsoft/TypeScript) |
 | Vite | 8.3.8 | MIT | [vitejs/vite](https://github.com/vitejs/vite) |
 | Vitest | 5.1.1 | MIT | [vitest-dev/vitest](https://github.com/vitest-dev/vitest) |
+| Wrangler | 4.162.0 | MIT OR Apache-2.0 | [cloudflare/workers-sdk](https://github.com/cloudflare/workers-sdk) |
 
-Their own dependencies are permissive too, except lightningcss (MPL-2.0), the CSS minifier Vite brings. It only runs during the build, so its license sets no duty on Fontbend. `tools/check_licenses.py` reads the license file of every installed package and fails on anything else.
+Their own dependencies are permissive too, except lightningcss (MPL-2.0), the CSS minifier Vite brings, and the libvips binaries (LGPL-3.0) in sharp, which Wrangler brings. They only run while building or uploading the site, so their licenses set no duty on Fontbend. `tools/check_licenses.py` reads the license file of every installed package and fails on anything else.

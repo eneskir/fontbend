@@ -36,6 +36,22 @@ EXCEPTIONS = {
     # The compiled part of rolldown, published from the same folder of the same repository
     # as rolldown, whose package carries the MIT license file.
     "@rolldown/binding-": "MIT, license file in the rolldown package",
+    # Wrangler and the packages it brings run only in the deploy job, to upload the built
+    # site; none of their code reaches the site. Those published from cloudflare/workers-sdk
+    # carry no license file; the repository holds LICENSE-MIT and LICENSE-APACHE.
+    "wrangler": "MIT OR Apache-2.0, license files in cloudflare/workers-sdk",
+    "miniflare": "MIT, license files in cloudflare/workers-sdk",
+    "@cloudflare/kv-asset-handler": "MIT OR Apache-2.0, license files in cloudflare/workers-sdk",
+    "@cloudflare/unenv-preset": "MIT OR Apache-2.0, license files in cloudflare/workers-sdk",
+    # workerd and its per-platform binaries: Apache-2.0, LICENSE in cloudflare/workerd.
+    "workerd": "Apache-2.0, license file in cloudflare/workerd",
+    "@cloudflare/workerd-": "Apache-2.0, license file in cloudflare/workerd",
+    # esbuild's per-platform binaries, published from the esbuild repository, whose package
+    # carries the MIT license file.
+    "@esbuild/": "MIT, license file in the esbuild package",
+    # sharp's per-platform parts: sharp is Apache-2.0; the libvips binaries are LGPL-3.0.
+    # Deploy tool only, like lightningcss; the maintainer accepted it on 2026-11-23.
+    "@img/sharp-": "Apache-2.0 and LGPL-3.0-or-later (libvips), deploy tool only",
 }
 LICENSE_FILE = re.compile(r"^(LICEN[CS]E|COPYING)(\.(md|txt))?$|^LICENSE-MIT$", re.I)
 

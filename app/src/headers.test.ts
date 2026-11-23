@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import text from "../public/_headers?raw";
 
-/** Each rule's headers in file order; "! Name" removes what earlier rules gave (Cloudflare Pages). */
-function policyFor(path: string): string[] {
-  let policies: string[] = [];
+/** One header's values for a path, rules in file order; "! Name" removes what earlier rules gave (Cloudflare Pages). */
+function valuesFor(path: string, header: string): string[] {
+  let values: string[] = [];
   let applies = false;
   for (const line of text.split("\n")) {
     if (!line.trim() || line.trimStart().startsWith("#")) continue;
@@ -12,12 +12,13 @@ function policyFor(path: string): string[] {
       applies = pattern.endsWith("*") ? path.startsWith(pattern.slice(0, -1)) : path === pattern;
     } else if (applies) {
       const [name, ...rest] = line.trim().split(":");
-      if (line.trim() === "! Content-Security-Policy") policies = [];
-      else if (name === "Content-Security-Policy") policies.push(rest.join(":").trim());
+      if (line.trim() === `! ${header}`) values = [];
+      else if (name === header) values.push(rest.join(":").trim());
     }
   }
-  return policies;
+  return values;
 }
+const policyFor = (path: string) => valuesFor(path, "Content-Security-Policy");
 
 const sources = (policy: string, directive: string) =>
   policy.split(";").map((d) => d.trim().split(/\s+/)).find(([name]) => name === directive)?.slice(1) ?? [];
@@ -38,5 +39,9 @@ describe("_headers", () => {
     expect(more).toEqual([]);
     expect(sources(policy!, "script-src")).toContain("'unsafe-eval'");
     expect(sources(policy!, "default-src")).toEqual(["'none'"]);
+  });
+
+  it("leaves a page that opened the app no handle to steer it", () => {
+    expect(valuesFor("/", "Cross-Origin-Opener-Policy")).toEqual(["same-origin"]);
   });
 });

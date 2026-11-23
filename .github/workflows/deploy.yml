@@ -94,7 +94,7 @@ jobs:
           wranglerVersion: "4.162.0"
           command: pages deploy dist --project-name=fontbend --branch=app --commit-hash=${{ github.sha }}
 
-      # The page must carry its security policy and the noindex line together.
+      # The page must carry its security policies and the noindex line together.
       - name: Check the preview's headers
         env:
           URL: ${{ steps.deploy.outputs.deployment-url }}
@@ -102,3 +102,4 @@ jobs:
           curl -sfI --retry 5 --retry-all-errors "$URL/" > headers.txt
           grep -qi '^content-security-policy:' headers.txt
           grep -qi '^x-robots-tag: noindex' headers.txt
+          grep -qi '^cross-origin-opener-policy: same-origin' headers.txt

@@ -10,7 +10,7 @@ Fontbend is a free, open-source browser font maker in English and Turkish; fonts
 
 - `site/` → fontbend.com, deployed from `main` by `.github/workflows/deploy.yml`.
 - `preview/` → pages not public yet, deployed on top of `site/` to preview.fontbend.pages.dev; moves to `site/` on the maintainer's call.
-- `app/` → the font maker (TypeScript, Vite), built to `dist/`; not deployed yet.
+- `app/` → the font maker (TypeScript, Vite), built to `dist/` and deployed from `main` to app.fontbend.pages.dev to preview; moves to fontbend.com on the maintainer's call.
 - `scripts/build-catalog.py` → copies the catalog fonts from google/fonts to `app/public/catalog/`, cuts a name preview of each, and writes `app/src/catalog.json` and the font table in `THIRD-PARTY-NOTICES.md`; `app/src/core/catalog.ts` decides what may enter.
 - `scripts/build-site-font.py` → builds the fonts of `site/`, `preview/` and the app's interface from Recursive.
 - `tools/` → checks that CI runs.

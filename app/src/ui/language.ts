@@ -13,6 +13,8 @@ import { allFonts } from "./opened";
 import type { Recent } from "./recent";
 
 const CARRY = "fontbend.carry";
+/** The repository's translation form: a fix to these strings, or a language to add. */
+const TRANSLATE = "https://github.com/eneskir/fontbend/issues/new?template=2-translation.yml";
 
 type Carry = { readonly link: string; readonly entry: string | null; readonly sample: SampleId; readonly size: number; readonly text: string | null };
 
@@ -33,6 +35,8 @@ export function languageMenu(store: Store, recent: Pick<Recent, "currentId">): H
       h("span", { class: "menu-name" }, name), h("span", { class: "menu-code" }, code.toUpperCase())));
   return footMenu("language-menu", t("language.title"), [h("span", { class: "foot-code", "aria-hidden": "true" }, currentLang().toUpperCase()), h("span", { class: "visually-hidden" }, t("language.title"))], [
     h("fieldset", { class: "menu-options" }, h("legend", { class: "meta" }, t("language.checked")), ...options),
+    h("hr", { class: "rule menu-rule" }),
+    h("a", { class: "menu-link", href: TRANSLATE, target: "_blank", rel: "noopener" }, t("language.suggest")),
   ]);
 }
 

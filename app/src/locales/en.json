@@ -32,6 +32,7 @@
   "theme.dark": "Dark",
   "language.title": "Language",
   "language.checked": "Checked by people",
+  "language.suggest": "Fix or add a translation",
 
   "preview.sample": "Sample",
   "preview.sampleLabel": "Sample text",

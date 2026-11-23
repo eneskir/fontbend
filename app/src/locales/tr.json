@@ -32,6 +32,7 @@
   "theme.dark": "Koyu",
   "language.title": "Dil",
   "language.checked": "Gözden geçirildi",
+  "language.suggest": "Çeviriyi düzelt, dil ekle",
 
   "preview.sample": "Örnek",
   "preview.sampleLabel": "Örnek metin",

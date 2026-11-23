@@ -55,6 +55,7 @@
   "preview.loading": "Chargement de {family}…",
   "preview.noStretch": "Fontbend n’a pas pu étirer {family}, donc les valeurs hors de sa plage s’affichent au bout de la plage.",
   "preview.loadFailed": "{family} ne s’est pas chargée. Vérifie ta connexion et réessaie.",
+  "preview.sampleFallback": "{family} n’a pas les lettres de l’exemple « {sample} », l’exemple anglais s’affiche donc.",
   "sample.pangram": "Pangramme",
   "sample.turkish": "Turc",
   "sample.spanish": "Espagnol",

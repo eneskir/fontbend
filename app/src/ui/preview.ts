@@ -2,16 +2,20 @@ import { breakPast } from "../core/axis";
 import { axisValue } from "../core/editor";
 import { formatValue, stepFor } from "../core/sliders";
 import { resultSentence, stemWidth } from "../core/summary";
-import { SAMPLES, SAMPLE_IDS, SIZES, WATERFALL, type SampleId } from "../core/samples";
+import { missingLetters, SAMPLES, SAMPLE_IDS, SIZES, WATERFALL, type SampleId } from "../core/samples";
 import { t } from "../i18n";
 import type { Store } from "../store";
 import { h } from "./dom";
 import { drawnSettings, drawnValues, letterH, loadStems } from "./drawn";
-import { loadPreview, loadStretched, previewFamily, stretchedFamily } from "./faces";
+import { fontChars, loadPreview, loadStretched, previewFamily, stretchedFamily } from "./faces";
 
 /** The centre: the sample at the chosen size, smaller sizes under it, then a paragraph. `banner` sits over the sample. */
 export function preview(store: Store, banner: HTMLElement): HTMLElement {
-  const sampleSelect = h("select", { class: "select", "aria-label": t("preview.sampleLabel"), onchange: () => store.update((s) => ({ ...s, sample: sampleSelect.value as SampleId, text: null })) },
+  // The sample the font could not draw, named in the status line until the user picks a sample or a font has its letters.
+  let fellBack: SampleId | null = null;
+  // The characters of the font on show, once read.
+  let chars: ReadonlySet<number> | null = null;
+  const sampleSelect = h("select", { class: "select", "aria-label": t("preview.sampleLabel"), onchange: () => { fellBack = null; store.update((s) => ({ ...s, sample: sampleSelect.value as SampleId, text: null })); } },
     ...SAMPLE_IDS.map((id) => h("option", { value: id }, t(`sample.${id}`))));
   const sizeSelect = h("select", { class: "select", "aria-label": t("preview.size"), onchange: () => store.update((s) => ({ ...s, size: Number(sizeSelect.value) })) },
     ...SIZES.map((px) => h("option", { value: px }, t("preview.px", { n: px }))));
@@ -25,6 +29,7 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
   const status = h("p", { class: "status", role: "status" });
   const result = h("span", { class: "status-result" });
   const breaks = h("span", {});
+  const fallbackNote = h("span", {});
   // The sample line once more at 64 px, in the user's values and the original's, to compare their widths.
   const yours = h("span", {}), original = h("span", {});
   const measure = h("div", { class: "measure", "aria-hidden": "true" }, yours, original);
@@ -59,7 +64,24 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
       const named = point! < axis.default ? Math.ceil(point! / step - 1e-9) * step : Math.floor(point! / step + 1e-9) * step;
       breaks.textContent = ` ${t("preview.breaks", { value: formatValue(named, step) })}`;
     }
-    status.replaceChildren(result, breaks);
+    fallbackNote.textContent = fellBack ? ` ${t("preview.sampleFallback", { family: s.font.family, sample: t(`sample.${fellBack}`) })}` : "";
+    status.replaceChildren(result, breaks, fallbackNote);
+  };
+  // A sample in letters the font lacks would show in another font: the English one takes its place, and the status line says why.
+  // A later font that has the letters brings the sample back.
+  const fitSample = () => {
+    const s = store.get();
+    if (!chars || s.text !== null) return;
+    // After the current round of listeners, so none of them gets the older state after the newer one.
+    const swap = (from: SampleId, to: SampleId) => queueMicrotask(() => store.update((now) => (now.sample === from && now.text === null ? { ...now, sample: to } : now)));
+    if (fellBack && s.sample === "pangram" && missingLetters(fellBack, chars).length === 0) {
+      const back = fellBack;
+      fellBack = null;
+      swap("pangram", back);
+    } else if (s.sample !== "pangram" && missingLetters(s.sample, chars).length > 0) {
+      fellBack = s.sample;
+      swap(s.sample, "pangram");
+    }
   };
   const retry = h("button", { class: "text-button", type: "button", hidden: true, onclick: () => show() }, t("common.tryAgain"));
 
@@ -120,6 +142,7 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
   // The sample stays hidden until its font has arrived, so a fallback font is never shown as the user's font.
   function show() {
     const font = store.get().font;
+    chars = null;
     canvas.classList.add("is-loading");
     canvas.classList.remove("is-failed");
     setStatus(t("preview.loading", { family: font.family }));
@@ -129,6 +152,11 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
       sample.style.setProperty("--family", `"${previewFamily(font)}"`);
       canvas.classList.remove("is-loading");
       setStatus("");
+      fontChars(font).then((c) => {
+        if (store.get().font !== font) return;
+        chars = c;
+        fitSample();
+      }, () => { /* unread: the sample stays as it is */ });
       // The shipped font shows at once; the stretched one, which can also draw values past the
       // font's own range and Width and Slant the font lacks, takes its place when ready (0.7 s
       // for Fraunces, 4 s for Recursive, measured 23.11).
@@ -152,6 +180,7 @@ export function preview(store: Store, banner: HTMLElement): HTMLElement {
   store.subscribe((now, before) => {
     if (now.font !== before.font) show();
     if (now.sample !== before.sample || now.text !== before.text) { fillText(); setStatus(); }
+    if (now.sample !== before.sample) fitSample();
     if (now.size !== before.size) fillSize();
     if (now.font !== before.font) fillAxes(true);
     else if (now.settings !== before.settings) fillAxes(false);

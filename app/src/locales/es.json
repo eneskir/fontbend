@@ -55,6 +55,7 @@
   "preview.loading": "Cargando {family}…",
   "preview.noStretch": "Fontbend no pudo estirar {family}, así que los valores fuera de su rango se muestran en el extremo del rango.",
   "preview.loadFailed": "{family} no se cargó. Revisa tu conexión y vuelve a intentarlo.",
+  "preview.sampleFallback": "{family} no tiene letras para la muestra «{sample}», así que se muestra la inglesa.",
   "sample.pangram": "Pangrama",
   "sample.turkish": "Turco",
   "sample.spanish": "Español",

@@ -66,6 +66,15 @@ export const LANG_SAMPLE: Readonly<Record<Lang, SampleId>> = {
   en: "pangram", tr: "turkish", de: "german", es: "spanish", fr: "french", id: "indonesian", pt: "portuguese", ru: "russian",
 };
 
+/**
+ * Letters of a sample (its line and paragraph, which show in the chosen font) that a font lacks: a
+ * browser draws those from another font, so the preview would no longer be the font.
+ */
+export function missingLetters(id: SampleId, chars: ReadonlySet<number>): string[] {
+  const { line, paragraph } = SAMPLES[id];
+  return [...new Set([...line + paragraph])].filter((c) => !/\s/.test(c) && !chars.has(c.codePointAt(0)!));
+}
+
 /** Sizes of the smaller preview lines under the main one, as in the design. */
 export const WATERFALL = [40, 32, 24, 20] as const;
 export const SIZES = [24, 32, 48, 64, 96, 128, 160] as const;

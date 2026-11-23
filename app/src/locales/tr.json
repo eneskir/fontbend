@@ -55,6 +55,7 @@
   "preview.loading": "{family} yükleniyor…",
   "preview.noStretch": "Fontbend bu fontu esnetemedi. Kendi aralığının dışındaki değerler aralığın ucunda görünüyor.",
   "preview.loadFailed": "{family} yüklenemedi. İnternet bağlantını denetleyip yeniden dene.",
+  "preview.sampleFallback": "{family} fontunda {sample} örneğin harfleri yok, bu yüzden İngilizce örnek gösteriliyor.",
   "sample.pangram": "Pangram",
   "sample.turkish": "Türkçe",
   "sample.spanish": "İspanyolca",

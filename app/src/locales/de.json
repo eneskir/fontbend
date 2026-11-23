@@ -55,6 +55,7 @@
   "preview.loading": "{family} wird geladen…",
   "preview.noStretch": "Fontbend konnte {family} nicht dehnen, daher erscheinen Werte außerhalb ihres Bereichs am Ende des Bereichs.",
   "preview.loadFailed": "{family} wurde nicht geladen. Prüfe deine Verbindung und versuche es erneut.",
+  "preview.sampleFallback": "{family} hat keine Buchstaben für das Beispiel „{sample}“, daher wird das englische gezeigt.",
   "sample.pangram": "Pangramm",
   "sample.turkish": "Türkisch",
   "sample.spanish": "Spanisch",

@@ -1,4 +1,6 @@
 import type { CatalogFont } from "../core/catalog";
+import { codePoints } from "../core/cmap";
+import { readTables } from "../core/sfnt";
 import { jobWorker, once } from "./jobs";
 
 const url = (path: string) => new URL(path, document.baseURI).href;
@@ -46,6 +48,16 @@ export const stretchedFont = (font: CatalogFont) =>
 /** The same font rewritten so its axes reach past their own ends (core/stretch), with Width and Slant added where it lacks them (core/synth). */
 export const stretchedFamily = (font: CatalogFont) => `fb-x-${font.id}`;
 export const loadStretched = (font: CatalogFont) => load(stretchedFamily(font), () => stretchedFont(font), weights(font));
+
+const charSets = new Map<string, Promise<Set<number>>>();
+
+/** The characters the font draws, from its cmap; the file comes from the browser's cache after the preview. */
+export const fontChars = (font: CatalogFont) =>
+  once(charSets, font.id, () => fetchBytes(font.files.upright.path).then((b) => {
+    const cmap = readTables(b).get("cmap");
+    if (!cmap) throw new Error(`no cmap in ${font.id}`);
+    return codePoints(cmap);
+  }));
 
 /** A few kilobytes that draw only the letters of the family name, for the font list. */
 export const nameFamily = (font: CatalogFont) => `fb-name-${font.id}`;

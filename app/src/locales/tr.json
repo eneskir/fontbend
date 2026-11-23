@@ -26,6 +26,8 @@
   "category.mono": "Eş aralıklı",
   "category.handwriting": "El yazısı",
 
+  "download.mine": "Benim {family}",
+  "download.mineReserved": "Benim Fontum",
   "help.title": "Yardım",
   "help.report": "Sorun bildir",
   "help.about": "Hakkında ve lisanslar",

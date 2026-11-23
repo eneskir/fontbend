@@ -26,6 +26,8 @@
   "category.mono": "Monospace",
   "category.handwriting": "Handwriting",
 
+  "download.mine": "My {family}",
+  "download.mineReserved": "My Font",
   "help.title": "Help",
   "help.report": "Report a problem",
   "help.about": "About and licenses",

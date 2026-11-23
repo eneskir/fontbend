@@ -1,16 +1,16 @@
-/* Tokens from the Figma design (V7), light then dark. Blue only means "changed from the original"; red only errors.
+/* Tokens from the Figma design (V7), light then dark; greys are neutral (no hue), at the design's lightness. Blue only means "changed from the original"; red only errors.
    Dark is the default; the Theme menu sets data-theme="light", and data-canvas when the canvas takes its own colours. */
 :root { color-scheme: dark; }
 /* Height of every control; a phone takes 44 px, the touch target the product keeps there. */
 :root { --control: 32px; }
 /* Declared on the canvas too, so its colours follow its own color-scheme (the build turns light-dark() into variables resolved where declared). */
 :root, .canvas {
-  --paper: light-dark(#FAFAF7, #1A1A18);
-  --surface: light-dark(#EFEEE9, #232320);
-  --line: light-dark(#E2E0DA, #34332F);
-  --line-strong: light-dark(#82807A, #7D7B74);
-  --ink: light-dark(#161616, #ECEAE4);
-  --ink-muted: light-dark(#5E5D58, #A6A49D);
+  --paper: light-dark(#FAFAFA, #1A1A1A);
+  --surface: light-dark(#EEEEEE, #232323);
+  --line: light-dark(#E0E0E0, #333333);
+  --line-strong: light-dark(#808080, #7B7B7B);
+  --ink: light-dark(#161616, #EAEAEA);
+  --ink-muted: light-dark(#5D5D5D, #A4A4A4);
   --red: light-dark(#C0261F, #F0675C);
   --changed: light-dark(#0062E6, #3D8EFF);
   --mono: "Recursive Mono", ui-monospace, monospace;
@@ -332,7 +332,11 @@ label.file:has(:disabled) { cursor: default; }
 .notice-title { color: var(--red); }
 .notice-code { font-family: var(--mono); }
 /* Numbers stay in the interface's mono font, upright and as wide as drawn, whatever the font being made. */
-:is(.button-meta, .size, .count, .slider-tag, .slider-delta, .slider-value, .slider-range, .check-count, .file, .notice-code, .recent-time) { font-variation-settings: normal; }
+:is(.button-meta, .size, .count, .slider-tag, .slider-delta, .slider-value, .slider-range, .check-count, .file, .notice-code, .recent-time, .foot-code) { font-variation-settings: normal; }
+/* Small notes, errors and icon letters keep the interface's own font too, so they read the same whatever
+   the font being made; names, buttons and headings still wear it. :where() lets the mono
+   classes above keep their family. */
+:where(.meta, .slider-zone, .owner, .icon-text, .notice, .banner.is-damaged .banner-texts) { font-family: "Recursive Text", system-ui, sans-serif; font-variation-settings: normal; }
 .notice-actions { display: flex; gap: 8px; padding-top: 8px; }
 
 @media (max-width: 1100px) {

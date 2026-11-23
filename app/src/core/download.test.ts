@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogFont } from "./catalog";
+import { useLang } from "../i18n";
 import { defaultFamily, downloadFiles, fileStem, madeNames } from "./download";
 import { isSloped, settingsCode } from "./settingsCode";
 import { crc32, makeZip } from "./zip";
@@ -51,6 +52,14 @@ describe("a font file the user opened", () => {
   it("drops a Reserved Font Name from the suggested name", () => {
     expect(defaultFamily(opened("reserved"))).toBe("My Font");
     expect(defaultFamily(opened("ofl"))).toBe(defaultFamily(font));
+  });
+  it("suggests the name in the interface's language, within the name limit", () => {
+    useLang("tr");
+    try {
+      expect(defaultFamily(font)).toBe(`Benim ${font.family}`);
+      expect(defaultFamily(opened("reserved"))).toBe("Benim Fontum");
+      expect(madeNames({ ...font, family: "A".repeat(30) }, "", roboto, {}).family).toHaveLength(31);
+    } finally { useLang("en"); }
   });
 });
 

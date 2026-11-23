@@ -16,11 +16,12 @@ import { copyLinkButton, sharedLinks } from "./ui/share";
 import { carryOver, languageMenu } from "./ui/language";
 import { themeMenu } from "./ui/theme";
 import { helpMenu } from "./ui/help";
-import { t } from "./i18n";
+import { LANG_SAMPLE } from "./core/samples";
+import { currentLang, t } from "./i18n";
 import { wear } from "./ui/wear";
 
 const catalog = parseCatalog(data);
-const store = createStore(startEditing(catalog.fonts[0]!));
+const store = createStore(startEditing(catalog.fonts[0]!, LANG_SAMPLE[currentLang()]));
 const recentFonts = recent(store, catalog, () => tabs.select("fonts"), () => opener.choose());
 // An opened file goes on where its latest Recent entry left off, else it starts fresh.
 const opener = openView(catalog, (font) => {

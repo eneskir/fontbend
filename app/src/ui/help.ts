@@ -4,8 +4,8 @@ import { h } from "./dom";
 import { REPOSITORY } from "./language";
 import { footMenu } from "./menu";
 
-/** The About page (about, licences, privacy, source code); it moves to fontbend.com/about/ with the site. */
-const ABOUT = "https://preview.fontbend.pages.dev/about/";
+/** The About page (about, licences, privacy, source code), next to the app on fontbend.com. */
+const ABOUT = "/about/";
 /** The repository's bug form; an error's code (FB-…) goes in it. */
 const REPORT = `${REPOSITORY}/issues/new?template=1-bug.yml`;
 

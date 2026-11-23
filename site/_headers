@@ -1,8 +1,5 @@
-/*
-  Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; font-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: no-referrer
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
-
+# Added after the app's rules (app/public/_headers) when tools/assemble_site.py puts the app
+# and site/ together; the app's /* rule gives every page its security headers. A font here is
+# named by its content (scripts/build-site-font.py), so it can be kept for a year.
 /fonts/*.woff2
   Cache-Control: public, max-age=31536000, immutable

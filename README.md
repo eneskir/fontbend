@@ -4,11 +4,11 @@ English | [Türkçe](README.tr.md)
 
 A free, open-source font maker that runs in your browser, in English and Turkish. Pick a font from the catalog, shape it with sliders, see which languages it covers and download it with its license.
 
-Fontbend is in development. Until the first release, [fontbend.com](https://fontbend.com) shows a placeholder page.
+Fontbend runs at [fontbend.com](https://fontbend.com).
 
 ## For AI agents and other tools
 
-Once the app is released, it serves two files at the root of its address: `/llms.txt` and `/catalog.json`. Every build makes both from the repository's `app/src/catalog.json`, so they are not copies of it.
+fontbend.com serves two files at its root: `/llms.txt` and `/catalog.json`. Every build makes both from the repository's `app/src/catalog.json`, so they are not copies of it.
 
 - `llms.txt`: what Fontbend is, what each font suits, its axes and a settings link to try it.
 - `catalog.json`: every font with its axes, at `schemaVersion` 1. The version goes up when a field changes meaning or is removed.

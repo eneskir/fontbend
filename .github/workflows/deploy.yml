@@ -26,80 +26,41 @@ jobs:
       - name: Secret scan
         run: python3 tools/secret_scan.py
 
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "4.162.0"
-          command: pages deploy site --project-name=fontbend --branch=main --commit-hash=${{ github.sha }}
-
-      # preview/ holds pages that are not public yet. They go out on top of site/ to a
-      # Cloudflare Pages preview address (preview.fontbend.pages.dev), never to fontbend.com.
-      - name: Assemble the preview
-        run: |
-          mkdir "$RUNNER_TEMP/preview"
-          cp -R site/. preview/. "$RUNNER_TEMP/preview/"
-
-      - name: Deploy the preview
-        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "4.162.0"
-          command: pages deploy ${{ runner.temp }}/preview --project-name=fontbend --branch=preview --commit-hash=${{ github.sha }}
-
-  # The font maker (app/) is not public yet. Each push builds it and deploys it to its own
-  # Cloudflare Pages preview address (app.fontbend.pages.dev), never to fontbend.com. A job of
-  # its own, so a failed build leaves the site deploy above untouched.
-  app:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Secret scan
-        run: python3 tools/secret_scan.py
-
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
 
-      # Packages' own install scripts never run, as in Check.
       - name: Build the app
         run: |
           npm ci --ignore-scripts
           npm run build
 
-      # Only the preview carries this; the app's own _headers stay as they ship. The line goes
-      # into the existing /* rule: a second /* rule replaces the first one's headers on Pages.
-      - name: Keep the preview out of search engines
+      # The app is the home page; site/ adds About, the 404 page, the icons and their fonts.
+      - name: Put the app and site/ together
         run: |
-          python3 - <<'EOF'
-          from pathlib import Path
-          p = Path("dist/_headers")
-          lines = p.read_text(encoding="utf-8").split("\n")
-          assert lines.count("/*") == 1, "expected one /* rule"
-          lines.insert(lines.index("/*") + 1, "  X-Robots-Tag: noindex")
-          p.write_text("\n".join(lines), encoding="utf-8")
-          EOF
+          python3 tools/check_site_cache.py dist site
+          python3 tools/assemble_site.py "$RUNNER_TEMP/site"
 
-      - name: Deploy the app preview
+      - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.162.0"
-          command: pages deploy dist --project-name=fontbend --branch=app --commit-hash=${{ github.sha }}
+          command: pages deploy ${{ runner.temp }}/site --project-name=fontbend --branch=main --commit-hash=${{ github.sha }}
 
-      # The page must carry its security policies and the noindex line together.
-      - name: Check the preview's headers
+      # Every page carries the app's security policies; the site is open to search engines;
+      # a named font is kept for a year.
+      - name: Check the site's headers
         env:
           URL: ${{ steps.deploy.outputs.deployment-url }}
         run: |
-          curl -sfI --retry 5 --retry-all-errors "$URL/" > headers.txt
-          grep -qi '^content-security-policy:' headers.txt
-          grep -qi '^x-robots-tag: noindex' headers.txt
-          grep -qi '^cross-origin-opener-policy: same-origin' headers.txt
+          for page in / /about/; do
+            curl -sfI --retry 5 --retry-all-errors "$URL$page" > headers.txt
+            grep -qi '^content-security-policy:' headers.txt
+            grep -qi '^cross-origin-opener-policy: same-origin' headers.txt
+            if grep -qi '^x-robots-tag:' headers.txt; then echo "$page has X-Robots-Tag"; exit 1; fi
+          done
+          font=$(grep -o '/fonts/recursive-text\.[0-9a-f]*\.woff2' site/about/index.html | head -1)
+          curl -sfI --retry 5 --retry-all-errors "$URL$font" | grep -qi '^cache-control:.*immutable'

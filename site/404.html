@@ -8,33 +8,33 @@
 <link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="preload" href="/fonts/recursive-sans.4b801a95.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/recursive-text.86bc049c.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face {
-  font-family: "Recursive Sans";
-  src: url("/fonts/recursive-sans.4b801a95.woff2") format("woff2");
+  font-family: "Recursive Text";
+  src: url("/fonts/recursive-text.86bc049c.woff2") format("woff2");
   font-weight: 400 700;
   font-display: swap;
 }
 /* Dark is the default, as in the font maker, whatever the computer's theme. The light tokens
-   answer the font maker's Theme pick (data-theme="light") once it runs on this address. */
+   answer the font maker's Theme pick (data-theme="light"). */
 :root {
   color-scheme: dark;
-  --paper: #1A1A18;
-  --surface: #232320;
-  --line: #34332F;
-  --line-strong: #7D7B74;
-  --ink: #ECEAE4;
-  --ink-muted: #A6A49D;
+  --paper: #1A1A1A;
+  --surface: #232323;
+  --line: #333333;
+  --line-strong: #7B7B7B;
+  --ink: #EAEAEA;
+  --ink-muted: #A4A4A4;
 }
 :root[data-theme="light"] {
   color-scheme: light;
-  --paper: #FAFAF7;
-  --surface: #EFEEE9;
-  --line: #E2E0DA;
-  --line-strong: #82807A;
+  --paper: #FAFAFA;
+  --surface: #EEEEEE;
+  --line: #E0E0E0;
+  --line-strong: #808080;
   --ink: #161616;
-  --ink-muted: #5E5D58;
+  --ink-muted: #5D5D5D;
 }
 /* Scrollbars as in the font maker: a thin bar with a 1 px corner, no arrows. */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
@@ -50,7 +50,7 @@ body {
   flex-direction: column;
   background: var(--paper);
   color: var(--ink);
-  font-family: "Recursive Sans", system-ui, sans-serif;
+  font-family: "Recursive Text", system-ui, sans-serif;
   font-size: 14px;
   line-height: 20px;
 }

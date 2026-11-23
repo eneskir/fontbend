@@ -21,13 +21,6 @@ jobs:
       - name: Secret scan
         run: python3 tools/secret_scan.py
 
-      # site/ alone is what fontbend.com serves; site/ with preview/ on top is what the
-      # preview address serves. Both must hold.
-      - name: Cache-safe file names
-        run: |
-          python3 tools/check_site_cache.py site
-          python3 tools/check_site_cache.py site preview
-
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "24"
@@ -44,6 +37,12 @@ jobs:
           npm run check
           npm test
           npm run build
+
+      # fontbend.com serves the built app with site/ on top, as the deploy puts them together.
+      - name: Cache-safe file names, links and the assembled site
+        run: |
+          python3 tools/check_site_cache.py dist site
+          python3 tools/assemble_site.py "$RUNNER_TEMP/site"
 
       # The title is passed through the environment, never pasted into the command,
       # so a crafted title cannot change what runs.

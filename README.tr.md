@@ -4,11 +4,11 @@
 
 Tarayıcıda çalışan, Türkçe ve İngilizce, ücretsiz ve açık kaynaklı bir font yapıcı. Katalogdan bir font seç, sürgülerle biçim ver, hangi dilleri desteklediğine bak ve lisansıyla birlikte indir.
 
-Fontbend geliştirme aşamasında. İlk sürüme kadar [fontbend.com](https://fontbend.com) bir bekleme sayfası gösteriyor.
+Fontbend [fontbend.com](https://fontbend.com) adresinde çalışıyor.
 
 ## Yapay zekâ ajanları ve diğer araçlar için
 
-Uygulama yayımlandığında adresinin kökünde iki dosya sunar: `/llms.txt` ve `/catalog.json`. İkisi de her derlemede depodaki `app/src/catalog.json`'dan üretilir.
+fontbend.com kökünde iki dosya sunar: `/llms.txt` ve `/catalog.json`. İkisi de her derlemede depodaki `app/src/catalog.json`'dan üretilir.
 
 - `llms.txt`: Fontbend'in ne olduğu, her fontun hangi işe yaradığı, eksenleri ve denemek için bir ayar bağlantısı.
 - `catalog.json`: her font ve eksenleri, `schemaVersion` 1. Alanları [README.md](README.md) dosyasında anlatılıyor (İngilizce).

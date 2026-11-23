@@ -1,5 +1,5 @@
 import { breakPast, isBeyond, reach, type Axis } from "../core/axis";
-import { formatDelta, formatValue, stepFor } from "../core/sliders";
+import { formatDelta, formatValue, stepFor, typedValue } from "../core/sliders";
 import { t, withUnit } from "../i18n";
 import { h } from "./dom";
 
@@ -14,6 +14,7 @@ let next = 0;
  * further than the font was drawn. The hollow marker shows the original value once the value
  * moves away from it. A short red mark crosses the ruler where some letters start to break.
  * `unit` follows every number shown ("%", "°"); a big slider is one of the three at the top.
+ * The number can be typed: Enter or leaving it applies, Escape takes it back.
  */
 export function slider(opts: { label: string; tag?: string; axis: Axis; unit?: string; big?: boolean; showRange?: boolean; onInput: (value: number) => void }): Slider {
   const { axis } = opts;
@@ -27,7 +28,22 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; unit?: s
 
   const delta = h("span", { class: "slider-delta" });
   const zone = h("span", { class: "slider-zone" }, t("slider.experiment"));
-  const value = h("span", { class: "slider-value" });
+  const typed = h("input", {
+    class: "slider-number", type: "text", inputmode: "decimal", enterkeyhint: "done", autocomplete: "off", spellcheck: "false",
+    "aria-label": t("slider.typed", { name: opts.label }),
+    onfocus: () => typed.select(),
+    onchange: () => apply(),
+    onblur: () => show(),
+    onkeydown: (e) => {
+      const key = (e as KeyboardEvent).key;
+      if (key === "Enter") { apply(); typed.select(); }
+      if (key === "Escape") { show(); typed.select(); }
+    },
+  });
+  // The unit sits where the language writes it: Turkish puts the percent sign first.
+  const [before, after] = withUnit("0", unit).split("0") as [string, string];
+  const unitText = (text: string) => (text ? [h("span", { "aria-hidden": "true" }, text)] : []);
+  const value = h("label", { class: "slider-value" }, ...unitText(before), typed, ...unitText(after));
   const input = h("input", {
     id, type: "range", "aria-labelledby": `${id}-name`, min: lo, max: hi, step, value: axis.default,
     oninput: () => opts.onInput(input.valueAsNumber),
@@ -46,21 +62,37 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; unit?: s
   track.style.setProperty("--own-min", at(axis.min));
   track.style.setProperty("--own-max", at(axis.max));
 
-  const head = h("label", { class: "slider-head", for: id },
-    h("span", { class: "slider-label", id: `${id}-name` }, opts.label, ...(opts.tag ? [" ", h("span", { class: "slider-tag" }, opts.tag)] : [])),
-    delta, zone, value);
+  const head = h("div", { class: "slider-head" },
+    h("label", { class: "slider-name", for: id },
+      h("span", { class: "slider-label", id: `${id}-name` }, opts.label, ...(opts.tag ? [" ", h("span", { class: "slider-tag" }, opts.tag)] : [])),
+      delta, zone),
+    value);
   const el = h("div", { class: opts.big ? "slider is-big" : "slider" }, head, track,
     ...(opts.showRange ? [h("div", { class: "slider-range", "aria-hidden": "true" }, h("span", {}, withUnit(formatValue(lo, step), unit)), h("span", {}, withUnit(formatValue(hi, step), unit)))] : []));
 
+  let current = axis.default;
+  // The number as the slider holds it, unless it is being typed.
+  function show() {
+    typed.value = formatValue(current, step);
+    typed.style.setProperty("--chars", String(typed.value.length));
+  }
+  function apply() {
+    const v = typedValue(typed.value, lo, hi, step);
+    if (v !== null && v !== current) opts.onInput(v);
+    show();
+  }
+
   function set(v: number) {
     const changed = v !== axis.default, beyond = isBeyond(axis, v);
+    current = v;
     if (input.valueAsNumber !== v) input.value = String(v);
     track.style.setProperty("--at", at(v));
     el.classList.toggle("is-changed", changed);
     el.classList.toggle("is-beyond", beyond);
-    value.textContent = withUnit(formatValue(v, step), unit);
+    if (document.activeElement !== typed) show();
+    const shown = withUnit(formatValue(v, step), unit);
     delta.textContent = changed ? withUnit(formatDelta(v, axis.default, step), unit) : "";
-    const where = changed ? t("slider.changed", { value: value.textContent, delta: delta.textContent }) : t("slider.original", { value: value.textContent });
+    const where = changed ? t("slider.changed", { value: shown, delta: delta.textContent }) : t("slider.original", { value: shown });
     input.setAttribute("aria-valuetext", breakPast(axis, v) !== null ? t("slider.pastBreaks", { where }) : beyond ? t("slider.past", { where }) : where);
   }
   set(axis.default);

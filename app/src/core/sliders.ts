@@ -43,10 +43,23 @@ export function stepFor(axis: Axis): number {
   return span <= 2 ? 0.01 : span <= 20 ? 0.1 : 1;
 }
 
+const decimalsFor = (step: number) => (step >= 1 ? 0 : step >= 0.1 ? 1 : 2);
+
 /** A value as the slider shows it: no more decimals than the step has, no trailing zeros. */
 export function formatValue(value: number, step: number): string {
-  const decimals = step >= 1 ? 0 : step >= 0.1 ? 1 : 2;
+  const decimals = decimalsFor(step);
   return num(Number(value.toFixed(decimals)) + 0, decimals); // + 0: no −0
+}
+
+/**
+ * A number typed into a slider, on its step grid and inside its ends; null when it isn't a number.
+ * Either decimal mark reads ("1,5" is 1.5), and a unit or spaces are left out.
+ */
+export function typedValue(text: string, lo: number, hi: number, step: number): number | null {
+  const plain = text.replace(/[\s%°]/g, "").replace(/[−–]/g, "-").replace(",", ".");
+  if (!/^[+-]?(\d+\.?\d*|\.\d+)$/.test(plain)) return null;
+  const v = Math.min(hi, Math.max(lo, Math.round(Number(plain) / step) * step));
+  return Number(v.toFixed(decimalsFor(step))) + 0;
 }
 
 /** How far a value is from the original, with its sign: "+300", "-25". */

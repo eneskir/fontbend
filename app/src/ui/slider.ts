@@ -1,5 +1,6 @@
 import { breakPast, isBeyond, reach, type Axis } from "../core/axis";
 import { formatDelta, formatValue, stepFor } from "../core/sliders";
+import { t, withUnit } from "../i18n";
 import { h } from "./dom";
 
 export type Slider = { readonly el: HTMLElement; set(value: number): void };
@@ -25,7 +26,7 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; unit?: s
   const at = (v: number) => String((v - lo) / (hi - lo));
 
   const delta = h("span", { class: "slider-delta" });
-  const zone = h("span", { class: "slider-zone" }, "Experiment");
+  const zone = h("span", { class: "slider-zone" }, t("slider.experiment"));
   const value = h("span", { class: "slider-value" });
   const input = h("input", {
     id, type: "range", "aria-labelledby": `${id}-name`, min: lo, max: hi, step, value: axis.default,
@@ -49,7 +50,7 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; unit?: s
     h("span", { class: "slider-label", id: `${id}-name` }, opts.label, ...(opts.tag ? [" ", h("span", { class: "slider-tag" }, opts.tag)] : [])),
     delta, zone, value);
   const el = h("div", { class: opts.big ? "slider is-big" : "slider" }, head, track,
-    ...(opts.showRange ? [h("div", { class: "slider-range", "aria-hidden": "true" }, h("span", {}, formatValue(lo, step) + unit), h("span", {}, formatValue(hi, step) + unit))] : []));
+    ...(opts.showRange ? [h("div", { class: "slider-range", "aria-hidden": "true" }, h("span", {}, withUnit(formatValue(lo, step), unit)), h("span", {}, withUnit(formatValue(hi, step), unit)))] : []));
 
   function set(v: number) {
     const changed = v !== axis.default, beyond = isBeyond(axis, v);
@@ -57,11 +58,10 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; unit?: s
     track.style.setProperty("--at", at(v));
     el.classList.toggle("is-changed", changed);
     el.classList.toggle("is-beyond", beyond);
-    value.textContent = formatValue(v, step) + unit;
-    delta.textContent = changed ? formatDelta(v, axis.default, step) + unit : "";
-    const where = changed ? `${value.textContent}, ${delta.textContent} from the original` : `${value.textContent}, the original`;
-    const past = breakPast(axis, v) !== null ? ", past the font's own range, some letters break" : beyond ? ", past the font's own range" : "";
-    input.setAttribute("aria-valuetext", where + past);
+    value.textContent = withUnit(formatValue(v, step), unit);
+    delta.textContent = changed ? withUnit(formatDelta(v, axis.default, step), unit) : "";
+    const where = changed ? t("slider.changed", { value: value.textContent, delta: delta.textContent }) : t("slider.original", { value: value.textContent });
+    input.setAttribute("aria-valuetext", breakPast(axis, v) !== null ? t("slider.pastBreaks", { where }) : beyond ? t("slider.past", { where }) : where);
   }
   set(axis.default);
   return { el, set };

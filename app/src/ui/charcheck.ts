@@ -6,11 +6,13 @@ import { readNotdef, type Notdef } from "../core/notdef";
 import { readTables, view } from "../core/sfnt";
 import type { Subset } from "../core/subsets";
 import type { Store } from "../store";
+import { t, type Key } from "../i18n";
 import { h } from "./dom";
 import { previewFamily, stretchedFamily } from "./faces";
 
 export const subsetLabel = (subset: Subset, glyphs: number) =>
-  subset === "all" ? `All ${glyphs} glyphs` : subset === "western" ? "Western European" : "Basic Latin";
+  subset === "all" ? t("check.all", { n: glyphs }) : t(subset === "western" ? "check.western" : "check.basic");
+const groupName = (name: string) => t(`group.${name}` as Key);
 
 type Result = { chars: Set<number>; groups: GroupResult[]; glyphs: number; notdef: Notdef | null } | { error: string };
 
@@ -23,7 +25,7 @@ function inspect(ttf: Uint8Array, fileName: string): Result {
     const chars = codePoints(cmap);
     return { chars, groups: checkCharacters(chars), glyphs: view(tables.get("maxp")!).getUint16(4), notdef: readNotdef(ttf) };
   } catch {
-    return { error: `${fileName} has no character map, so its letters can't be checked.` };
+    return { error: t("check.noCmap", { file: fileName }) };
   }
 }
 
@@ -55,25 +57,25 @@ function box(n: Notdef | null): Element {
 export function characterCheck(store: Store, back: () => void) {
   const sample = h("p", { class: "check-sample" });
   const count = h("p", { class: "meta" });
-  const details = h("button", { class: "text-button", type: "button" }, "Details");
+  const details = h("button", { class: "text-button", type: "button" }, t("check.details"));
   const row = h("div", { class: "download-field" },
-    h("div", { class: "field-head" }, h("p", { class: "meta" }, "Character check"), details),
+    h("div", { class: "field-head" }, h("p", { class: "meta" }, t("check.title")), details),
     sample, count);
 
-  const backButton = h("button", { class: "back-button", type: "button", onclick: back }, "Download");
+  const backButton = h("button", { class: "back-button", type: "button", onclick: back }, t("check.back"));
   const subtitle = h("p", { class: "meta" });
   const groups = h("ul", { class: "check-groups" });
   const turkish = h("p", { class: "check-sample" });
   const missing = h("p", { class: "meta" });
   const turkishPart = h("div", { class: "download-field" }, turkish, missing);
-  const note = h("p", { class: "meta" }, "Text in these languages will show in another font.");
-  const errorCode = h("p", { class: "meta notice-code" }, "Code FB-CHECK-01");
+  const note = h("p", { class: "meta" }, t("check.note"));
+  const errorCode = h("p", { class: "meta notice-code" }, t("common.code", { code: "FB-CHECK-01" }));
   const errorBody = h("p", { class: "meta" });
-  const notice = h("div", { class: "notice", role: "alert" }, h("p", { class: "label notice-title" }, "Couldn't check the letters"), errorBody, errorCode);
+  const notice = h("div", { class: "notice", role: "alert" }, h("p", { class: "label notice-title" }, t("check.failed")), errorBody, errorCode);
   const useAll = h("button", { class: "primary-button is-wide", type: "button", onclick: () => store.update((s) => setSubset(s, "all")) });
   const panel = h("div", { class: "check-view", hidden: true },
     backButton,
-    h("div", {}, h("h2", { class: "title" }, "Character check"), subtitle),
+    h("div", {}, h("h2", { class: "title" }, t("check.title")), subtitle),
     notice, groups, turkishPart, note, useAll);
 
   /** Letters in the preview's face, missing ones as this font's box. */
@@ -82,34 +84,34 @@ export function characterCheck(store: Store, back: () => void) {
     into.style.fontFamily = `"${stretchedFamily(s.font)}", "${previewFamily(s.font)}", sans-serif`;
     into.style.fontVariationSettings = drawnSettings(s);
     into.replaceChildren(...letters.map((l) => (r.chars.has(l.codePointAt(0)!) ? l : box(r.notdef))));
-    into.setAttribute("aria-label", letters.filter((l) => r.chars.has(l.codePointAt(0)!)).join(" ") || "none of the letters");
+    into.setAttribute("aria-label", letters.filter((l) => r.chars.has(l.codePointAt(0)!)).join(" ") || t("check.noLetters"));
   };
 
   /** Called with the made TTF once it is ready, or null while it is being made; `turkishFix` from core/turkish. */
   const update = (ttf: Uint8Array | null, fileName: string, turkishFix: boolean) => {
     const s = store.get();
-    subtitle.textContent = `Characters: ${subsetLabel(s.settings.subset, s.font.glyphs)}`;
+    subtitle.textContent = t("check.subtitle", { subset: subsetLabel(s.settings.subset, s.font.glyphs) });
     details.disabled = !ttf;
     if (!ttf) { sample.replaceChildren(); count.textContent = ""; return; }
     const r = inspect(ttf, fileName);
     const failed = "error" in r;
     notice.hidden = !failed;
     for (const el of [groups, turkishPart, note, useAll]) el.hidden = failed;
-    if (failed) { errorBody.textContent = r.error; sample.replaceChildren(); count.textContent = "Couldn't check the letters"; return; }
+    if (failed) { errorBody.textContent = r.error; sample.replaceChildren(); count.textContent = t("check.failed"); return; }
 
     draw(sample, SAMPLE, r);
-    count.textContent = `${r.glyphs} / ${s.font.glyphs} glyphs`;
+    count.textContent = t("check.count", { have: r.glyphs, total: s.font.glyphs });
     groups.replaceChildren(...r.groups.map((g) =>
-      h("li", {}, h("span", { class: "label" }, g.name), h("span", { class: g.have === g.total ? "check-count is-complete" : "check-count" }, `${g.have} of ${g.total}`),
-        ...(g.name === "Turkish" && turkishFix ? [h("p", { class: "meta check-note" }, "In Turkish text, f and i no longer join, so the i keeps its dot.")] : []))));
+      h("li", {}, h("span", { class: "label" }, groupName(g.name)), h("span", { class: g.have === g.total ? "check-count is-complete" : "check-count" }, t("check.groupCount", { have: g.have, total: g.total })),
+        ...(g.name === "Turkish" && turkishFix ? [h("p", { class: "meta check-note" }, t("check.turkishFix"))] : []))));
     const tr = r.groups.find((g) => g.name === "Turkish")!;
     turkishPart.hidden = tr.have === tr.total;
     draw(turkish, TURKISH, r);
-    missing.textContent = `Missing: ${tr.missing.join(" ")}`;
+    missing.textContent = t("check.missing", { letters: tr.missing.join(" ") });
     const none = r.groups.every((g) => g.have === 0);
     note.hidden = !r.groups.some((g) => g.have === 0);
     useAll.hidden = s.settings.subset === "all" || r.groups.every((g) => g.have === g.total);
-    useAll.textContent = none ? `Use all ${s.font.glyphs} glyphs` : "Add the missing letters";
+    useAll.textContent = none ? t("check.useAll", { n: s.font.glyphs }) : t("check.addMissing");
   };
 
   return { row, panel, details, backButton, update };

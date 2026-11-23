@@ -11,6 +11,7 @@ import type { Store } from "../store";
 import { h } from "./dom";
 import { loadPreview, previewFamily } from "./faces";
 import { allFonts } from "./opened";
+import { currentLang, t } from "../i18n";
 
 const KEY = "fontbend.recent";
 // A slider sends dozens of values a second; the list is written once it rests.
@@ -39,6 +40,9 @@ export type Recent = {
   openFor(sha256: string): boolean;
   /** The next change starts a new entry instead of updating the one being edited. */
   detach(): void;
+  /** The entry being edited, if any, and opening one by id; for the page to come back as it was after a reload. */
+  currentId(): string | null;
+  openId(id: string): boolean;
   count(): number;
 };
 
@@ -51,7 +55,7 @@ export function recent(store: Store, catalog: Catalog, browse: () => void, choos
   let entries: readonly RecentEntry[] = stored ?? [];
   let current: string | null = null, opening = false, saving = 0, shown = false;
 
-  const view = h("div", { class: "drawer recent", id: "drawer-recent", role: "tabpanel", "aria-label": "Recent", hidden: true });
+  const view = h("div", { class: "drawer recent", id: "drawer-recent", role: "tabpanel", "aria-label": t("drawer.recent"), hidden: true });
 
   const stateOf = (e: RecentEntry): EditorState | null => {
     const { state, opened } = openLink(allFonts(catalog), e.link);
@@ -101,8 +105,8 @@ export function recent(store: Store, catalog: Catalog, browse: () => void, choos
     if (theirs) { entries = mergeRecent(entries, theirs); render(); }
   });
 
-  const time = new Intl.DateTimeFormat(undefined, { hour: "2-digit", minute: "2-digit" });
-  const date = new Intl.DateTimeFormat(undefined, { day: "numeric", month: "short" });
+  const time = new Intl.DateTimeFormat(currentLang(), { hour: "2-digit", minute: "2-digit" });
+  const date = new Intl.DateTimeFormat(currentLang(), { day: "numeric", month: "short" });
 
   const item = (e: RecentEntry, s: EditorState) => {
     const sample = h("span", { class: "recent-sample", "aria-hidden": "true" }, "Ag");
@@ -116,39 +120,39 @@ export function recent(store: Store, catalog: Catalog, browse: () => void, choos
     loadPreview(s.font).then(() => sample.classList.add("is-ready"), () => {});
     return h("button", { class: "recent-item", type: "button", "aria-current": e.id === current ? "true" : undefined, onclick: () => open(e) },
       sample,
-      h("span", { class: "recent-meta" }, h("span", {}, e.name ?? s.font.family), h("span", { class: "recent-time" }, e.id === current ? "now" : time.format(e.at))));
+      h("span", { class: "recent-meta" }, h("span", {}, e.name ?? s.font.family), h("span", { class: "recent-time" }, e.id === current ? t("recent.now") : time.format(e.at))));
   };
 
   // A font file's entry whose file isn't open: the file was never kept, so the user chooses it again.
   const fileOf = (e: RecentEntry) => { const d = decodeSettings(e.link); return d.ok && d.settings.source.kind === "local" ? d.settings.source.sha256 : null; };
   const missing = (e: RecentEntry) => {
-    const file = e.file ?? "the font file";
+    const file = e.file ?? t("recent.theFile");
     return h("div", { class: "recent-missing" },
       h("p", { class: "label" }, e.name ?? file.replace(/\.[^.]+$/, "")),
-      h("p", { class: "recent-meta" }, h("span", {}, "File not found"), h("span", { class: "recent-time" }, time.format(e.at))),
-      h("p", { class: "meta" }, `Choose ${file} again to keep working on it.`),
-      h("button", { class: "text-button", type: "button", onclick: choose }, "Choose file"));
+      h("p", { class: "recent-meta" }, h("span", {}, t("recent.missing")), h("span", { class: "recent-time" }, time.format(e.at))),
+      h("p", { class: "meta" }, t("recent.chooseAgain", { file })),
+      h("button", { class: "text-button", type: "button", onclick: choose }, t("recent.chooseFile")));
   };
 
   function render() {
     if (!shown) return;
     if (!storage) {
-      view.replaceChildren(h("div", { class: "notice" }, h("p", { class: "label" }, "Recent is off"),
-        h("p", { class: "banner-body" }, "This browser doesn't let Fontbend keep anything, for example in a private window. The Copy link button still saves your settings in the link.")));
+      view.replaceChildren(h("div", { class: "notice" }, h("p", { class: "label" }, t("recent.off")),
+        h("p", { class: "banner-body" }, t("recent.offBody"))));
       return;
     }
     const listed = entries.flatMap((e): { e: RecentEntry; s: EditorState | null }[] => { const s = stateOf(e); return s || fileOf(e) ? [{ e, s }] : []; });
     if (listed.length === 0) {
-      view.replaceChildren(h("div", { class: "recent-empty" }, h("p", { class: "label" }, "No recent fonts yet"),
-        h("p", { class: "banner-body" }, "Fonts you change are listed here. Font files you open aren't copied, so choose them again to continue."),
-        h("button", { class: "text-button", type: "button", onclick: browse }, "Browse base fonts")));
+      view.replaceChildren(h("div", { class: "recent-empty" }, h("p", { class: "label" }, t("recent.empty")),
+        h("p", { class: "banner-body" }, t("recent.emptyBody")),
+        h("button", { class: "text-button", type: "button", onclick: browse }, t("recent.browse"))));
       return;
     }
     const states = new Map(listed.map(({ e, s }) => [e.id, s]));
     view.replaceChildren(
       ...byDay(listed.map(({ e }) => e), new Date(), (d) => date.format(d)).map((g) =>
         h("section", { class: "recent-day" }, h("h3", { class: "meta" }, g.label), ...g.entries.map((e) => { const s = states.get(e.id); return s ? item(e, s) : missing(e); }))),
-      h("p", { class: "meta recent-note" }, "Recent fonts are kept in this browser's storage. Clearing the site's data removes them."));
+      h("p", { class: "meta recent-note" }, t("recent.note")));
   }
 
   return {
@@ -157,6 +161,8 @@ export function recent(store: Store, catalog: Catalog, browse: () => void, choos
     openLatest() { const e = entries.find((x) => stateOf(x)); if (e) open(e); return e !== undefined; },
     openFor(sha256) { const e = entries.find((x) => fileOf(x) === sha256 && stateOf(x)); if (e) open(e); return e !== undefined; },
     detach() { current = null; },
+    currentId: () => current,
+    openId(id) { const e = entries.find((x) => x.id === id); if (e && stateOf(e)) { open(e); return true; } return false; },
     count: () => entries.length,
   };
 }

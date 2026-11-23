@@ -1,4 +1,5 @@
 /** The drawer's views, picked by tabs on its top bar (design: Fonts, Recent, Open). */
+import { t } from "../i18n";
 import { h } from "./dom";
 
 export type DrawerView = {
@@ -21,7 +22,7 @@ export function drawerTabs(views: readonly DrawerView[]): { readonly bar: HTMLEl
     if (on) v.shown?.();
   });
   // Arrow keys move between tabs, as in any tab list.
-  const bar = h("div", { class: "drawer-tabs", role: "tablist", "aria-label": "Drawer", onkeydown: (e) => {
+  const bar = h("div", { class: "drawer-tabs", role: "tablist", "aria-label": t("drawer.tabs"), onkeydown: (e) => {
     const key = (e as KeyboardEvent).key, i = tabs.indexOf(document.activeElement as HTMLButtonElement);
     if (i < 0 || (key !== "ArrowRight" && key !== "ArrowLeft")) return;
     const next = (i + (key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length;

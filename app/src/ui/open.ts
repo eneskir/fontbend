@@ -5,18 +5,19 @@
  */
 import type { Catalog, CatalogFont } from "../core/catalog";
 import { OPEN_MAX, type OpenProblem } from "../core/open";
+import { num, t } from "../i18n";
 import { h } from "./dom";
 import { addFont, readFile, type ReadFile } from "./opened";
 
-const MB = (n: number) => `${Math.round(n / 1024 / 1024)} MB`;
+const MB = (n: number) => t("unit.mb", { n: Math.round(n / 1024 / 1024) });
 
 /** What the notice says for each file Fontbend can't open, and its code where it is an error. */
 function explain(problem: OpenProblem, name: string): { title: string; body: string; code: string | null } {
   switch (problem.kind) {
-    case "too-big": return { title: `${name} is ${MB(problem.bytes)}`, body: `Fontbend opens fonts up to ${MB(OPEN_MAX)}. Most font sites also offer a smaller, Latin-only file.`, code: "FB-OPEN-03" };
-    case "broken": return { title: `Can't read ${name}`, body: "It may be damaged or partly downloaded. Download it again.", code: "FB-OPEN-02" };
-    case "not-variable": return { title: `${name} has no axes`, body: "Fontbend changes variable fonts, whose weight or width can move. Their files often have “Variable” or “[wght]” in the name.", code: null };
-    case "outlines": return { title: `${name} uses PostScript outlines`, body: "Fontbend changes fonts with TrueType outlines. The same font is often offered as a TTF too.", code: "FB-OPEN-04" };
+    case "too-big": return { title: t("open.tooBig", { file: name, size: MB(problem.bytes) }), body: t("open.tooBigBody", { max: MB(OPEN_MAX) }), code: "FB-OPEN-03" };
+    case "broken": return { title: t("open.broken", { file: name }), body: t("open.brokenBody"), code: "FB-OPEN-02" };
+    case "not-variable": return { title: t("open.noAxes", { file: name }), body: t("open.noAxesBody"), code: null };
+    case "outlines": return { title: t("open.outlines", { file: name }), body: t("open.outlinesBody"), code: "FB-OPEN-04" };
   }
 }
 
@@ -26,36 +27,36 @@ function explain(problem: OpenProblem, name: string): { title: string; body: str
  */
 export function openView(catalog: Catalog, opened: (font: CatalogFont) => void, show: () => void) {
   const input = h("input", { type: "file", accept: ".ttf,.otf,.woff,.woff2", hidden: true });
-  const view = h("div", { class: "drawer open-view", id: "drawer-open", role: "tabpanel", "aria-label": "Open", hidden: true });
+  const view = h("div", { class: "drawer open-view", id: "drawer-open", role: "tabpanel", "aria-label": t("drawer.open"), hidden: true });
   const choose = () => { input.value = ""; input.click(); };
   const chooseButton = (label: string, primary: boolean) =>
     h("button", { class: primary ? "primary-button is-wide" : "text-button", type: "button", onclick: choose }, label);
   const fileRow = (name: string, ...rest: Node[]) => h("p", { class: "open-file" }, h("span", { class: "file-name" }, name), ...rest);
 
   const idle = () => view.replaceChildren(
-    h("p", {}, `TTF, OTF, WOFF or WOFF2, up to ${MB(OPEN_MAX)}.`),
-    chooseButton("Choose a font file", true),
-    h("p", { class: "meta" }, "Or drop the file on the canvas."),
+    h("p", {}, t("open.formats", { size: MB(OPEN_MAX) })),
+    chooseButton(t("open.choose"), true),
+    h("p", { class: "meta" }, t("open.orDrop")),
     h("hr", { class: "rule" }),
-    h("p", { class: "meta" }, "Open only fonts you're allowed to change, like those from Google Fonts. The file stays on your computer."));
+    h("p", { class: "meta" }, t("open.allowedOnly")));
 
   const failed = (problem: OpenProblem, name: string) => {
     const { title, body, code } = explain(problem, name);
     view.replaceChildren(fileRow(name),
       h("div", { class: "notice", role: "alert" }, h("p", { class: code ? "label notice-title" : "label" }, title), h("p", { class: "meta" }, body),
-        ...(code ? [h("p", { class: "meta notice-code" }, `Code ${code}`)] : [])),
-      chooseButton("Choose another file", true));
+        ...(code ? [h("p", { class: "meta notice-code" }, t("common.code", { code }))] : [])),
+      chooseButton(t("open.chooseAnother"), true));
   };
 
   // Fontbend can't tell the license: the user says they may change the font before it opens.
   const ask = (read: Extract<ReadFile, { ok: true }>) => {
     const allowed = h("input", { type: "checkbox", class: "check", onchange: () => { open.disabled = !allowed.checked; } });
-    const open = h("button", { class: "primary-button is-wide", type: "button", disabled: true, onclick: () => finish(read) }, "Open");
+    const open = h("button", { class: "primary-button is-wide", type: "button", disabled: true, onclick: () => finish(read) }, t("open.open"));
     view.replaceChildren(fileRow(read.fileName),
-      h("div", { class: "open-question" }, h("p", { class: "label" }, "Can you change this font?"),
-        h("p", { class: "meta" }, `${read.fileName} doesn't say which license it has. Continue only if you're allowed to change it.`)),
-      h("label", { class: "open-allowed" }, allowed, "I'm allowed to change it"),
-      open, chooseButton("Choose another file", false));
+      h("div", { class: "open-question" }, h("p", { class: "label" }, t("open.question")),
+        h("p", { class: "meta" }, t("open.questionBody", { file: read.fileName }))),
+      h("label", { class: "open-allowed" }, allowed, t("open.allowed")),
+      open, chooseButton(t("open.chooseAnother"), false));
   };
 
   const finish = (read: Extract<ReadFile, { ok: true }>) => {
@@ -67,7 +68,7 @@ export function openView(catalog: Catalog, opened: (font: CatalogFont) => void, 
   const openFile = async (file: File) => {
     const id = ++job;
     show();
-    view.replaceChildren(fileRow(file.name), h("p", { class: "meta", role: "status" }, "Reading the font tables"));
+    view.replaceChildren(fileRow(file.name), h("p", { class: "meta", role: "status" }, t("open.reading")));
     const read = await readFile(file);
     if (id !== job) return;
     if (!read.ok) failed(read.problem, read.fileName);
@@ -86,6 +87,7 @@ export function openView(catalog: Catalog, opened: (font: CatalogFont) => void, 
 export function dropFiles(target: HTMLElement, onFile: (file: File) => void): void {
   const hasFile = (e: DragEvent) => e.dataTransfer?.types.includes("Files") ?? false;
   let depth = 0;
+  target.dataset.drop = t("open.drop");
   target.addEventListener("dragenter", (e) => { if (!hasFile(e)) return; e.preventDefault(); depth++; target.classList.add("is-dropping"); });
   target.addEventListener("dragover", (e) => { if (hasFile(e)) { e.preventDefault(); e.dataTransfer!.dropEffect = "copy"; } });
   target.addEventListener("dragleave", () => { if (--depth <= 0) { depth = 0; target.classList.remove("is-dropping"); } });

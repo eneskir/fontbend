@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { useLang } from "../i18n";
 import { fraunces, inter, recursive } from "./fixtures";
 import { stretchFont } from "./stretch";
 import { resultSentence, stemWidth } from "./summary";
@@ -33,5 +34,13 @@ describe("result sentence", () => {
     expect(resultSentence(1.004, 0.6)).toBe("Strokes 40% thinner than the original.");
     expect(resultSentence(1, null)).toBe("Same width and strokes as the original.");
     expect(resultSentence(0.82, 0.003)).toBe("Overall 18% narrower, strokes 99% thinner than the original.");
+  });
+
+  it("says it in Turkish as the Turkish design does: decimal comma, percent sign first", () => {
+    useLang("tr");
+    try {
+      expect(resultSentence(0.95, 1.7)).toBe("Asıl fonttan toplamda %5 dar, çizgileri 1,7 kat kalın.");
+      expect(resultSentence(1.004, 0.6)).toBe("Asıl fonttan çizgileri %40 ince.");
+    } finally { useLang("en"); }
   });
 });

@@ -2,10 +2,12 @@
  * Fontbend opens dark. The Theme menu at the foot of the drawer picks Match system, Light or Dark;
  * the pick is remembered on this device only.
  */
+import { t, type Key } from "../i18n";
 import { h } from "./dom";
+import { footMenu } from "./menu";
 
 export type Theme = "dark" | "light" | "system";
-const THEMES: readonly [Theme, string][] = [["system", "Match system"], ["light", "Light"], ["dark", "Dark"]];
+const THEMES: readonly [Theme, Key][] = [["system", "theme.system"], ["light", "theme.light"], ["dark", "theme.dark"]];
 const KEY = "fontbend.theme";
 const lightSystem = window.matchMedia("(prefers-color-scheme: light)");
 
@@ -39,20 +41,7 @@ export function themeMenu(): HTMLElement {
   const options = THEMES.map(([value, label]) =>
     h("label", { class: "menu-option" },
       h("input", { type: "radio", name: "theme", value, checked: value === theme, onchange: () => choose(value) }),
-      label));
-  const menu = h("div", { class: "menu", id: "theme-menu", popover: "auto", role: "dialog", "aria-label": "Theme" },
-    h("fieldset", { class: "menu-options" }, h("legend", { class: "meta" }, "Theme"), ...options));
-  const button = h("button", { class: "foot-button", type: "button", popovertarget: "theme-menu", "aria-haspopup": "dialog", "aria-expanded": "false" },
-    h("span", { class: "icon icon-theme", "aria-hidden": "true" }), "Theme");
-
-  // The menu opens above the button, its left edge on the button's.
-  menu.addEventListener("beforetoggle", (e) => {
-    if ((e as ToggleEvent).newState !== "open") return;
-    const r = button.getBoundingClientRect();
-    menu.style.left = `${r.left}px`;
-    menu.style.bottom = `${window.innerHeight - r.top + 4}px`;
-  });
-  menu.addEventListener("toggle", (e) => button.setAttribute("aria-expanded", String((e as ToggleEvent).newState === "open")));
-
-  return h("div", { class: "drawer-foot" }, button, menu);
+      t(label)));
+  return footMenu("theme-menu", t("theme.title"), [h("span", { class: "icon icon-theme", "aria-hidden": "true" }), t("theme.title")],
+    [h("fieldset", { class: "menu-options" }, h("legend", { class: "meta" }, t("theme.title")), ...options)]);
 }

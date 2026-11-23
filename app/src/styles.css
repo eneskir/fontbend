@@ -98,6 +98,12 @@ ul { list-style: none; }
 .menu-option::before { content: ""; flex: none; width: 16px; height: 16px; }
 .menu-option:has(:checked)::before { background: var(--ink); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
 .menu-option:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: -2px; }
+/* Language menu: each language in its own name, its code at the right; then a link to suggest a translation. */
+.foot-item { display: contents; }
+.foot-code { flex: none; width: 16px; font-family: var(--mono); font-size: 11px; line-height: 16px; text-align: center; font-weight: 600; }
+.menu-name { flex: 1; }
+.menu-code { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); font-variation-settings: normal; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .field { height: 32px; width: 100%; padding: 0 8px; background: var(--paper); border: 0; border-radius: 2px; } /* told apart from the drawer by tone, no border (design) */
 .field::placeholder { color: var(--ink-muted); }
 .font-groups { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
@@ -128,7 +134,7 @@ ul { list-style: none; }
 .empty .label { color: var(--ink); }
 /* While a file is dragged over the canvas (design: drop target). */
 .canvas { position: relative; }
-.canvas.is-dropping::after { content: "Drop to open"; position: absolute; inset: 16px; z-index: 2; display: flex; align-items: center; justify-content: center; background: var(--paper); border: 2px solid var(--ink); font-size: 14px; line-height: 20px; font-weight: 500; pointer-events: none; }
+.canvas.is-dropping::after { content: attr(data-drop); position: absolute; inset: 16px; z-index: 2; display: flex; align-items: center; justify-content: center; background: var(--paper); border: 2px solid var(--ink); font-size: 14px; line-height: 20px; font-weight: 500; pointer-events: none; }
 /* Recent: each font's "Ag" in its own settings, its name and when it last changed. */
 .recent { gap: 16px; }
 .recent-day { display: flex; flex-direction: column; gap: 4px; }

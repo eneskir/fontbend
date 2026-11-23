@@ -9,7 +9,7 @@ const font = (id: string) => fonts.find((f) => f.id === id)!;
 
 describe("big sliders", () => {
   it("are Weight, Width and Slant on every catalog font", () => {
-    for (const f of fonts) expect(bigSliders(f).map((s) => s.label), f.id).toEqual(["Weight", "Width", "Slant"]);
+    for (const f of fonts) expect(bigSliders(f).map((s) => axisLabel(s.tag)), f.id).toEqual(["Weight", "Width", "Slant"]);
   });
 
   it("use the font's own Width and Slant where it has them, and added ones elsewhere", () => {

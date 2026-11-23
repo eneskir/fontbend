@@ -13,7 +13,9 @@ import { dropFiles, openView } from "./ui/open";
 import { preview } from "./ui/preview";
 import { recent } from "./ui/recent";
 import { copyLinkButton, sharedLinks } from "./ui/share";
+import { carryOver, languageMenu } from "./ui/language";
 import { themeMenu } from "./ui/theme";
+import { t } from "./i18n";
 import { wear } from "./ui/wear";
 
 const catalog = parseCatalog(data);
@@ -25,8 +27,9 @@ const opener = openView(catalog, (font) => {
   if (!recentFonts.openFor(font.local!.sha256)) store.update((s) => selectFont(s, font));
 }, () => tabs.select("open"));
 const links = sharedLinks(store, catalog, recentFonts);
-// A shared link wins, else the latest Recent font comes back; both before anything is drawn, so no font is fetched for nothing.
-if (!links.open()) recentFonts.openLatest();
+// A shared link wins, then the page as it was before a language change, else the latest Recent
+// font comes back; all before anything is drawn, so no font is fetched for nothing.
+if (!links.open() && !carryOver(store, catalog, recentFonts)) recentFonts.openLatest();
 
 const docName = h("h1", { class: "doc-name" });
 // The same name the Download panel writes into the font.
@@ -37,9 +40,9 @@ const dl = download(store);
 
 const fonts = fontList(store, catalog, () => opener.choose());
 const tabs = drawerTabs([
-  { id: "fonts", label: "Fonts", icon: h("span", { class: "icon-text", "aria-hidden": "true" }, "Aa"), panel: fonts },
-  { id: "recent", label: "Recent", icon: h("span", { class: "icon icon-recent", "aria-hidden": "true" }), panel: recentFonts.view, shown: recentFonts.render },
-  { id: "open", label: "Open", icon: h("span", { class: "icon icon-open", "aria-hidden": "true" }), panel: opener.view },
+  { id: "fonts", label: t("drawer.fonts"), icon: h("span", { class: "icon-text", "aria-hidden": "true" }, "Aa"), panel: fonts },
+  { id: "recent", label: t("drawer.recent"), icon: h("span", { class: "icon icon-recent", "aria-hidden": "true" }), panel: recentFonts.view, shown: recentFonts.render },
+  { id: "open", label: t("drawer.open"), icon: h("span", { class: "icon icon-open", "aria-hidden": "true" }), panel: opener.view },
 ]);
 
 const canvas = preview(store, links.banner);
@@ -49,6 +52,6 @@ const app = document.getElementById("app")!;
 wear(store, app, docName);
 app.replaceChildren(
   h("header", { class: "app-bar" }, docName, h("span", { class: "bar-end" }, copyLinkButton(store), dl.button)),
-  h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, tabs.bar, fonts, recentFonts.view, opener.view, themeMenu()), canvas, adjustPanel(store)),
+  h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, tabs.bar, fonts, recentFonts.view, opener.view, h("div", { class: "drawer-foot" }, themeMenu(), languageMenu(store, recentFonts))), canvas, adjustPanel(store)),
   dl.panel,
 );

@@ -15,6 +15,7 @@ import { recent } from "./ui/recent";
 import { copyLinkButton, sharedLinks } from "./ui/share";
 import { carryOver, languageMenu } from "./ui/language";
 import { themeMenu } from "./ui/theme";
+import { helpMenu } from "./ui/help";
 import { t } from "./i18n";
 import { wear } from "./ui/wear";
 
@@ -52,6 +53,6 @@ const app = document.getElementById("app")!;
 wear(store, app, docName);
 app.replaceChildren(
   h("header", { class: "app-bar" }, docName, h("span", { class: "bar-end" }, copyLinkButton(store), dl.button)),
-  h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, tabs.bar, fonts, recentFonts.view, opener.view, h("div", { class: "drawer-foot" }, themeMenu(), languageMenu(store, recentFonts))), canvas, adjustPanel(store)),
+  h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, tabs.bar, fonts, recentFonts.view, opener.view, h("div", { class: "drawer-foot" }, helpMenu(), themeMenu(), languageMenu(store, recentFonts))), canvas, adjustPanel(store)),
   dl.panel,
 );

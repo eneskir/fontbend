@@ -26,6 +26,9 @@
   "category.mono": "Monospace",
   "category.handwriting": "Handwriting",
 
+  "help.title": "Help",
+  "help.report": "Report a problem",
+  "help.about": "About and licenses",
   "theme.title": "Theme",
   "theme.system": "Match system",
   "theme.light": "Light",

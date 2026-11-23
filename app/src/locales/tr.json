@@ -26,6 +26,9 @@
   "category.mono": "Eş aralıklı",
   "category.handwriting": "El yazısı",
 
+  "help.title": "Yardım",
+  "help.report": "Sorun bildir",
+  "help.about": "Hakkında ve lisanslar",
   "theme.title": "Tema",
   "theme.system": "Sisteme uy",
   "theme.light": "Açık",

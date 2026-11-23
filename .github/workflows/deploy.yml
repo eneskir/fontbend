@@ -50,8 +50,9 @@ jobs:
           wranglerVersion: "4.162.0"
           command: pages deploy ${{ runner.temp }}/site --project-name=fontbend --branch=main --commit-hash=${{ github.sha }}
 
-      # Every page carries the app's security policies; the site is open to search engines;
-      # a named font is kept for a year.
+      # Every page carries the app's security policies; fontbend.com is open to search engines
+      # (Cloudflare adds noindex to the deployment's own pages.dev address, never to the
+      # domain); a named font is kept for a year.
       - name: Check the site's headers
         env:
           URL: ${{ steps.deploy.outputs.deployment-url }}
@@ -60,7 +61,8 @@ jobs:
             curl -sfI --retry 5 --retry-all-errors "$URL$page" > headers.txt
             grep -qi '^content-security-policy:' headers.txt
             grep -qi '^cross-origin-opener-policy: same-origin' headers.txt
-            if grep -qi '^x-robots-tag:' headers.txt; then echo "$page has X-Robots-Tag"; exit 1; fi
+            curl -sfI --retry 5 --retry-all-errors "https://fontbend.com$page" > live.txt
+            if grep -qi '^x-robots-tag:' live.txt; then echo "fontbend.com$page has X-Robots-Tag"; exit 1; fi
           done
           font=$(grep -o '/fonts/recursive-text\.[0-9a-f]*\.woff2' site/about/index.html | head -1)
           curl -sfI --retry 5 --retry-all-errors "$URL$font" | grep -qi '^cache-control:.*immutable'

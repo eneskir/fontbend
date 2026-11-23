@@ -1,10 +1,12 @@
 # Read by Cloudflare Pages from the root of dist/, rules in order. A font file the user opens is
 # read through a blob: address on this page, so fonts and fetches allow blob:; the font builder is
-# WebAssembly; the interface's small icons are SVG data: images in styles.css.
+# WebAssembly; the interface's small icons are SVG data: images in styles.css. A page that opened the
+# app keeps no handle to its window, so it cannot keep sending shared links into it.
 /*
   Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self' blob:; font-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
+  Cross-Origin-Opener-Policy: same-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
 
 # Vite names these files by their content.

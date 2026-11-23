@@ -69,6 +69,7 @@
   "adjust.reset": "Tümünü sıfırla",
   "adjust.fontAxes": "Font eksenleri",
   "adjust.own": "Fontun kendi eksenleri",
+  "slider.typed": "{name}, değer yaz",
   "slider.experiment": "Deneysel",
   "slider.changed": "{value}, asıl fonttan {delta}",
   "slider.original": "{value}, asıl değer",

@@ -69,6 +69,7 @@
   "adjust.reset": "Reset all",
   "adjust.fontAxes": "Font axes",
   "adjust.own": "{family}’s own",
+  "slider.typed": "{name}, type a value",
   "slider.experiment": "Experiment",
   "slider.changed": "{value}, {delta} from the original",
   "slider.original": "{value}, the original",

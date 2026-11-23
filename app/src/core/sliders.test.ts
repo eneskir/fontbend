@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { reach } from "./axis";
 import { parseCatalog } from "./catalog";
-import { BIG_SLIDERS, axisLabel, bigSliders, flipped, fontAxes, formatDelta, formatValue, stepFor } from "./sliders";
+import { BIG_SLIDERS, axisLabel, bigSliders, flipped, fontAxes, formatDelta, formatValue, stepFor, typedValue } from "./sliders";
 import data from "../catalog.json";
 
 const fonts = parseCatalog(data).fonts;
@@ -63,5 +63,28 @@ describe("slider numbers", () => {
     expect(formatDelta(700, 400, 1)).toBe("+300");
     expect(formatDelta(75, 100, 1)).toBe("-25");
     expect(formatDelta(0.7, 0.4, 0.01)).toBe("+0.3");
+  });
+});
+
+describe("a typed slider number", () => {
+  it("reads either decimal mark, a sign and a unit", () => {
+    expect(typedValue("650", 100, 1000, 1)).toBe(650);
+    expect(typedValue(" 1,5 ", 0, 3, 0.1)).toBe(1.5);
+    expect(typedValue("1.5", 0, 3, 0.1)).toBe(1.5);
+    expect(typedValue("%85", 50, 150, 1)).toBe(85);
+    expect(typedValue("85%", 50, 150, 1)).toBe(85);
+    expect(typedValue("−12°", -20, 20, 0.1)).toBe(-12);
+    expect(typedValue("+.5", 0, 1, 0.01)).toBe(0.5);
+  });
+  it("lands on the step grid inside the slider's ends", () => {
+    expect(typedValue("650.4", 100, 1000, 1)).toBe(650);
+    expect(typedValue("5000", 100, 1300, 1)).toBe(1300);
+    expect(typedValue("-5000", -300, 1300, 1)).toBe(-300);
+    expect(typedValue("0.123", 0, 1, 0.01)).toBe(0.12);
+    expect(typedValue("-0.001", -1, 1, 0.01)).toBe(0);
+    expect(Object.is(typedValue("-0.001", -1, 1, 0.01), -0)).toBe(false);
+  });
+  it("is null for anything that is not a number", () => {
+    for (const bad of ["", " ", "abc", "1,2,3", "1.2.3", "--4", "4-", "1e3", "Infinity", "%"]) expect(typedValue(bad, 0, 1000, 1), bad).toBeNull();
   });
 });

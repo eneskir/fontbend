@@ -73,5 +73,5 @@ export function themeMenu(): HTMLElement {
     remember(CANVAS_KEY, next);
   });
   return footMenu("theme-menu", t("theme.title"), [h("span", { class: "icon icon-theme", "aria-hidden": "true" }), t("theme.title")],
-    [interfaceGroup, h("hr", { class: "menu-rule" }), canvasGroup]);
+    [interfaceGroup, h("hr", { class: "rule menu-rule" }), canvasGroup]);
 }

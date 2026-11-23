@@ -243,6 +243,8 @@ ul { list-style: none; }
 
 /* Right: adjust */
 .panel { display: flex; flex-direction: column; gap: 8px; padding: 8px 16px 32px; background: var(--surface); border-left: 1px solid var(--line); }
+/* The panel scrolls, so nothing in it shrinks: a shrunk heading drew its second line over the next row. */
+.panel > * { flex-shrink: 0; }
 /* Where a language's words don't fit on one line, the note on the right goes under the heading whole. */
 .panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 8px; min-height: 32px; }
 .panel-head > .label { white-space: nowrap; }

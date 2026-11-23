@@ -43,13 +43,26 @@ export function languageMenu(store: Store, recent: Pick<Recent, "currentId">): H
       h("span", { class: "menu-name", lang: code, ...(dir ? { dir } : {}) }, name), h("span", { class: "menu-tag" }, t("language.soon"))));
   const group = (legend: string, langs: typeof LANGS) =>
     h("fieldset", { class: "menu-options" }, h("legend", { class: "meta" }, legend), ...langs.map(option));
-  return footMenu("language-menu", t("language.title"), [h("span", { class: "foot-code", "aria-hidden": "true" }, currentLang().toUpperCase()), h("span", { class: "visually-hidden" }, t("language.title"))], [
+  const item = footMenu("language-menu", t("language.title"), [h("span", { class: "foot-code", "aria-hidden": "true" }, currentLang().toUpperCase()), h("span", { class: "visually-hidden" }, t("language.title"))], [
     group(t("language.checked"), LANGS.filter((l) => l.checked)),
     group(t("language.unchecked"), LANGS.filter((l) => !l.checked)),
     ...soon,
     h("hr", { class: "rule menu-rule" }),
     h("a", { class: "menu-link", href: TRANSLATE, target: "_blank", rel: "noopener" }, t("language.suggest")),
   ]);
+  // An arrow key would check the next radio at once, and a check reloads the page: arrows only move the
+  // focus, Space or Enter picks.
+  item.addEventListener("keydown", (e) => {
+    const radios = [...item.querySelectorAll<HTMLInputElement>('input[name="language"]')];
+    const i = radios.indexOf(document.activeElement as HTMLInputElement);
+    if (i < 0) return;
+    if (e.key === "Enter") { e.preventDefault(); choose(radios[i]!.value as Lang); return; }
+    const step = e.key === "ArrowDown" || e.key === "ArrowRight" ? 1 : e.key === "ArrowUp" || e.key === "ArrowLeft" ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    radios[(i + step + radios.length) % radios.length]!.focus();
+  });
+  return item;
 }
 
 /**

@@ -32,6 +32,10 @@ jobs:
       - name: Licenses of installed packages
         run: python3 tools/check_licenses.py
 
+      # The deploy uploads with this Wrangler, installed without install scripts.
+      - name: Wrangler runs from the lockfile
+        run: npx --no-install wrangler --version
+
       - name: Type check, tests, build
         run: |
           npm run check

@@ -2,7 +2,9 @@
 
 English | [Türkçe](README.tr.md)
 
-A free, open-source font maker that runs in your browser, in English and Turkish. Pick a font from the catalog, shape it with sliders, see which languages it covers and download it with its license.
+A free, open-source font maker that runs in your browser. Pick a font from the catalog, shape it with sliders, see which languages it covers and download it with its license.
+
+The interface is in English and Turkish. German, Spanish, French, Indonesian, Portuguese and Russian are machine translations no one has checked yet. Fixes through the [translation form](https://github.com/eneskir/fontbend/issues/new?template=2-translation.yml) are welcome.
 
 Fontbend runs at [fontbend.com](https://fontbend.com).
 

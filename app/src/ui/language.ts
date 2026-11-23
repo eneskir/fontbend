@@ -5,7 +5,7 @@
 import type { Catalog } from "../core/catalog";
 import { linkText, openLink } from "../core/link";
 import { LANG_SAMPLE, SAMPLE_IDS, SIZES, type SampleId } from "../core/samples";
-import { currentLang, LANGS, saveLang, t, type Lang } from "../i18n";
+import { currentLang, LANGS, saveLang, SOON, t, type Lang } from "../i18n";
 import type { Store } from "../store";
 import { h } from "./dom";
 import { footMenu } from "./menu";
@@ -31,12 +31,22 @@ export function languageMenu(store: Store, recent: Pick<Recent, "currentId">): H
     if (saveLang(next)) url.searchParams.delete("lang"); else url.searchParams.set("lang", next);
     location.replace(url);
   };
-  const options = LANGS.map(({ code, name }) =>
+  const option = ({ code, name, beta }: (typeof LANGS)[number]) =>
     h("label", { class: "menu-option", lang: code },
       h("input", { type: "radio", name: "language", value: code, checked: code === currentLang(), onchange: () => choose(code) }),
-      h("span", { class: "menu-name" }, name), h("span", { class: "menu-code" }, code.toUpperCase())));
+      h("span", { class: "menu-name" }, name),
+      ...(beta ? [h("span", { class: "menu-tag" }, t("language.beta"))] : []),
+      h("span", { class: "menu-code" }, code.toUpperCase()));
+  // Named so people see they are coming; not a choice yet, so not focusable either.
+  const soon = SOON.map(({ code, name, dir }) =>
+    h("div", { class: "menu-option is-soon" },
+      h("span", { class: "menu-name", lang: code, ...(dir ? { dir } : {}) }, name), h("span", { class: "menu-tag" }, t("language.soon"))));
+  const group = (legend: string, langs: typeof LANGS) =>
+    h("fieldset", { class: "menu-options" }, h("legend", { class: "meta" }, legend), ...langs.map(option));
   return footMenu("language-menu", t("language.title"), [h("span", { class: "foot-code", "aria-hidden": "true" }, currentLang().toUpperCase()), h("span", { class: "visually-hidden" }, t("language.title"))], [
-    h("fieldset", { class: "menu-options" }, h("legend", { class: "meta" }, t("language.checked")), ...options),
+    group(t("language.checked"), LANGS.filter((l) => l.checked)),
+    group(t("language.unchecked"), LANGS.filter((l) => !l.checked)),
+    ...soon,
     h("hr", { class: "rule menu-rule" }),
     h("a", { class: "menu-link", href: TRANSLATE, target: "_blank", rel: "noopener" }, t("language.suggest")),
   ]);

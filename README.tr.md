@@ -2,7 +2,9 @@
 
 [English](README.md) | Türkçe
 
-Tarayıcıda çalışan, Türkçe ve İngilizce, ücretsiz ve açık kaynaklı bir font yapıcı. Katalogdan bir font seç, sürgülerle biçim ver, hangi dilleri desteklediğine bak ve lisansıyla birlikte indir.
+Tarayıcıda çalışan, ücretsiz ve açık kaynaklı bir font yapıcı. Katalogdan bir font seç, sürgülerle biçim ver, hangi dilleri desteklediğine bak ve lisansıyla birlikte indir.
+
+Arayüz Türkçe ve İngilizce. Almanca, İspanyolca, Fransızca, Endonezce, Portekizce ve Rusça makine çevirisi, henüz kimse gözden geçirmedi. Düzeltmeleri [çeviri formuyla](https://github.com/eneskir/fontbend/issues/new?template=2-translation.yml) gönderebilirsin.
 
 Fontbend [fontbend.com](https://fontbend.com) adresinde çalışıyor.
 

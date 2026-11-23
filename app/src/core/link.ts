@@ -12,6 +12,10 @@ export type Opened =
   | { readonly kind: "shared"; readonly changes: number }
   /** Opened, but these axis tags were left out: the font no longer has them, or can't keep them as a range. */
   | { readonly kind: "older"; readonly skipped: readonly string[] }
+  /** Made by a later Fontbend than this page; the first catalog font opened as designed. */
+  | { readonly kind: "newer" }
+  /** For a font file that isn't open on this page; the first catalog font opened as designed. */
+  | { readonly kind: "noFile" }
   /** Nothing could be read; the first catalog font opened as designed. `reason` is for the console. */
   | { readonly kind: "damaged"; readonly reason: string };
 
@@ -20,13 +24,18 @@ export const linkText = (state: EditorState): string => encodeSettings(state.set
 
 /** The editor state a link opens, and what to tell the user about it. `fonts` is the catalog, first font first, then any font files open on this page. */
 export function openLink(fonts: readonly CatalogFont[], text: string): { readonly state: EditorState; readonly opened: Opened } {
-  const damaged = (reason: string) => ({ state: startEditing(fonts[0]!), opened: { kind: "damaged", reason } as const });
+  const instead = (opened: Opened) => ({ state: startEditing(fonts[0]!), opened });
+  const damaged = (reason: string) => instead({ kind: "damaged", reason });
   const decoded = decodeSettings(text);
-  if (!decoded.ok) return damaged(decoded.error);
+  if (!decoded.ok) {
+    // Versions count up from 1; a higher one is a page that has not caught up yet, not a broken link.
+    const version = Number(new URLSearchParams(text).get("v"));
+    return Number.isInteger(version) && version > 1 ? instead({ kind: "newer" }) : damaged(decoded.error);
+  }
   const s = decoded.settings;
   const source = s.source;
   const font = source.kind === "catalog" ? fonts.find((f) => !f.local && f.id === source.id) : fonts.find((f) => f.local?.sha256 === source.sha256);
-  if (!font) return damaged(source.kind === "catalog" ? `no font ${source.id}` : "a font file that isn't open on this page");
+  if (!font) return source.kind === "catalog" ? damaged(`no font ${source.id}`) : instead({ kind: "noFile" });
 
   const axes: Record<string, AxisSetting> = {}, skipped: string[] = [];
   for (const [tag, value] of Object.entries(s.axes)) {

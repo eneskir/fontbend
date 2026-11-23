@@ -61,6 +61,14 @@ export function sharedLinks(store: Store, catalog: Catalog, recent: Pick<Recent,
         body.textContent = tn("share.gone", names.length, { axes: listText(names), family }) + kept;
         break;
       }
+      case "newer":
+        title.textContent = t("share.newer");
+        body.textContent = t("share.newerBody", { family });
+        break;
+      case "noFile":
+        title.textContent = t("share.noFile");
+        body.textContent = t("share.noFileBody", { family });
+        break;
       case "damaged":
         console.warn(`Fontbend couldn't read the shared link: ${opened.reason}`);
         title.textContent = t("share.damaged");

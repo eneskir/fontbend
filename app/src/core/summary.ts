@@ -56,5 +56,6 @@ export function resultSentence(widthRatio: number, strokeRatio: number | null): 
   if (width && stroke) return t("summary.both", { width, stroke });
   if (width) return t("summary.width", { width });
   if (stroke) return capitalize(t("summary.stroke", { stroke }));
-  return t("summary.same");
+  // Unknown strokes (H not measured yet, or past a break point) are not called the same.
+  return t(strokeRatio === null ? "summary.sameWidth" : "summary.same");
 }

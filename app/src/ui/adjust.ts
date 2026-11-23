@@ -48,6 +48,11 @@ export function adjustPanel(store: Store): HTMLElement {
   };
 
   build();
+  // Where the big sliders sit fixed at the foot of the screen (a phone), the page keeps their height free.
+  new ResizeObserver(() => {
+    const fixed = getComputedStyle(big).position === "fixed";
+    document.documentElement.style.setProperty("--strip", fixed ? `${big.offsetHeight}px` : "0px");
+  }).observe(big);
   sync();
   store.subscribe((now, before) => {
     if (now.font !== before.font) build();

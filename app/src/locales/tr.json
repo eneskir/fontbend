@@ -47,7 +47,7 @@
   "preview.size": "Boyut",
   "preview.px": "{n} px",
   "preview.textLabel": "Önizleme metni, düzenlenebilir",
-  "preview.asDesigned": "{family} tasarlandığı gibi. Sağdaki bir sürgüyü kaydır ya da başka bir font seç.",
+  "preview.asDesigned": "{family} tasarlandığı gibi. Bir sürgüyü kaydır ya da başka bir font seç.",
   "preview.breaks": "{value} değerinden sonra bazı harfler bozuluyor.",
   "preview.loading": "{family} yükleniyor…",
   "preview.noStretch": "Fontbend bu fontu esnetemedi. Kendi aralığının dışındaki değerler aralığın ucunda görünüyor.",

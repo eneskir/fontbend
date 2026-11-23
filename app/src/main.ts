@@ -9,11 +9,15 @@ import { h } from "./ui/dom";
 import { download } from "./ui/download";
 import { fontList } from "./ui/fontList";
 import { preview } from "./ui/preview";
+import { copyLinkButton, sharedLinks } from "./ui/share";
 import { themeMenu } from "./ui/theme";
 import { wear } from "./ui/wear";
 
 const catalog = parseCatalog(data);
 const store = createStore(startEditing(catalog.fonts[0]!));
+// A shared link opens before anything is drawn, so the first font is never fetched for nothing.
+const links = sharedLinks(store, catalog);
+links.open();
 
 const docName = h("h1", { class: "doc-name" });
 // The same name the Download panel writes into the font.
@@ -25,7 +29,7 @@ const dl = download(store);
 const app = document.getElementById("app")!;
 wear(store, app, docName);
 app.replaceChildren(
-  h("header", { class: "app-bar" }, docName, h("span", { class: "bar-end" }, dl.button)),
-  h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, fontList(store, catalog), themeMenu()), preview(store), adjustPanel(store)),
+  h("header", { class: "app-bar" }, docName, h("span", { class: "bar-end" }, copyLinkButton(store), dl.button)),
+  h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, fontList(store, catalog), themeMenu()), preview(store, links.banner), adjustPanel(store)),
   dl.panel,
 );

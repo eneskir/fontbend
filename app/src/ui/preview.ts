@@ -8,8 +8,8 @@ import { h } from "./dom";
 import { drawnSettings, drawnValues, letterH, loadStems } from "./drawn";
 import { loadPreview, loadStretched, previewFamily, stretchedFamily } from "./faces";
 
-/** The centre: the sample at the chosen size, smaller sizes under it, then a paragraph. */
-export function preview(store: Store): HTMLElement {
+/** The centre: the sample at the chosen size, smaller sizes under it, then a paragraph. `banner` sits over the sample. */
+export function preview(store: Store, banner: HTMLElement): HTMLElement {
   const sampleSelect = h("select", { class: "select", "aria-label": "Sample text", onchange: () => store.update((s) => ({ ...s, sample: sampleSelect.value as SampleId, text: null })) },
     ...SAMPLE_IDS.map((id) => h("option", { value: id }, SAMPLES[id].label)));
   const sizeSelect = h("select", { class: "select", "aria-label": "Size", onchange: () => store.update((s) => ({ ...s, size: Number(sizeSelect.value) })) },
@@ -75,6 +75,7 @@ export function preview(store: Store): HTMLElement {
         h("label", { class: "field-group" }, h("span", { class: "meta" }, "Sample"), sampleSelect),
         h("label", { class: "field-group" }, h("span", { class: "meta" }, "Size"), sizeSelect)),
       h("div", { class: "status-row" }, status, retry)),
+    banner,
     h("div", { class: "stage" }, sample));
 
   const lineText = () => store.get().text ?? SAMPLES[store.get().sample].line;

@@ -66,9 +66,9 @@ describe("editor state", () => {
     expect(resetAxes(s).settings.axes).toEqual({});
   });
 
-  it("names every axis in font-variation-settings", () => {
+  it("names every axis in font-variation-settings, the added Width and Slant too", () => {
     const s = setAxis(startEditing(fraunces), "SOFT", 50);
-    expect(variationSettings(s)).toBe('"opsz" 9, "wght" 900, "SOFT" 50, "WONK" 1');
+    expect(variationSettings(s)).toBe('"opsz" 9, "wght" 900, "SOFT" 50, "WONK" 1, "wdth" 100, "slnt" 0');
   });
 
   it("writes settings a link can carry back", () => {

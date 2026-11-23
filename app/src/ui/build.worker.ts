@@ -1,16 +1,16 @@
 /// <reference types="vite/client" />
 import wasmUrl from "harfbuzzjs/dist/harfbuzz-subset.wasm?url";
 import type { Axis } from "../core/axis";
-import { BuildError, buildFont } from "../core/build";
+import { BuildError, buildFont, needsStretched } from "../core/build";
 import { loadInstancer, type Instancer } from "../core/harfbuzz";
 import type { MadeNames } from "../core/download";
 import type { AxisSetting } from "../core/settings";
+import { stretchFont } from "../core/stretch";
 import type { Subset } from "../core/subsets";
 
 export type BuildRequest = {
   id: number;
   original: Uint8Array;
-  stretched: Uint8Array | null;
   axes: readonly Axis[];
   settings: Record<string, AxisSetting>;
   names: MadeNames;
@@ -35,13 +35,22 @@ const instancer = () => {
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 scope.onmessage = async (e: MessageEvent<BuildRequest>) => {
-  const { id, original, stretched, axes, settings, names, subset } = e.data;
+  const { id, original, axes, settings, names, subset } = e.data;
   let maker: Instancer;
   try {
     maker = await instancer();
   } catch (err) {
     const code = err instanceof LoadError ? err.code : "LOAD_FAILED";
     scope.postMessage({ id, error: code, message: "The font builder didn't load. Check your connection and try again." } satisfies BuildReply);
+    return;
+  }
+  // The stretched font the page draws with carries added axes (core/synth), so a download past
+  // the font's own range stretches the shipped file here, without them (up to about 0.7 s).
+  let stretched: Uint8Array | null = null;
+  try {
+    if (needsStretched(axes, settings)) stretched = stretchFont(original).bytes;
+  } catch {
+    scope.postMessage({ id, error: "STRETCH_FAILED", message: "Fontbend couldn't stretch this font past its own range. Bring the values back inside it to download." } satisfies BuildReply);
     return;
   }
   try {

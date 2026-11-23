@@ -163,9 +163,11 @@ ul { list-style: none; }
 .panel { display: flex; flex-direction: column; gap: 8px; padding: 8px 16px 32px; background: var(--surface); border-left: 1px solid var(--line); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; min-height: 32px; }
 .panel-head.is-sub { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
-.count { margin-left: 8px; font-family: var(--mono); color: var(--changed); }
-.simple-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; } /* fixed columns: labels appearing must not move the cards */
-.card { padding: 8px 12px 4px; background: var(--paper); }
+.count { margin-left: 8px; font-family: var(--mono); color: var(--ink-muted); font-weight: 400; }
+.owner { font-size: 12px; color: var(--ink-muted); }
+.big-sliders { display: flex; flex-direction: column; gap: 8px; }
+.card { padding: 8px 12px; background: var(--paper); }
+.is-big .slider-label { font-size: 14px; line-height: 20px; font-weight: 600; }
 .axis-list { display: flex; flex-direction: column; gap: 16px; }
 
 .slider-head { display: flex; align-items: baseline; gap: 8px; cursor: pointer; }
@@ -174,8 +176,6 @@ ul { list-style: none; }
 .slider-delta { font-family: var(--mono); font-size: 12px; color: var(--changed); }
 .slider-zone { font-size: 12px; color: var(--ink-muted); display: none; }
 .is-beyond .slider-zone { display: inline; }
-/* A card has no room for it next to the value; the dashed ruler says it there. */
-.card .is-beyond .slider-zone { display: none; }
 .slider-value { margin-left: auto; font-family: var(--mono); }
 /* The handle's centre sits where the native thumb's centre is: 6px in from each end. */
 .slider-track { position: relative; height: 22px; --x: calc(6px + var(--at) * (100% - 12px)); }
@@ -263,7 +263,6 @@ label.file:has(:disabled) { cursor: default; }
 
 @media (max-width: 1100px) {
   .workspace { grid-template-columns: 232px minmax(0, 1fr) 320px; }
-  .simple-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
   #app { height: auto; }

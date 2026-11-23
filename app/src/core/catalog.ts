@@ -1,4 +1,4 @@
-import { reach, type Axis } from "./axis";
+import { reach, withSynthetic, type Axis } from "./axis";
 
 export type Category = "sans" | "serif" | "slab" | "display" | "mono" | "handwriting";
 
@@ -12,6 +12,7 @@ export type CatalogFont = {
   readonly copyright: string;
   /** How many glyphs the upright file has: what "all glyphs" means for this font. */
   readonly glyphs: number;
+  /** The font's own axes, then Width and Slant added where it has none (axis.ts SYNTHETIC_AXES). */
   readonly axes: readonly Axis[];
   readonly files: { readonly upright: FontFile; readonly italic?: FontFile };
   readonly licenseFile: string;
@@ -82,7 +83,7 @@ export function parseCatalog(data: unknown): Catalog {
     if (problems.length > before) return [];
     return [{
       id: id as string, category: category as Category, family: family as string, version: String(version), copyright: copyright as string,
-      glyphs: glyphs as number, axes: parsedAxes, files: italic ? { upright: upright!, italic } : { upright: upright! }, licenseFile: licenseFile as string, nameFile: nameFile as string,
+      glyphs: glyphs as number, axes: withSynthetic(parsedAxes), files: italic ? { upright: upright!, italic } : { upright: upright! }, licenseFile: licenseFile as string, nameFile: nameFile as string,
     }];
   });
   if (problems.length > 0) throw new Error(`catalog.json has ${problems.length} problem(s):\n${problems.join("\n")}`);

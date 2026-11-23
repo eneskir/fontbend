@@ -21,7 +21,7 @@
 import { glyphData, outline, parseGlyph, type Glyph } from "./glyf";
 import { mapLayout } from "./layout";
 import { readTables, tagAt, view, writeFont } from "./sfnt";
-import { encodeDeltas } from "./stretch";
+import { sharedPeaks, sparseOrFull, writeGvar as encodeGvar, type Written } from "./gvar";
 import { deltasFor, readTuples, type Tuple } from "./variation";
 import { VarStore, varRef, type VarRef } from "./varstore";
 
@@ -56,14 +56,12 @@ const WORDS = 1, XY_VALUES = 2, ROUND_XY = 4, SCALE = 8, MORE = 0x20, XY_SCALE =
 const MY_METRICS = 0x200, OVERLAP_COMPOUND = 0x400, SCALED_OFFSET = 0x800, UNSCALED_OFFSET = 0x1000;
 // Simple glyph flags.
 const ON_CURVE = 1, X_SHORT = 2, Y_SHORT = 4, REPEAT = 8, X_SAME = 16, Y_SAME = 32, OVERLAP_SIMPLE = 0x40;
-// gvar.
-const EMBEDDED_PEAK = 0x8000, INTERMEDIATE = 0x4000, PRIVATE_POINTS = 0x2000;
 const DROPPED = ["fpgm", "prep", "cvt ", "cvar", "hdmx", "LTSH", "VDMX", "HVAR", "VVAR", "DSIG"];
 
 /** A component's 2×2 matrix as glyf stores it: x' = a·x + c·y, y' = b·x + d·y. */
 type Matrix = readonly [a: number, b: number, c: number, d: number];
-type Part = { flags: number; gid: number; dx: number; dy: number; m: Matrix };
-type Source =
+export type Part = { flags: number; gid: number; dx: number; dy: number; m: Matrix };
+export type Source =
   | { kind: "empty" }
   | { kind: "simple"; glyph: Glyph; overlap: boolean }
   | { kind: "composite"; parts: Part[] };
@@ -80,9 +78,7 @@ export function transformFont(input: Uint8Array, t: Shear): Uint8Array {
 
   const sources = Array.from({ length: glyphCount }, (_, g) => readSource(glyphData(tables, g)));
   const gvar = tables.get("gvar");
-  const tuples = gvar
-    ? sources.map((s, g) => readTuples(gvar, g, (s.kind === "simple" ? s.glyph.points.length : s.kind === "composite" ? s.parts.length : 0) + 4))
-    : null;
+  const tuples = gvar ? sources.map((s, g) => readTuples(gvar, g, pointCount(s) + 4)) : null;
 
   const moved = sources.map((s) => moveSource(s, t));
   const glyphs = moved.map(encodeGlyph);
@@ -224,7 +220,7 @@ function mapMvar(mvar: Uint8Array, m: Mvar, t: Shear, k: number): Uint8Array {
   return out;
 }
 
-function readSource(g: Uint8Array | null): Source {
+export function readSource(g: Uint8Array | null): Source {
   if (!g || g.length < 10) return { kind: "empty" };
   const v = view(g);
   const contours = v.getInt16(0);
@@ -274,7 +270,7 @@ function partOffset(p: Part, t: Shear): { m: Matrix; x: number; y: number } {
   return { m, x: t.a * ox + t.b * oy + t.c - m[0] * t.c, y: oy - m[1] * t.c };
 }
 
-function plainOffset(p: Part, x: number, y: number): [number, number] {
+export function plainOffset(p: Part, x: number, y: number): [number, number] {
   const [a, b, c, d] = p.m;
   return p.flags & SCALED_OFFSET ? [a * x + c * y, b * x + d * y] : [x, y];
 }
@@ -323,7 +319,7 @@ function encodeGlyph(m: Moved): Uint8Array {
 }
 
 /** A simple glyph with short coordinates where they fit and repeated flags; no instructions. */
-function encodeSimple(glyph: Glyph, overlap: boolean): Uint8Array {
+export function encodeSimple(glyph: Glyph, overlap: boolean): Uint8Array {
   const flags: number[] = [], xs: number[] = [], ys: number[] = [];
   let px = 0, py = 0;
   glyph.points.forEach((p, i) => {
@@ -395,52 +391,8 @@ function encodeComposite(parts: readonly Part[]): Uint8Array {
 /** gvar with every tuple's deltas mapped; peaks and regions stay, so shared tuples keep their meaning. */
 function writeGvar(gvar: Uint8Array, sources: readonly Source[], moved: readonly Moved[], tuples: readonly Tuple[][], t: Shear): Uint8Array {
   const v = view(gvar);
-  const axisCount = v.getUint16(4), sharedCount = v.getUint16(6), sharedAt = v.getUint32(8);
   if (v.getUint16(12) !== sources.length) fail("gvar and maxp disagree on the number of glyphs");
-  const sharedBytes = gvar.subarray(sharedAt, sharedAt + sharedCount * axisCount * 2);
-  const sharedIndex = new Map<string, number>();
-  for (let i = sharedCount - 1; i >= 0; i--) {
-    sharedIndex.set(Array.from({ length: axisCount }, (_, k) => v.getInt16(sharedAt + (i * axisCount + k) * 2)).join(), i);
-  }
-
-  const glyphs = tuples.map((list, g) => (list.length ? writeGlyphVariations(list, sources[g]!, moved[g]!, t, sharedIndex) : new Uint8Array(0)));
-
-  const tuplesAt = 20 + (sources.length + 1) * 4;
-  const header = tuplesAt + sharedBytes.length;
-  const out = new Uint8Array(header + glyphs.reduce((n, d) => n + d.length, 0));
-  const w = view(out);
-  w.setUint16(0, 1); w.setUint16(2, 0); w.setUint16(4, axisCount);
-  w.setUint16(6, sharedCount); w.setUint32(8, tuplesAt);
-  w.setUint16(12, sources.length); w.setUint16(14, 1); w.setUint32(16, header);
-  out.set(sharedBytes, tuplesAt);
-  let at = 0;
-  glyphs.forEach((d, g) => { w.setUint32(20 + g * 4, at); out.set(d, header + at); at += d.length; });
-  w.setUint32(20 + sources.length * 4, at);
-  return out;
-}
-
-type Written = { peak: number[]; start: number[] | null; end: number[] | null; points: number[] | null; dx: number[]; dy: number[] };
-
-function writeGlyphVariations(list: readonly Tuple[], source: Source, moved: Moved, t: Shear, sharedIndex: Map<string, number>): Uint8Array {
-  const written = list.map((tuple) => mapTuple(tuple, source, moved, t));
-  const headers: number[] = [], bodies: number[] = [];
-  const u16 = (out: number[], x: number) => out.push((x >> 8) & 0xff, x & 0xff);
-  for (const w of written) {
-    const body = [...encodePoints(w.points), ...encodeDeltas(w.dx), ...encodeDeltas(w.dy)];
-    if (body.length > 0xffff) fail("tuple data too large");
-    const shared = sharedIndex.get(w.peak.join());
-    u16(headers, body.length);
-    u16(headers, (shared ?? EMBEDDED_PEAK) | (w.start ? INTERMEDIATE : 0) | PRIVATE_POINTS);
-    if (shared === undefined) for (const x of w.peak) u16(headers, x);
-    if (w.start && w.end) for (const x of [...w.start, ...w.end]) u16(headers, x);
-    bodies.push(...body);
-  }
-  const out: number[] = [];
-  u16(out, written.length);
-  u16(out, 4 + headers.length);
-  out.push(...headers, ...bodies);
-  if (out.length & 1) out.push(0);
-  return Uint8Array.from(out);
+  return encodeGvar(v.getUint16(4), sharedPeaks(gvar), tuples.map((list, g) => list.map((tuple) => mapTuple(tuple, sources[g]!, moved[g]!, t))));
 }
 
 /**
@@ -449,23 +401,14 @@ function writeGlyphVariations(list: readonly Tuple[], source: Source, moved: Mov
  * instead doubled the drift where tuples meet (measured on the catalog: worst 8.4 against 4.2).
  */
 function mapTuple(tuple: Tuple, source: Source, moved: Moved, t: Shear): Written {
-  const n = source.kind === "simple" ? source.glyph.points.length : source.kind === "composite" ? source.parts.length : 0;
+  const n = pointCount(source);
   // Every point's delta, the inferred ones made explicit; points a tuple leaves out of a composite stay put.
-  const fx = new Array<number>(n + 4).fill(0), fy = new Array<number>(n + 4).fill(0);
-  if (!tuple.points) tuple.dx.forEach((d, i) => { fx[i] = d; fy[i] = tuple.dy[i]!; });
-  else tuple.points.forEach((p, i) => { if (p < n + 4) { fx[p] = tuple.dx[i]!; fy[p] = tuple.dy[i]!; } });
-  if (source.kind === "simple" && tuple.points) {
-    const [ix, iy] = deltasFor(tuple, source.glyph);
-    for (let i = 0; i < n; i++) { fx[i] = ix[i]!; fy[i] = iy[i]!; }
-  }
-
+  const [fx, fy] = fullDeltas(tuple, source);
   const nx = fx.slice(), ny = fy.slice();
   for (let i = 0; i < n; i++) {
-    if (source.kind === "simple" && moved.kind === "simple") {
-      const p = source.glyph.points[i]!;
-      nx[i] = Math.round(t.a * fx[i]! + t.b * fy[i]!);
-    } else if (source.kind === "composite" && moved.kind === "composite") {
-      const part = source.parts[i]!, m = moved.parts[i]!;
+    if (source.kind === "simple") nx[i] = Math.round(t.a * fx[i]! + t.b * fy[i]!);
+    else if (source.kind === "composite") {
+      const part = source.parts[i]!;
       if (!(part.flags & XY_VALUES)) continue; // point numbers do not move
       const [dx, dy] = plainOffset(part, fx[i]!, fy[i]!);
       nx[i] = Math.round(t.a * dx + t.b * dy);
@@ -474,43 +417,23 @@ function mapTuple(tuple: Tuple, source: Source, moved: Moved, t: Shear): Written
   }
   // Phantom points: the origin and the advance move along x only, so they scale.
   for (let i = n; i < n + 4; i++) nx[i] = Math.round(t.a * fx[i]!);
-
-  if (!tuple.points || !keepsSparse(tuple.points, nx, ny, n, moved)) return { ...tuple, points: null, dx: nx, dy: ny };
-  return { ...tuple, dx: tuple.points.map((p) => nx[p] ?? 0), dy: tuple.points.map((p) => ny[p] ?? 0) };
+  return sparseOrFull(tuple, tuple.points, nx, ny, n, moved.kind === "simple" ? moved.glyph : null);
 }
 
-/** Whether the points a tuple lists still let readers infer the others within half a unit. */
-function keepsSparse(points: readonly number[], nx: readonly number[], ny: readonly number[], n: number, moved: Moved): boolean {
-  const listed = new Set(points);
-  for (let i = n; i < n + 4; i++) if (!listed.has(i) && (nx[i] !== 0 || ny[i] !== 0)) return false;
-  if (moved.kind !== "simple") {
-    for (let i = 0; i < n; i++) if (!listed.has(i) && (nx[i] !== 0 || ny[i] !== 0)) return false;
-    return true;
+/** Outline points (or parts) of a glyph, phantoms not counted. */
+export function pointCount(s: Source): number {
+  return s.kind === "simple" ? s.glyph.points.length : s.kind === "composite" ? s.parts.length : 0;
+}
+
+/** A tuple's delta for every point and phantom: inferred ones made explicit, unlisted parts of a composite 0. */
+export function fullDeltas(tuple: Tuple, source: Source): [number[], number[]] {
+  const n = pointCount(source);
+  const fx = new Array<number>(n + 4).fill(0), fy = new Array<number>(n + 4).fill(0);
+  if (!tuple.points) tuple.dx.forEach((d, i) => { fx[i] = d; fy[i] = tuple.dy[i]!; });
+  else tuple.points.forEach((p, i) => { if (p < n + 4) { fx[p] = tuple.dx[i]!; fy[p] = tuple.dy[i]!; } });
+  if (source.kind === "simple" && tuple.points) {
+    const [ix, iy] = deltasFor(tuple, source.glyph);
+    for (let i = 0; i < n; i++) { fx[i] = ix[i]!; fy[i] = iy[i]!; }
   }
-  const sparse: Tuple = { peak: [], start: null, end: null, points: [...points], dx: points.map((p) => nx[p] ?? 0), dy: points.map((p) => ny[p] ?? 0) };
-  const [ix, iy] = deltasFor(sparse, moved.glyph);
-  for (let i = 0; i < n; i++) if (!listed.has(i) && (Math.abs(ix[i]! - nx[i]!) > 0.5 || Math.abs(iy[i]! - ny[i]!) > 0.5)) return false;
-  return true;
+  return [fx, fy];
 }
-
-/** Packed point numbers; null (every point) is a count of 0. */
-function encodePoints(points: readonly number[] | null): number[] {
-  if (!points) return [0];
-  const out: number[] = points.length < 128 ? [points.length] : [0x80 | (points.length >> 8), points.length & 0xff];
-  let i = 0, last = 0;
-  while (i < points.length) {
-    const words = points[i]! - last > 255;
-    let j = i;
-    while (j < points.length && j - i < 128 && (points[j]! - (j ? points[j - 1]! : 0) > 255) === words) j++;
-    out.push((words ? 0x80 : 0) | (j - i - 1));
-    for (let k = i; k < j; k++) {
-      const d = points[k]! - last;
-      last = points[k]!;
-      if (words) out.push((d >> 8) & 0xff, d & 0xff);
-      else out.push(d);
-    }
-    i = j;
-  }
-  return out;
-}
-

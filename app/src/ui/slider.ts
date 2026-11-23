@@ -12,9 +12,11 @@ let next = 0;
  * The ruler is solid over the font's own range and dashed past it, where Fontbend goes on
  * further than the font was drawn. The hollow marker shows the original value once the value
  * moves away from it. A short red mark crosses the ruler where some letters start to break.
+ * `unit` follows every number shown ("%", "°"); a big slider is one of the three at the top.
  */
-export function slider(opts: { label: string; tag?: string; axis: Axis; showRange?: boolean; onInput: (value: number) => void }): Slider {
+export function slider(opts: { label: string; tag?: string; axis: Axis; unit?: string; big?: boolean; showRange?: boolean; onInput: (value: number) => void }): Slider {
   const { axis } = opts;
+  const unit = opts.unit ?? "";
   const step = stepFor(axis);
   // The ends sit on the step grid, inside the reach, so the default stays a value the input can hold.
   const r = reach(axis);
@@ -46,8 +48,8 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; showRang
   const head = h("label", { class: "slider-head", for: id },
     h("span", { class: "slider-label", id: `${id}-name` }, opts.label, ...(opts.tag ? [" ", h("span", { class: "slider-tag" }, opts.tag)] : [])),
     delta, zone, value);
-  const el = h("div", { class: "slider" }, head, track,
-    ...(opts.showRange ? [h("div", { class: "slider-range", "aria-hidden": "true" }, h("span", {}, formatValue(lo, step)), h("span", {}, formatValue(hi, step)))] : []));
+  const el = h("div", { class: opts.big ? "slider is-big" : "slider" }, head, track,
+    ...(opts.showRange ? [h("div", { class: "slider-range", "aria-hidden": "true" }, h("span", {}, formatValue(lo, step) + unit), h("span", {}, formatValue(hi, step) + unit))] : []));
 
   function set(v: number) {
     const changed = v !== axis.default, beyond = isBeyond(axis, v);
@@ -55,8 +57,8 @@ export function slider(opts: { label: string; tag?: string; axis: Axis; showRang
     track.style.setProperty("--at", at(v));
     el.classList.toggle("is-changed", changed);
     el.classList.toggle("is-beyond", beyond);
-    value.textContent = formatValue(v, step);
-    delta.textContent = changed ? formatDelta(v, axis.default, step) : "";
+    value.textContent = formatValue(v, step) + unit;
+    delta.textContent = changed ? formatDelta(v, axis.default, step) + unit : "";
     const where = changed ? `${value.textContent}, ${delta.textContent} from the original` : `${value.textContent}, the original`;
     const past = breakPast(axis, v) !== null ? ", past the font's own range, some letters break" : beyond ? ", past the font's own range" : "";
     input.setAttribute("aria-valuetext", where + past);

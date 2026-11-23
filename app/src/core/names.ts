@@ -73,7 +73,7 @@ export function menuFamily(family: string, code: string): string {
  * every download of one family and show the code as the style. Records it does not name (license,
  * designer, the names STAT and fvar point to) stay as they were, on every platform.
  */
-export function writeNames(name: Uint8Array, opts: { family: string; style: Style; code?: string; variable: boolean }): Uint8Array {
+export function writeNames(name: Uint8Array, opts: { family: string; style: Style; code?: string; signed?: boolean; variable: boolean }): Uint8Array {
   const old = readNames(name);
   const winText = (id: number) => old.find((r) => r.platform === 3 && r.id === id)?.text;
   const kept = keptRecords(name);
@@ -87,13 +87,14 @@ export function writeNames(name: Uint8Array, opts: { family: string; style: Styl
     [3, `${ps};Fontbend`],
     [4, opts.style === "Regular" ? full : `${full} ${opts.style}`],
     [6, ps],
-    [10, SIGNATURE],
+    [10, opts.signed === false ? winText(10) ?? "" : SIGNATURE],
   ]);
   if (code) {
     fresh.set(16, opts.family);
     fresh.set(17, opts.style === "Regular" ? code : `${code} ${opts.style}`);
   }
   if (opts.variable) fresh.set(25, ps.replace(/-.*$/, ""));
+  if (!fresh.get(10)) fresh.delete(10);
   const records = [
     ...kept,
     ...[...fresh].map(([id, text]) => ({ ...WINDOWS, id, bytes: utf16(text) })),

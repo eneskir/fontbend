@@ -1,5 +1,7 @@
 import { FAMILY_MAX, defaultFamily, downloadFiles, fileStem, madeNames, type MadeNames } from "../core/download";
+import type { CatalogFont } from "../core/catalog";
 import { setFormat, setSubset, type Format } from "../core/editor";
+import { oflText } from "../core/open";
 import { drawnSettings } from "./drawn";
 import { SUBSETS, type Subset } from "../core/subsets";
 import { makeZip } from "../core/zip";
@@ -11,7 +13,17 @@ import { MakeError, makeFont, makeWoff2, stopWoff2 } from "./maker";
 
 const size = (n: number) => (n < 1024 * 1024 ? `${Math.max(1, Math.round(n / 1024))} KB` : `${(n / 1024 / 1024).toFixed(2)} MB`);
 
-type Made = { ttf: Uint8Array; license: Uint8Array; woff2?: Uint8Array };
+type Made = { ttf: Uint8Array; license: Uint8Array | null; woff2?: Uint8Array };
+
+/**
+ * The OFL.txt that goes with the font: the catalog's own, or for an opened OFL file its copyright
+ * over the same license text; none for a file whose license Fontbend can't tell.
+ */
+async function licenseFor(font: CatalogFont): Promise<Uint8Array | null> {
+  if (font.local?.license === "unknown") return null;
+  const bytes = await fetchBytes(font.licenseFile);
+  return font.local ? new TextEncoder().encode(oflText(font.copyright, new TextDecoder().decode(bytes))) : bytes;
+}
 
 /** The Download button in the app bar and the panel it opens: name, files, license, then the ZIP. */
 export function download(store: Store): { button: HTMLElement; panel: HTMLElement } {
@@ -40,6 +52,10 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
   const subsetOptions = SUBSETS.map((s) => h("option", { value: s }));
   const subsetSelect = h("select", { class: "input", id: "characters", onchange: () => store.update((s) => setSubset(s, subsetSelect.value as Subset)) }, ...subsetOptions);
   const licenseSize = h("span", { class: "file-size" });
+  const licenseRow = h("li", { class: "file is-locked" }, h("span", { class: "lock", "aria-hidden": "true" }), h("span", { class: "file-name" }, "OFL.txt"), h("span", { class: "meta" }, "Required by the license"), licenseSize);
+  const licenseTitle = h("summary", { class: "label" });
+  const licenseText = h("p", {});
+  const signature = h("p", { class: "meta" }, "Fontbend writes “Made with Fontbend” into the font's description field.");
   const progressText = h("p", { class: "meta" });
   const progress = h("div", { class: "download-progress", hidden: true }, h("div", { class: "progress-bar" }), progressText);
   const errorTitle = h("p", { class: "label notice-title" });
@@ -58,14 +74,11 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
       h("p", { class: "meta" }, "Files"),
       h("ul", { class: "files" },
         ttfRow.el, woff2Row.el,
-        h("li", { class: "file is-locked" }, h("span", { class: "lock", "aria-hidden": "true" }), h("span", { class: "file-name" }, "OFL.txt"), h("span", { class: "meta" }, "Required by the license"), licenseSize)),
+        licenseRow),
       h("p", { class: "meta" }, "Install the TTF on your computer. Use the WOFF2 on websites.")),
     h("div", { class: "download-field" }, h("label", { class: "meta", for: "characters" }, "Characters"), h("span", { class: "select-field" }, subsetSelect)),
     check.row,
-    h("details", { class: "license" },
-      h("summary", { class: "label" }, "Free for commercial work (SIL OFL 1.1)"),
-      h("p", {}, "You can use and change this font in any project, logos and games included. Keep the copyright lines in the font, and don't sell the font file on its own."),
-      h("p", { class: "meta" }, "Fontbend writes “Made with Fontbend” into the font's description field.")),
+    h("details", { class: "license" }, licenseTitle, licenseText, signature),
     progress, notice, save);
   const panel = h("section", { class: "download", id: "download", popover: "auto", role: "dialog", "aria-labelledby": "download-title" }, main, check.panel);
 
@@ -90,6 +103,12 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     woff2Row.name.textContent = `${stem}.woff2`;
     subsetOptions.forEach((o, i) => { o.textContent = subsetLabel(SUBSETS[i]!, s.font.glyphs); });
     subsetSelect.value = s.settings.subset;
+    const license = s.font.local?.license ?? "ofl";
+    licenseRow.hidden = license === "unknown";
+    signature.hidden = license === "unknown";
+    licenseTitle.textContent = license === "unknown" ? "License unknown" : "Free for commercial work (SIL OFL 1.1)";
+    licenseText.textContent = license === "unknown" ? "Fontbend can't tell which license this font has. Use the font you make only as that license allows."
+      : `You can use and change this font in any project, logos and games included. Keep the copyright lines in the font, and don't sell the font file on its own.${license === "reserved" ? " This font reserves its name, so the font you make needs a name of its own." : ""}`;
     for (const [r, f] of [[ttfRow, "ttf"], [woff2Row, "woff2"]] as const) {
       r.box.checked = s.settings.formats.includes(f);
       // The last format left can't be turned off: a ZIP with only the license is no download.
@@ -132,13 +151,13 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     try {
       const [{ bytes: ttf, turkishFix }, license] = await Promise.all([
         makeFont(s.font, s.settings.axes, n, s.settings.subset),
-        fetchBytes(s.font.licenseFile).catch(() => { throw new MakeError("LOAD_FAILED", "The license file didn't load. Check your connection and try again."); }),
+        licenseFor(s.font).catch(() => { throw new MakeError("LOAD_FAILED", "The license file didn't load. Check your connection and try again."); }),
       ]);
       if (id !== job) return;
       made = { ttf, license };
       ttfRow.meta.textContent = size(ttf.length);
       check.update(ttf, `${fileStem(n)}.ttf`, turkishFix);
-      licenseSize.textContent = size(license.length);
+      licenseSize.textContent = license ? size(license.length) : "";
     } catch (err) {
       if (id === job) fail("failed", err instanceof MakeError ? err : new MakeError("INSTANCE_FAILED", String(err)));
       return;

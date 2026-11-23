@@ -85,7 +85,7 @@ export function buildFont(
   source: BuildSource,
   settings: Readonly<Record<string, AxisSetting>>,
   /** `code` is the settings in the name ("wght1100 opsz72"); `style` is what families group by. */
-  names: { family: string; style: Style; code?: string },
+  names: { family: string; style: Style; code?: string; signed?: boolean },
   subset: Subset = "all",
 ): BuiltFont {
   // Inside the font's own range the shipped file is used: it keeps HVAR and MVAR exactly.

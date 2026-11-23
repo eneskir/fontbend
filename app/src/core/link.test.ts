@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { reach } from "./axis";
 import { parseCatalog } from "./catalog";
 import { setAxis, setFormat, setSubset, startEditing, type EditorState } from "./editor";
+import { inter } from "./fixtures";
 import { linkText, openLink } from "./link";
+import { openedFont, readFontFile } from "./open";
 import { SUBSETS } from "./subsets";
 import data from "../catalog.json";
 
@@ -33,6 +35,23 @@ describe("share link", () => {
       expect(state.settings, linkText(s)).toEqual(s.settings);
       expect(opened).toEqual({ kind: "shared", changes: Object.keys(s.settings.axes).length });
     }
+  });
+
+  it("opens a font file's settings while that file is open, else says it's missing", async () => {
+    const r = await readFontFile(inter, async () => { throw new Error("no WOFF2 here"); });
+    if (!r.ok) throw new Error(JSON.stringify(r.problem));
+    const own = openedFont(r.file, { sha256: "cd".repeat(32), fileName: "Inter.ttf", url: "blob:x", oflTemplate: "OFL.txt" });
+    let s = startEditing(own);
+    expect(s.settings.source).toEqual({ kind: "local", sha256: "cd".repeat(32) });
+    s = setAxis(s, "wght", 700);
+    const link = linkText(s);
+    const back = openLink([...fonts, own], link);
+    expect(back.state.font).toBe(own);
+    expect(back.state.settings).toEqual(s.settings);
+    expect(openLink(fonts, link).opened.kind).toBe("damaged");
+    // A catalog font never stands in for an opened file with the same id.
+    const { local: _, ...asCatalog } = own;
+    expect(openLink([...fonts, asCatalog], link).opened.kind).toBe("damaged");
   });
 
   it("still opens a link made by this version", () => {

@@ -48,6 +48,12 @@ describe("buildFont", () => {
     expect(readNames(readTables(regular).get("name")!).filter((r) => r.id === 1).map((r) => r.text)).toEqual(["Fraunces Fontbend"]);
   });
 
+  it("leaves a font of unknown license unsigned, its own description kept", () => {
+    const unsigned = buildFont(hb, { original, stretched: null, axes }, { wght: 500 }, { ...names, signed: false }).bytes;
+    expect(winName(unsigned, 10)).not.toBe(SIGNATURE);
+    expect(winName(unsigned, 10)).toBe(winName(original, 10));
+  });
+
   it("sets one style: regular, not bold, no signature table left", () => {
     const t = readTables(regular);
     expect(view(t.get("OS/2")!).getUint16(62) & 0x61).toBe(0x40);

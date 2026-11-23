@@ -1,4 +1,5 @@
 import { reach, withSynthetic, type Axis } from "./axis";
+import type { License } from "./open";
 
 export type Category = "sans" | "serif" | "slab" | "display" | "mono" | "handwriting";
 
@@ -6,7 +7,8 @@ export type FontFile = { readonly path: string; readonly source: string; readonl
 
 export type CatalogFont = {
   readonly id: string;
-  readonly category: Category;
+  /** Null for a font file the user opened. */
+  readonly category: Category | null;
   readonly family: string;
   readonly version: string;
   readonly copyright: string;
@@ -18,6 +20,8 @@ export type CatalogFont = {
   readonly licenseFile: string;
   /** The default instance cut to the letters of the family name, for the font list. */
   readonly nameFile: string;
+  /** Set for a font file the user opened (core/open); it is never stored or sent anywhere. */
+  readonly local?: { readonly sha256: string; readonly fileName: string; readonly license: License };
 };
 
 export type Catalog = { readonly source: { readonly repository: string; readonly commit: string }; readonly fonts: readonly CatalogFont[] };

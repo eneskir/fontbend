@@ -1,4 +1,4 @@
-/** The drawer's views, picked by tabs on its top bar (design: Fonts, Recent; Open comes with phase 9). */
+/** The drawer's views, picked by tabs on its top bar (design: Fonts, Recent, Open). */
 import { h } from "./dom";
 
 export type DrawerView = {

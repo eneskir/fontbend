@@ -84,6 +84,7 @@ ul { list-style: none; }
 /* Top of the drawer: its views as tabs (design: drawer tabs). */
 .drawer-tabs { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 8px; }
 .icon-text { flex: none; width: 16px; font-size: 11px; line-height: 16px; text-align: center; font-weight: 600; }
+.icon-open { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 2.2h5.4L12 4.8v9H4z M9.4 2.2v2.6H12 M6.2 9.4h3.6' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat; }
 .icon-recent { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.6 8a5.4 5.4 0 1 0 1.6-3.84' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M2 2.2v3.6h3.6z'/%3E%3Cpath d='M8 5.4v3h2.2' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat; }
 .icon { flex: none; width: 16px; height: 16px; background: currentColor; }
 .icon-theme { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='5.25' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M8 2.75a5.25 5.25 0 0 1 0 10.5z'/%3E%3C/svg%3E") center / contain no-repeat; }
@@ -112,7 +113,22 @@ ul { list-style: none; }
   line-height: 24px;
 }
 .font-item:hover { background: var(--line); }
+.font-file { display: block; font-family: "Recursive Text", system-ui, sans-serif; overflow-wrap: anywhere; }
 .font-item[aria-current="true"] { background: var(--paper); }
+/* Open (design E5): choose a font file or drop it on the canvas; a file that can't open says why. */
+.open-view { gap: 16px; }
+.open-view[hidden], .empty[hidden] { display: none; }
+.open-file { display: flex; align-items: center; min-height: 24px; font-family: var(--mono); font-size: 14px; }
+.open-question { display: flex; flex-direction: column; gap: 8px; }
+.open-allowed { display: flex; align-items: center; gap: 8px; min-height: 32px; cursor: pointer; }
+.rule { width: 100%; height: 0; margin: 0; border: 0; border-top: 1px solid var(--line); }
+.recent-missing { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px; }
+.recent-missing .recent-meta { align-self: stretch; }
+.empty { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.empty .label { color: var(--ink); }
+/* While a file is dragged over the canvas (design: drop target). */
+.canvas { position: relative; }
+.canvas.is-dropping::after { content: "Drop to open"; position: absolute; inset: 16px; z-index: 2; display: flex; align-items: center; justify-content: center; background: var(--paper); border: 2px solid var(--ink); font-size: 14px; line-height: 20px; font-weight: 500; pointer-events: none; }
 /* Recent: each font's "Ag" in its own settings, its name and when it last changed. */
 .recent { gap: 16px; }
 .recent-day { display: flex; flex-direction: column; gap: 4px; }

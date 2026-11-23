@@ -38,6 +38,22 @@ describe("isSloped", () => {
   });
 });
 
+describe("a font file the user opened", () => {
+  const opened = (license: "ofl" | "reserved" | "unknown") => ({ ...font, local: { sha256: "ab".repeat(32), fileName: "Sample.ttf", license } }) as CatalogFont;
+  it("is signed and ships OFL.txt only when its license is OFL", () => {
+    const one = new Uint8Array([1]);
+    expect(madeNames(opened("ofl"), "", roboto, {}).signed).toBe(true);
+    expect(madeNames(opened("reserved"), "", roboto, {}).signed).toBe(true);
+    const unknown = madeNames(opened("unknown"), "", roboto, {});
+    expect(unknown.signed).toBe(false);
+    expect(downloadFiles(unknown, { ttf: one }, null).map((f) => f.name)).toEqual([`${fileStem(unknown)}.ttf`]);
+  });
+  it("drops a Reserved Font Name from the suggested name", () => {
+    expect(defaultFamily(opened("reserved"))).toBe("My Font");
+    expect(defaultFamily(opened("ofl"))).toBe(defaultFamily(font));
+  });
+});
+
 describe("madeNames", () => {
   it("suggests My <family> when the name is empty and tidies spaces", () => {
     expect(madeNames(font, "  ", roboto, {}).family).toBe(defaultFamily(font));

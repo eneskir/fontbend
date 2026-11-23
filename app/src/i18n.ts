@@ -3,21 +3,43 @@
  * key; en.json is the source, and a test keeps every other file to its keys. Font names, file
  * names, sample texts and the signature written into fonts stay as they are in every language.
  */
+import de from "./locales/de.json" with { type: "json" };
 import en from "./locales/en.json" with { type: "json" };
+import es from "./locales/es.json" with { type: "json" };
+import fr from "./locales/fr.json" with { type: "json" };
+import id from "./locales/id.json" with { type: "json" };
+import pt from "./locales/pt.json" with { type: "json" };
+import ru from "./locales/ru.json" with { type: "json" };
 import tr from "./locales/tr.json" with { type: "json" };
 
-export type Lang = "en" | "tr";
+export type Lang = "en" | "tr" | "de" | "es" | "fr" | "id" | "pt" | "ru";
 export type Key = keyof typeof en;
 /** Keys with a form per count ("share.changes.one", "share.changes.other"), named without the ending. */
 export type CountKey = { [K in Key]: K extends `${infer B}.one` ? B : never }[Key];
 type Vars = Readonly<Record<string, string | number>>;
 
-/** The languages a person has read, each named in its own language. */
-export const LANGS: readonly { readonly code: Lang; readonly name: string }[] = [
-  { code: "en", name: "English" },
-  { code: "tr", name: "Türkçe" },
+/**
+ * The interface languages, each named in its own language. `checked`: a person who reads the language
+ * has read every text; the others are machine translations waiting for one. `beta`: the interface
+ * font lacks the script, so the text shows in the system font.
+ */
+export const LANGS: readonly { readonly code: Lang; readonly name: string; readonly checked: boolean; readonly beta?: true }[] = [
+  { code: "en", name: "English", checked: true },
+  { code: "tr", name: "Türkçe", checked: true },
+  { code: "id", name: "Bahasa Indonesia", checked: false },
+  { code: "de", name: "Deutsch", checked: false },
+  { code: "es", name: "Español", checked: false },
+  { code: "fr", name: "Français", checked: false },
+  { code: "pt", name: "Português", checked: false },
+  { code: "ru", name: "Русский", checked: false, beta: true },
 ];
-export const MESSAGES: Readonly<Record<Lang, Readonly<Record<string, string>>>> = { en, tr };
+/** Languages named in the menu but not offered yet: they need their own fonts, samples and, for Arabic, a right-to-left layout. */
+export const SOON: readonly { readonly code: string; readonly name: string; readonly dir?: "rtl" }[] = [
+  { code: "zh", name: "中文" },
+  { code: "hi", name: "हिन्दी" },
+  { code: "ar", name: "العربية", dir: "rtl" },
+];
+export const MESSAGES: Readonly<Record<Lang, Readonly<Record<string, string>>>> = { en, tr, de, es, fr, id, pt, ru };
 const KEY = "fontbend.lang";
 
 /** A saved choice wins; else the first of the browser's languages Fontbend has; else English. */
@@ -66,8 +88,12 @@ export function num(n: number, decimals = 2): string {
   return new Intl.NumberFormat(lang, { maximumFractionDigits: decimals, useGrouping: false }).format(n);
 }
 
-/** A written number with its unit: Turkish puts the percent sign first ("%75", "+%5"). */
+/** The space these languages put before the percent sign: French a narrow one, the others a no-break space. */
+const PERCENT_SPACE: Partial<Record<Lang, string>> = { de: "\u00A0", es: "\u00A0", fr: "\u202F", ru: "\u00A0" };
+
+/** A written number with its unit: Turkish puts the percent sign first ("%75", "+%5"); French, German, Spanish and Russian put a space before it. */
 export function withUnit(text: string, unit: string): string {
+  if (unit === "%" && PERCENT_SPACE[lang]) return text + PERCENT_SPACE[lang] + unit;
   if (unit !== "%" || lang !== "tr") return text + unit;
   const sign = /^[+\-−]/.test(text) ? text.charAt(0) : "";
   return `${sign}%${text.slice(sign.length)}`;

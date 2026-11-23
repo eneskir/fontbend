@@ -13,7 +13,7 @@ export type DrawerView = {
 
 /** The tab bar; the first view starts open. `select` opens a view by id. */
 export function drawerTabs(views: readonly DrawerView[]): { readonly bar: HTMLElement; readonly select: (id: string) => void } {
-  const tabs = views.map((v) => h("button", { class: "foot-button drawer-tab", type: "button", role: "tab", id: `tab-${v.id}`, "aria-controls": v.panel.id, onclick: () => select(v.id) }, v.icon, v.label));
+  const tabs = views.map((v) => h("button", { class: "foot-button drawer-tab", type: "button", role: "tab", id: `tab-${v.id}`, "aria-controls": v.panel.id, onclick: () => select(v.id) }, v.icon, h("span", { class: "tab-label" }, v.label)));
   const select = (id: string) => views.forEach((v, i) => {
     const on = v.id === id;
     tabs[i]!.setAttribute("aria-selected", String(on));
@@ -30,5 +30,12 @@ export function drawerTabs(views: readonly DrawerView[]): { readonly bar: HTMLEl
     tabs[next]!.focus();
   } }, ...tabs);
   select(views[0]!.id);
+  // Longer words (Récentes, Недавние) don't fit beside the icons in a narrow drawer: the icons go first.
+  const fit = () => {
+    bar.classList.remove("is-compact");
+    bar.classList.toggle("is-compact", bar.scrollWidth > bar.clientWidth + 1);
+  };
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(fit).observe(bar);
+  document.fonts?.addEventListener("loadingdone", fit);
   return { bar, select };
 }

@@ -1,6 +1,6 @@
 # Fontbend: notes for coding agents
 
-Fontbend is a free, open-source browser font maker in English and Turkish; fonts stay on the user's device, with no server or accounts.
+Fontbend is a free, open-source browser font maker in English and Turkish, with unchecked machine translations into six more languages; fonts stay on the user's device, with no server or accounts.
 
 **Explain for a maintainer who does not read code.** Every change. Say in plain words what changed, what you ran and saw; screenshots for interface changes.
 

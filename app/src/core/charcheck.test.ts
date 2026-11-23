@@ -18,11 +18,11 @@ const counts = (font: Uint8Array) => checkCharacters(codePoints(readTables(font)
 describe("character check", () => {
   // Expected counts from fontTools: Fraunces's cmap against each group, and against Windows-1252.
   it("finds every group complete in Fraunces with all glyphs", () => {
-    expect(counts(made("all"))).toEqual(["Czech 30/30", "French 32/32", "German 8/8", "Nordic 14/14", "Polish 18/18", "Turkish 12/12"]);
+    expect(counts(made("all"))).toEqual(["Czech 30/30", "French 32/32", "German 8/8", "Nordic 14/14", "Polish 18/18", "Portuguese 24/24", "Spanish 16/16", "Turkish 12/12"]);
   });
 
   it("counts what Western European keeps and names the missing Turkish letters", () => {
-    expect(counts(made("western"))).toEqual(["Czech 16/30", "French 32/32", "German 7/8", "Nordic 14/14", "Polish 2/18", "Turkish 6/12"]);
+    expect(counts(made("western"))).toEqual(["Czech 16/30", "French 32/32", "German 7/8", "Nordic 14/14", "Polish 2/18", "Portuguese 24/24", "Spanish 16/16", "Turkish 6/12"]);
     const turkish = checkCharacters(codePoints(readTables(made("western")).get("cmap")!)).find((g) => g.name === "Turkish")!;
     expect(turkish.missing).toEqual(["Ğ", "ğ", "İ", "ı", "Ş", "ş"]);
   });

@@ -27,9 +27,11 @@ describe("interface languages", () => {
 
   it("picks the saved language, else the browser's first known one, else English", () => {
     expect(pickLang("tr", ["en-US"])).toBe("tr");
-    expect(pickLang(null, ["de-DE", "tr-TR", "en"])).toBe("tr");
+    expect(pickLang(null, ["de-DE", "tr-TR", "en"])).toBe("de");
+    expect(pickLang(null, ["pt-BR", "en"])).toBe("pt");
+    expect(pickLang(null, ["zh-CN", "ru"])).toBe("ru");
     expect(pickLang("xx", ["TR"])).toBe("tr");
-    expect(pickLang(null, ["de", "fr"])).toBe("en");
+    expect(pickLang(null, ["zh", "ar", "hi"])).toBe("en");
     expect(pickLang(null, [])).toBe("en");
   });
 
@@ -43,6 +45,10 @@ describe("interface languages", () => {
     expect(t("fonts.search", { n: 20 })).toBe("20 fontta ara");
     expect([num(1.5), withUnit("75", "%"), withUnit("+5", "%"), withUnit("-3", "%"), withUnit("12", "°")]).toEqual(["1,5", "%75", "+%5", "-%3", "12°"]);
     expect(listText(["Derece", "Oynaklık"])).toBe("Derece ve Oynaklık");
+    useLang("fr");
+    expect([withUnit("75", "%"), withUnit("12", "°")]).toEqual(["75\u202F%", "12°"]);
+    useLang("de");
+    expect(withUnit("75", "%")).toBe("75\u00A0%");
   });
 
   it("capitalizes and folds Turkish letters right", () => {

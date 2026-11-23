@@ -12,6 +12,8 @@ export const GROUPS: readonly Group[] = [
   { name: "German", letters: letters("Ää Öö Üü ẞß") },
   { name: "Nordic", letters: letters("Åå Ææ Øø Ää Öö Ðð Þþ") },
   { name: "Polish", letters: letters("Ąą Ćć Ęę Łł Ńń Óó Śś Źź Żż") },
+  { name: "Portuguese", letters: letters("Àà Áá Ââ Ãã Çç Éé Êê Íí Óó Ôô Õõ Úú") },
+  { name: "Spanish", letters: letters("Áá Éé Íí Ññ Óó Úú Üü ¡¿") },
   { name: "Turkish", letters: letters("Çç Ğğ İı Öö Şş Üü") },
 ];
 

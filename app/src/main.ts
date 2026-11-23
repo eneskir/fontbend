@@ -10,6 +10,7 @@ import { download } from "./ui/download";
 import { fontList } from "./ui/fontList";
 import { preview } from "./ui/preview";
 import { themeMenu } from "./ui/theme";
+import { wear } from "./ui/wear";
 
 const catalog = parseCatalog(data);
 const store = createStore(startEditing(catalog.fonts[0]!));
@@ -21,7 +22,9 @@ name();
 store.subscribe((now, before) => { if (now.font !== before.font || now.name !== before.name) name(); });
 const dl = download(store);
 
-document.getElementById("app")!.replaceChildren(
+const app = document.getElementById("app")!;
+wear(store, app, docName);
+app.replaceChildren(
   h("header", { class: "app-bar" }, docName, h("span", { class: "bar-end" }, dl.button)),
   h("div", { class: "workspace" }, h("div", { class: "drawer-column" }, fontList(store, catalog), themeMenu()), preview(store), adjustPanel(store)),
   dl.panel,

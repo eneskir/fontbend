@@ -1,11 +1,11 @@
-import { needsStretched, type BuiltFont } from "../core/build";
+import type { BuiltFont } from "../core/build";
 import type { CatalogFont } from "../core/catalog";
 import type { MadeNames } from "../core/download";
 import type { AxisSetting } from "../core/settings";
 import type { Subset } from "../core/subsets";
 import type { BuildReply, BuildRequest } from "./build.worker";
 import type { Woff2Reply, Woff2Request } from "./woff2.worker";
-import { StretchError, fetchBytes, stretchedFont } from "./faces";
+import { fetchBytes } from "./faces";
 import { jobWorker } from "./jobs";
 
 export class MakeError extends Error {
@@ -22,17 +22,12 @@ const build = jobWorker<BuildReply, BuiltFont>(
   () => new MakeError("WORKER_STOPPED", "The font builder stopped. Try again."),
 );
 
-/** Makes the font file in a worker; the stretched font is waited for only when a value needs it. */
+/** Makes the font file in a worker, from the file as it ships. */
 export async function makeFont(font: CatalogFont, settings: Readonly<Record<string, AxisSetting>>, names: MadeNames, subset: Subset): Promise<BuiltFont> {
-  const [original, stretched] = await Promise.all([
-    fetchBytes(font.files.upright.path),
-    needsStretched(font.axes, settings) ? stretchedFont(font).then((b) => new Uint8Array(b)) : Promise.resolve(null),
-  ]).catch((err: unknown) => {
-    throw err instanceof StretchError
-      ? new MakeError("STRETCH_FAILED", `Fontbend couldn't stretch ${font.family} past its own range. Bring the values back inside it to download.`)
-      : new MakeError("LOAD_FAILED", `${font.family} didn't load. Check your connection and try again.`);
+  const original = await fetchBytes(font.files.upright.path).catch(() => {
+    throw new MakeError("LOAD_FAILED", `${font.family} didn't load. Check your connection and try again.`);
   });
-  return build({ original, stretched, axes: font.axes, settings: { ...settings }, names, subset } satisfies Omit<BuildRequest, "id">);
+  return build({ original, axes: font.axes, settings: { ...settings }, names, subset } satisfies Omit<BuildRequest, "id">);
 }
 
 let woff2: { worker: Worker; id: number; no: (e: MakeError) => void } | null = null;

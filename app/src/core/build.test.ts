@@ -1,12 +1,14 @@
 /// <reference types="vite/client" />
 import { describe, expect, it } from "vitest";
 import initWasm from "harfbuzzjs/dist/harfbuzz-subset.wasm?init";
+import { SYNTHETIC_AXES } from "./axis";
 import { BuildError, buildFont, needsStretched } from "./build";
 import { loadInstancer } from "./harfbuzz";
 import { SIGNATURE, menuFamily, postScriptName, readNames } from "./names";
 import { checksumOk, fraunces as original } from "./fixtures";
 import { readTables, view } from "./sfnt";
 import { stretchFont } from "./stretch";
+import { slant, transformFont } from "./transform";
 
 const stretched = stretchFont(original).bytes;
 const axes = [
@@ -97,6 +99,19 @@ describe("buildFont", () => {
     expect(view(readTables(heavy).get("OS/2")!).getUint16(4)).toBe(1000); // usWeightClass stops at 1000
     expect(readTables(heavy).get("glyf")).not.toEqual(readTables(black).get("glyf"));
     expect(checksumOk(heavy)).toBe(true);
+  });
+
+  it("draws Width and Slant of added axes into the letters: the mapped instance, as transformFont makes it", () => {
+    const withAdded = [...axes, ...SYNTHETIC_AXES];
+    const pins = { wght: 500, wdth: 80, slnt: -10 };
+    const made = buildFont(hb, { original, stretched: null, axes: withAdded }, pins, names).bytes;
+    const t = { ...slant(original, 10), a: 0.8 };
+    const want = hb.instance(transformFont(original, t), { wght: 500 });
+    expect(readTables(made).has("fvar")).toBe(false);
+    expect(readTables(made).get("glyf")).toEqual(readTables(want).get("glyf"));
+    expect(readTables(made).get("hmtx")).toEqual(readTables(want).get("hmtx"));
+    expect(needsStretched(withAdded, { wdth: 50 })).toBe(false);
+    expect(() => buildFont(hb, { original, stretched: null, axes: withAdded }, { wdth: [80, 120] }, names)).toThrow(/only be set to one value/);
   });
 
   it("keeps an axis variable when a range is chosen", () => {

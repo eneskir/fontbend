@@ -7,7 +7,23 @@ export type Axis = {
   /** Past these values some letters break: a contour turns inside out. Measured for catalog fonts by scripts/build-catalog.py. */
   readonly breaksBelow?: number;
   readonly breaksAbove?: number;
+  /** Not in the font file: Fontbend adds it to the font it draws with (core/synth) and maps the download (core/transform). */
+  readonly synthetic?: true;
 };
+
+/**
+ * Width and Slant for a font drawn without them. Their own range is narrower or
+ * wider by a quarter and a usual italic lean; past it the slider's line is dashed, as for any axis.
+ */
+export const SYNTHETIC_AXES: readonly Axis[] = [
+  { tag: "wdth", min: 75, default: 100, max: 125, synthetic: true },
+  { tag: "slnt", min: -12, default: 0, max: 0, synthetic: true },
+];
+
+/** The font's axes and the synthetic ones it lacks, which come last. */
+export function withSynthetic(axes: readonly Axis[]): Axis[] {
+  return [...axes, ...SYNTHETIC_AXES.filter((s) => !axes.some((a) => a.tag === s.tag))];
+}
 
 /** How far past its own range Fontbend lets an axis go: this share of each side's span. */
 export const STRETCH = 0.5;

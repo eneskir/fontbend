@@ -1,46 +1,49 @@
 import { axisValue, resetAxes, setAxis } from "../core/editor";
-import { SIMPLE_SLIDERS, axisLabel, slidersFor } from "../core/sliders";
+import { axisLabel, bigSliders, flipped, fontAxes } from "../core/sliders";
 import type { Store } from "../store";
 import { h } from "./dom";
 import { slider, type Slider } from "./slider";
 
-/** The right panel: plain-word sliders for the axes people know, then every axis of the font. */
+/** The right panel: Weight, Width and Slant stacked, then the font's other axes. */
 export function adjustPanel(store: Store): HTMLElement {
   const reset = h("button", { class: "text-button", type: "button", onclick: () => store.update(resetAxes) }, "Reset all");
-  const simple = h("div", { class: "simple-grid" });
+  const big = h("div", { class: "big-sliders" });
   const axesCount = h("span", { class: "count" });
+  const axesOwner = h("span", { class: "owner" });
+  const axesHead = h("div", { class: "panel-head is-sub" }, h("h3", { class: "label" }, "Font axes", axesCount), axesOwner);
   const expert = h("div", { class: "axis-list" });
   const panel = h("section", { class: "panel", "aria-labelledby": "adjust-title" },
     h("div", { class: "panel-head" }, h("h2", { id: "adjust-title", class: "title" }, "Adjust"), reset),
-    simple,
-    h("div", { class: "panel-head is-sub" }, h("h3", { class: "label" }, "Font axes", axesCount)),
-    expert);
+    big, axesHead, expert);
 
-  let byTag = new Map<string, Slider[]>();
+  // Each slider with the sign it shows the axis value in (Slant shows lean to the right as positive).
+  let sliders: { tag: string; sign: 1 | -1; s: Slider }[] = [];
   const build = () => {
     const state = store.get();
-    byTag = new Map();
-    const make = (tag: string, el: (s: Slider) => void, opts: { label: string; tag?: string; showRange?: boolean }) => {
-      const axis = state.font.axes.find((a) => a.tag === tag)!;
-      const s = slider({ ...opts, axis, onInput: (v) => store.update((st) => setAxis(st, tag, v)) });
-      byTag.set(tag, [...(byTag.get(tag) ?? []), s]);
-      el(s);
-    };
-    simple.replaceChildren();
-    for (const s of slidersFor(state.font)) make(s.tag, (sl) => simple.append(h("div", { class: "card" }, sl.el)), { label: s.label });
-    simple.hidden = simple.childElementCount === 0;
-    expert.replaceChildren();
-    for (const a of state.font.axes) {
-      const named = SIMPLE_SLIDERS.some((s) => s.tag === a.tag);
-      make(a.tag, (sl) => expert.append(sl.el), { label: axisLabel(a.tag), showRange: true, ...(named ? { tag: a.tag } : {}) });
+    sliders = [];
+    big.replaceChildren();
+    for (const b of bigSliders(state.font)) {
+      const sign = b.flip ? -1 : 1;
+      const s = slider({ label: b.label, axis: b.flip ? flipped(b.axis) : b.axis, unit: b.unit, big: true, showRange: true,
+        onInput: (v) => store.update((st) => setAxis(st, b.tag, sign * v)) });
+      sliders.push({ tag: b.tag, sign, s });
+      big.append(h("div", { class: "card" }, s.el));
     }
+    expert.replaceChildren();
+    const own = fontAxes(state.font);
+    for (const a of own) {
+      const s = slider({ label: axisLabel(a.tag), tag: a.tag, axis: a, showRange: true, onInput: (v) => store.update((st) => setAxis(st, a.tag, v)) });
+      sliders.push({ tag: a.tag, sign: 1, s });
+      expert.append(s.el);
+    }
+    axesHead.hidden = expert.hidden = own.length === 0;
+    axesCount.textContent = String(own.length);
+    axesOwner.textContent = `${state.font.family}’s own`;
   };
   const sync = () => {
     const state = store.get();
-    for (const [tag, sliders] of byTag) for (const s of sliders) s.set(axisValue(state, tag));
-    const changed = Object.keys(state.settings.axes).length;
-    reset.disabled = changed === 0;
-    axesCount.textContent = changed ? String(changed) : "";
+    for (const { tag, sign, s } of sliders) s.set(sign * axisValue(state, tag) + 0); // + 0: no −0 on the Slant ruler
+    reset.disabled = Object.keys(state.settings.axes).length === 0;
   };
 
   build();

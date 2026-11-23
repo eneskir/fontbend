@@ -20,25 +20,70 @@ function fail(why: string): never {
   throw new Error(`variation store: ${why}`);
 }
 
+/** One axis of a region: start, peak and end in F2Dot14. */
+export type Span = readonly [start: number, peak: number, end: number];
+
 export class VarStore {
-  private readonly regionList: Uint8Array;
+  private readonly regions: Span[][];
+  private readonly regionIndex = new Map<string, number>();
   private readonly data: readonly Data[];
   private readonly groups: Group[] = [];
   private readonly open = new Map<string, Group>();
   private readonly made = new Map<string, VarRef | null>();
 
-  /** `store` starts at the store and may run past its end. */
-  constructor(store: Uint8Array) {
+  /** `store` starts at the store and may run past its end; `addedAxes` new axes join every region, unused. */
+  constructor(store: Uint8Array, addedAxes = 0) {
     const v = view(store);
     if (v.getUint16(0) !== 1) fail("unknown format");
-    const regionAt = v.getUint32(2);
-    this.regionList = store.subarray(regionAt, regionAt + 4 + v.getUint16(regionAt) * v.getUint16(regionAt + 2) * 6);
+    const at = v.getUint32(2), axisCount = v.getUint16(at);
+    this.regions = Array.from({ length: v.getUint16(at + 2) }, (_, r) => [
+      ...Array.from({ length: axisCount }, (_, k): Span => {
+        const p = at + 4 + (r * axisCount + k) * 6;
+        return [v.getInt16(p), v.getInt16(p + 2), v.getInt16(p + 4)];
+      }),
+      ...Array.from({ length: addedAxes }, (): Span => [0, 0, 0]),
+    ]);
+    this.regions.forEach((r, i) => this.regionIndex.set(r.join(), i));
     this.data = Array.from({ length: v.getUint16(6) }, (_, i) => readData(store, v.getUint32(8 + i * 4)));
   }
 
-  /** Whether any item was added. */
+  /** Whether any item or region was added. */
   get changed(): boolean {
     return this.groups.length > 0;
+  }
+
+  /** A region's spans, axis by axis. */
+  spans(region: number): readonly Span[] {
+    return this.regions[region] ?? fail(`no region ${region}`);
+  }
+
+  /** The index of the region with these spans, added when new. */
+  region(spans: readonly Span[]): number {
+    const key = spans.join();
+    let i = this.regionIndex.get(key);
+    if (i === undefined) {
+      if (this.regions.length === 0xffff) fail("too many regions");
+      i = this.regions.push([...spans]) - 1;
+      this.regionIndex.set(key, i);
+    }
+    return i;
+  }
+
+  /** An item's deltas by region; empty for none. */
+  row(ref: VarRef | null): Map<number, number> {
+    const out = new Map<number, number>();
+    if (!ref) return out;
+    const d = this.data[ref.outer] ?? fail(`no item data ${ref.outer}`);
+    const row = d.rows[ref.inner] ?? fail(`no item ${ref.outer}.${ref.inner}`);
+    d.regions.forEach((region, j) => out.set(region, row[j]!));
+    return out;
+  }
+
+  /** The item with these deltas by region, rounded; null when it varies nothing. */
+  item(deltas: ReadonlyMap<number, number>): VarRef | null {
+    const regions = [...deltas.keys()].sort((x, y) => x - y);
+    const row = regions.map((r) => Math.round(deltas.get(r)!));
+    return row.some((x) => x !== 0) ? this.add(regions, row) : null;
   }
 
   /** The item that is the sum of `terms`, rounded region by region; null when it varies nothing. */
@@ -48,30 +93,14 @@ export class VarStore {
     if (live.length === 1 && live[0]![1] === 1) return live[0]![0];
     const key = live.map(([r, k]) => `${r.outer}.${r.inner}*${k}`).join("+");
     if (this.made.has(key)) return this.made.get(key)!;
-
-    const sum = new Map<number, number>();
-    for (const [r, k] of live) {
-      const d = this.data[r.outer] ?? fail(`no item data ${r.outer}`);
-      const row = d.rows[r.inner] ?? fail(`no item ${r.outer}.${r.inner}`);
-      d.regions.forEach((region, j) => sum.set(region, (sum.get(region) ?? 0) + k * row[j]!));
-    }
-    const regions = [...sum.keys()].sort((x, y) => x - y);
-    const row = regions.map((r) => Math.round(sum.get(r)!));
-    const ref = row.some((x) => x !== 0) ? this.add(regions, row) : null;
+    const ref = this.item(sum(live.map(([r, k]) => [this.row(r), k])));
     this.made.set(key, ref);
     return ref;
   }
 
   /** How far the sum of `terms` can move a value: its deltas' sizes added up. */
   reach(terms: Terms): number {
-    const sum = new Map<number, number>();
-    for (const [r, k] of terms) {
-      if (!r) continue;
-      const d = this.data[r.outer] ?? fail(`no item data ${r.outer}`);
-      const row = d.rows[r.inner] ?? fail(`no item ${r.outer}.${r.inner}`);
-      d.regions.forEach((region, j) => sum.set(region, (sum.get(region) ?? 0) + k * row[j]!));
-    }
-    return [...sum.values()].reduce((n, x) => n + Math.abs(x), 0);
+    return [...sum(terms.map(([r, k]) => [this.row(r), k])).values()].reduce((n, x) => n + Math.abs(x), 0);
   }
 
   private add(regions: readonly number[], row: number[]): VarRef {
@@ -90,19 +119,29 @@ export class VarStore {
     return { outer: g.outer, inner };
   }
 
-  /** The store with its old item data first, unchanged, and the new after. */
+  /** The store with its old item data first, unchanged, and the new after; regions with every axis. */
   write(): Uint8Array {
+    const axisCount = this.regions[0]?.length ?? 0;
+    const regionList = new Uint8Array(4 + this.regions.length * axisCount * 6), rv = view(regionList);
+    rv.setUint16(0, axisCount); rv.setUint16(2, this.regions.length);
+    this.regions.forEach((r, i) => r.forEach((span, k) => span.forEach((x, j) => rv.setInt16(4 + (i * axisCount + k) * 6 + j * 2, x))));
     const parts = [...this.data.map((d) => d.bytes), ...this.groups.map(encodeGroup)];
     const header = 8 + parts.length * 4;
-    const size = parts.reduce((n, p) => n + p.length, header + this.regionList.length);
+    const size = parts.reduce((n, p) => n + p.length, header + regionList.length);
     const out = new Uint8Array(size + (size & 1));
     const w = view(out);
     w.setUint16(0, 1); w.setUint32(2, header); w.setUint16(6, parts.length);
-    out.set(this.regionList, header);
-    let at = header + this.regionList.length;
+    out.set(regionList, header);
+    let at = header + regionList.length;
     parts.forEach((p, i) => { w.setUint32(8 + i * 4, at); out.set(p, at); at += p.length; });
     return out;
   }
+}
+
+function sum(rows: readonly (readonly [ReadonlyMap<number, number>, number])[]): Map<number, number> {
+  const out = new Map<number, number>();
+  for (const [row, k] of rows) for (const [region, d] of row) out.set(region, (out.get(region) ?? 0) + k * d);
+  return out;
 }
 
 function readData(store: Uint8Array, at: number): Data {

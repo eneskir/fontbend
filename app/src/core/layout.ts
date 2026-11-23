@@ -20,7 +20,7 @@ import { VarStore, varRef, type VarRef } from "./varstore";
 
 const EXTENSION = 9, VARIATION_INDEX = 0x8000;
 // Value record fields, in their order in the record.
-const X_PLA = 1, Y_PLA = 2, X_ADV = 4, Y_ADV = 8, X_PLA_DEV = 0x10, Y_PLA_DEV = 0x20, X_ADV_DEV = 0x40, Y_ADV_DEV = 0x80;
+export const X_PLA = 1, Y_PLA = 2, X_ADV = 4, Y_ADV = 8, X_PLA_DEV = 0x10, Y_PLA_DEV = 0x20, X_ADV_DEV = 0x40, Y_ADV_DEV = 0x80;
 
 function fail(why: string): never {
   throw new Error(`layout: ${why}`);
@@ -101,22 +101,51 @@ function place(root: Node, how: Order): Uint8Array | null {
 
 type Value = { xPla: number; yPla: number; xAdv: number; yAdv: number; xPlaDev: VarRef | null; yPlaDev: VarRef | null; xAdvDev: VarRef | null; yAdvDev: VarRef | null };
 
-/** GPOS and GDEF mapped by `t`; only the tables that changed. */
+/** How a map moves x in GPOS and GDEF; y never changes. A result's `xr` is the new x variation. */
+export type LayoutMap = {
+  /** An anchor. */
+  point(x: number, y: number, xr: VarRef | null, yr: VarRef | null): { x: number; xr: VarRef | null };
+  /** A placement or an advance. */
+  move(dx: number, dy: number, xr: VarRef | null, yr: VarRef | null): { x: number; xr: VarRef | null };
+  /** The fields a value record of this format gets. */
+  format(f: number): number;
+  /** A ligature caret, a point on the baseline; null leaves carets as they are. */
+  caret: ((x: number, r: VarRef | null) => { x: number; r: VarRef | null }) | null;
+};
+
+/** GPOS and GDEF mapped by `t`. */
 export function mapLayout(tables: ReadonlyMap<string, Uint8Array>, t: Shear): Map<string, Uint8Array> {
+  return rewriteLayout(tables, (store) => {
+    const combine = (terms: readonly (readonly [VarRef | null, number])[]) => {
+      if (terms.every(([r, k]) => !r || k === 0)) return null;
+      return (store ?? fail("a variation device with no variation store")).combine(terms);
+    };
+    return {
+      point: (x, y, xr, yr) => ({ x: Math.round(t.a * x + t.b * y + t.c), xr: combine([[xr, t.a], [yr, t.b]]) }),
+      move: (dx, dy, xr, yr) => ({ x: Math.round(t.a * dx + t.b * dy), xr: combine([[xr, t.a], [yr, t.b]]) }),
+      // A slant gives every y field an x field.
+      format: (f) => (t.b !== 0 ? f | ((f & (Y_PLA | Y_ADV | Y_PLA_DEV | Y_ADV_DEV)) >> 1) : f),
+      caret: (x, r) => ({ x: Math.round(t.a * x + t.c), r: combine([[r, t.a]]) }),
+    };
+  });
+}
+
+/**
+ * GPOS and GDEF rewritten by the map `make` builds over GDEF's variation store (null when the font
+ * has none); `addedAxes` new axes join the store's regions. Only the tables the font has.
+ */
+export function rewriteLayout(tables: ReadonlyMap<string, Uint8Array>, make: (store: VarStore | null) => LayoutMap, addedAxes = 0): Map<string, Uint8Array> {
   const out = new Map<string, Uint8Array>();
   const gdef = tables.get("GDEF"), gpos = tables.get("GPOS");
   const g = gdef ? view(gdef) : null;
   const storeAt = g && gdef!.length >= 18 && g.getUint16(0) === 1 && g.getUint16(2) >= 3 ? g.getUint32(14) : 0;
-  const store = storeAt ? new VarStore(gdef!.subarray(storeAt)) : null;
-  const combine = (terms: readonly (readonly [VarRef | null, number])[]) => {
-    if (terms.every(([r, k]) => !r || k === 0)) return null;
-    return (store ?? fail("a variation device with no variation store")).combine(terms);
-  };
+  const store = storeAt ? new VarStore(gdef!.subarray(storeAt), addedAxes) : null;
+  const m = make(store);
 
-  if (gpos) out.set("GPOS", mapGpos(gpos, t, combine));
+  if (gpos) out.set("GPOS", mapGpos(gpos, m));
   if (gdef) {
-    const carets = mapCarets(gdef, t, combine);
-    if (store?.changed) {
+    const carets = m.caret ? mapCarets(gdef, m.caret) : gdef.slice();
+    if (store && (store.changed || addedAxes > 0)) {
       const s = store.write(), at = carets.length + (carets.length & 1);
       const next = new Uint8Array(at + s.length);
       next.set(carets); next.set(s, at);
@@ -127,10 +156,8 @@ export function mapLayout(tables: ReadonlyMap<string, Uint8Array>, t: Shear): Ma
   return out;
 }
 
-type Combine = (terms: readonly (readonly [VarRef | null, number])[]) => VarRef | null;
-
 /** Ligature carets, in place: a caret is where its line meets the baseline, so it maps as the point (x, 0). */
-function mapCarets(gdef: Uint8Array, t: Shear, combine: Combine): Uint8Array {
+function mapCarets(gdef: Uint8Array, caret: NonNullable<LayoutMap["caret"]>): Uint8Array {
   const out = gdef.slice(), v = view(out);
   const list = v.getUint16(8);
   if (!list) return out;
@@ -144,20 +171,21 @@ function mapCarets(gdef: Uint8Array, t: Shear, combine: Combine): Uint8Array {
       const format = v.getUint16(cv);
       if (format === 2) continue; // a contour point, which moves with its glyph
       if (format !== 1 && format !== 3) fail(`unknown caret format ${format}`);
-      v.setInt16(cv + 2, Math.round(t.a * v.getInt16(cv + 2) + t.c));
-      const dev = format === 3 ? cv + v.getUint16(cv + 4) : cv;
-      if (dev === cv || done.has(dev)) continue;
+      const dev = format === 3 && v.getUint16(cv + 4) ? cv + v.getUint16(cv + 4) : 0;
+      const old = dev && v.getUint16(dev + 4) === VARIATION_INDEX ? varRef(v.getUint16(dev), v.getUint16(dev + 2)) : null;
+      const mapped = caret(v.getInt16(cv + 2), old);
+      v.setInt16(cv + 2, mapped.x);
+      if (!dev || done.has(dev)) continue;
       done.add(dev);
-      // Only carets point at caret devices, and all of them map by a, so a device is rewritten in place once.
-      const ref = v.getUint16(dev + 4) === VARIATION_INDEX ? combine([[varRef(v.getUint16(dev), v.getUint16(dev + 2)), t.a]]) : null;
-      if (ref) { v.setUint16(dev, ref.outer); v.setUint16(dev + 2, ref.inner); }
+      // Only carets point at caret devices, and all of them map alike, so a device is rewritten in place once.
+      if (mapped.r) { v.setUint16(dev, mapped.r.outer); v.setUint16(dev + 2, mapped.r.inner); v.setUint16(dev + 4, VARIATION_INDEX); }
       else v.setUint16(cv + 4, 0);
     }
   }
   return out;
 }
 
-function mapGpos(gpos: Uint8Array, t: Shear, combine: Combine): Uint8Array {
+function mapGpos(gpos: Uint8Array, m: LayoutMap): Uint8Array {
   const v = view(gpos), u16 = (at: number) => v.getUint16(at), i16 = (at: number) => v.getInt16(at);
   const memo = new Map<string, Node>();
   const intern = (n: Node): Node => {
@@ -174,25 +202,22 @@ function mapGpos(gpos: Uint8Array, t: Shear, combine: Combine): Uint8Array {
   const deviceAt = (base: number, off: number): VarRef | null =>
     off && u16(base + off + 4) === VARIATION_INDEX ? varRef(u16(base + off), u16(base + off + 2)) : null;
   const device = (r: VarRef | null) => (r ? intern(new Node().u16(r.outer, r.inner, VARIATION_INDEX)) : null);
-  const x = (px: number, py: number) => Math.round(t.a * px + t.b * py + t.c);
-  const move = (dx: number, dy: number) => Math.round(t.a * dx + t.b * dy);
 
   const anchor = (at: number | null): Node | null => {
     if (at === null) return null;
     const format = u16(at), ax = i16(at + 2), ay = i16(at + 4);
     if (format < 1 || format > 3) fail(`unknown anchor format ${format}`);
     const xr = format === 3 ? deviceAt(at, u16(at + 6)) : null, yr = format === 3 ? deviceAt(at, u16(at + 8)) : null;
-    const nxr = combine([[xr, t.a], [yr, t.b]]);
+    const p = m.point(ax, ay, xr, yr);
     const n = new Node();
-    if (nxr || yr) n.u16(3).i16(x(ax, ay)).i16(ay).off(device(nxr)).off(device(yr));
-    else if (format === 2) n.u16(2).i16(x(ax, ay)).i16(ay).u16(u16(at + 6));
-    else n.u16(1).i16(x(ax, ay)).i16(ay);
+    if (p.xr || yr) n.u16(3).i16(p.x).i16(ay).off(device(p.xr)).off(device(yr));
+    else if (format === 2) n.u16(2).i16(p.x).i16(ay).u16(u16(at + 6));
+    else n.u16(1).i16(p.x).i16(ay);
     return intern(n);
   };
   const anchorAt = (base: number, off: number) => (off ? anchor(base + off) : null);
 
-  // A slant gives every y field an x field.
-  const format = (f: number) => (t.b !== 0 ? f | ((f & (Y_PLA | Y_ADV | Y_PLA_DEV | Y_ADV_DEV)) >> 1) : f);
+  const format = (f: number) => m.format(f);
   const recordSize = (f: number) => popcount(f) * 2;
   const readValue = (at: number, f: number, base: number): Value => {
     const val: Value = { xPla: 0, yPla: 0, xAdv: 0, yAdv: 0, xPlaDev: null, yPlaDev: null, xAdvDev: null, yAdvDev: null };
@@ -210,13 +235,14 @@ function mapGpos(gpos: Uint8Array, t: Shear, combine: Combine): Uint8Array {
     return val;
   };
   const putValue = (n: Node, val: Value, f: number) => {
-    if (f & X_PLA) n.i16(move(val.xPla, val.yPla));
+    const pla = m.move(val.xPla, val.yPla, val.xPlaDev, val.yPlaDev), adv = m.move(val.xAdv, val.yAdv, val.xAdvDev, val.yAdvDev);
+    if (f & X_PLA) n.i16(pla.x);
     if (f & Y_PLA) n.i16(val.yPla);
-    if (f & X_ADV) n.i16(move(val.xAdv, val.yAdv));
+    if (f & X_ADV) n.i16(adv.x);
     if (f & Y_ADV) n.i16(val.yAdv);
-    if (f & X_PLA_DEV) n.off(device(combine([[val.xPlaDev, t.a], [val.yPlaDev, t.b]])));
+    if (f & X_PLA_DEV) n.off(device(pla.xr));
     if (f & Y_PLA_DEV) n.off(device(val.yPlaDev));
-    if (f & X_ADV_DEV) n.off(device(combine([[val.xAdvDev, t.a], [val.yAdvDev, t.b]])));
+    if (f & X_ADV_DEV) n.off(device(adv.xr));
     if (f & Y_ADV_DEV) n.off(device(val.yAdvDev));
   };
   /** Copies `count` value records (or pairs of them) starting at `at`, devices measured from `base`. */

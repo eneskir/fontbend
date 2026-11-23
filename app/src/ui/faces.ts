@@ -29,11 +29,12 @@ export const loadPreview = (font: CatalogFont) => load(previewFamily(font), asyn
 
 const stretchedBytes = new Map<string, Promise<ArrayBuffer>>();
 
-/** The stretched font's bytes, made once per font: the preview draws with them and downloads are built from them. */
+/** The stretched font's bytes, made once per font, for the preview. */
 export const stretchedFont = (font: CatalogFont) =>
-  once(stretchedBytes, font.id, () => fetchBytes(font.files.upright.path).then((b) => stretchJob({ bytes: b }, [b.buffer])));
+  once(stretchedBytes, font.id, () => fetchBytes(font.files.upright.path)
+    .then((b) => stretchJob({ bytes: b, synthetic: font.axes.filter((a) => a.synthetic) }, [b.buffer])));
 
-/** The same font rewritten so its axes reach past their own ends (core/stretch). */
+/** The same font rewritten so its axes reach past their own ends (core/stretch), with Width and Slant added where it lacks them (core/synth). */
 export const stretchedFamily = (font: CatalogFont) => `fb-x-${font.id}`;
 export const loadStretched = (font: CatalogFont) => load(stretchedFamily(font), () => stretchedFont(font));
 

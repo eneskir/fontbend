@@ -8,6 +8,7 @@ import { linkText, openLink, type Opened } from "../core/link";
 import { axisLabel } from "../core/sliders";
 import type { Store } from "../store";
 import { h } from "./dom";
+import type { Recent } from "./recent";
 
 const COPIED_FOR = 2000;
 
@@ -35,9 +36,9 @@ const list = (names: readonly string[]) => names.length < 2 ? names.join("") : `
 /**
  * Opens the link in the address bar, if there is one, and takes it out of the address so a reload
  * doesn't open it again. Returns the band, empty until a link opens; a link pasted into this tab
- * later opens too.
+ * later opens too. A link starts a new Recent entry, so it never writes over the user's own.
  */
-export function sharedLinks(store: Store, catalog: Catalog): { readonly banner: HTMLElement; readonly open: () => void } {
+export function sharedLinks(store: Store, catalog: Catalog, recent: Pick<Recent, "detach" | "count">): { readonly banner: HTMLElement; readonly open: () => boolean } {
   const title = h("p", { class: "label" });
   const body = h("p", { class: "banner-body" });
   const code = h("span", { class: "meta notice-code" }, "Code FB-LINK-01");
@@ -46,19 +47,19 @@ export function sharedLinks(store: Store, catalog: Catalog): { readonly banner: 
   const banner = h("section", { class: "banner", "aria-label": "Shared link", hidden: true }, h("div", { class: "banner-texts" }, title, body), reset, close);
   const hide = () => { banner.hidden = true; };
 
-  const show = (opened: Opened) => {
-    const family = store.get().font.family;
+  const show = (opened: Opened, hadRecent: boolean) => {
+    const family = store.get().font.family, kept = hadRecent ? " Your changed fonts are still in Recent." : "";
     banner.classList.toggle("is-damaged", opened.kind === "damaged");
     reset.hidden = !(opened.kind === "shared" && opened.changes > 0);
     switch (opened.kind) {
       case "shared":
         title.textContent = "Opened from a shared link";
-        body.textContent = opened.changes ? `${family} with ${opened.changes} ${opened.changes === 1 ? "change" : "changes"}.` : `${family} as designed.`;
+        body.textContent = opened.changes ? `${family} with ${opened.changes} ${opened.changes === 1 ? "change" : "changes"}.${kept}` : `${family} as designed.${kept}`;
         break;
       case "older": {
         const names = opened.skipped.map(axisLabel);
         title.textContent = "This link is from an older version of Fontbend";
-        body.textContent = `${list(names)} ${names.length === 1 ? "is" : "are"} no longer in ${family}. Everything else opened as shared.`;
+        body.textContent = `${list(names)} ${names.length === 1 ? "is" : "are"} no longer in ${family}. Everything else opened as shared.${kept}`;
         break;
       }
       case "damaged":
@@ -72,14 +73,17 @@ export function sharedLinks(store: Store, catalog: Catalog): { readonly banner: 
 
   const open = () => {
     const text = location.hash.slice(1);
-    if (!text) return;
+    if (!text) return false;
     history.replaceState(null, "", location.pathname + location.search);
     const { state, opened } = openLink(catalog.fonts, text);
+    const hadRecent = recent.count() > 0;
+    recent.detach();
     // The sample text and size stay as the user left them.
     store.update((s) => ({ ...s, font: state.font, settings: state.settings, name: null }));
-    show(opened);
+    show(opened, hadRecent);
+    return true;
   };
-  window.addEventListener("hashchange", open);
+  window.addEventListener("hashchange", () => void open());
   // The band tells about the font the link opened; another font makes it old news.
   store.subscribe((now, before) => { if (now.font !== before.font) hide(); });
   return { banner, open };

@@ -80,7 +80,11 @@ ul { list-style: none; }
 /* Foot of the drawer (design: Help, Theme, language); Theme opens a menu of three choices. */
 .drawer-foot { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 8px; }
 .foot-button { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px 0 4px; border-radius: 2px; color: var(--ink-muted); font-weight: 500; }
-.foot-button:hover, .foot-button[aria-expanded="true"] { background: var(--paper); color: var(--ink); }
+.foot-button:hover, .foot-button[aria-expanded="true"], .drawer-tab[aria-selected="true"] { background: var(--paper); color: var(--ink); }
+/* Top of the drawer: its views as tabs (design: drawer tabs). */
+.drawer-tabs { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 8px; }
+.icon-text { flex: none; width: 16px; font-size: 11px; line-height: 16px; text-align: center; font-weight: 600; }
+.icon-recent { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M2.6 8a5.4 5.4 0 1 0 1.6-3.84' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M2 2.2v3.6h3.6z'/%3E%3Cpath d='M8 5.4v3h2.2' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E") center / contain no-repeat; }
 .icon { flex: none; width: 16px; height: 16px; background: currentColor; }
 .icon-theme { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='5.25' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M8 2.75a5.25 5.25 0 0 1 0 10.5z'/%3E%3C/svg%3E") center / contain no-repeat; }
 /* Menu as the design draws it: a heading, then choices with a tick on the chosen one (radios underneath for keyboard and screen readers). */
@@ -93,7 +97,6 @@ ul { list-style: none; }
 .menu-option::before { content: ""; flex: none; width: 16px; height: 16px; }
 .menu-option:has(:checked)::before { background: var(--ink); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
 .menu-option:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: -2px; }
-.drawer-title { padding: 6px 4px; }
 .field { height: 32px; width: 100%; padding: 0 8px; background: var(--paper); border: 0; border-radius: 2px; } /* told apart from the drawer by tone, no border (design) */
 .field::placeholder { color: var(--ink-muted); }
 .font-groups { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
@@ -110,6 +113,19 @@ ul { list-style: none; }
 }
 .font-item:hover { background: var(--line); }
 .font-item[aria-current="true"] { background: var(--paper); }
+/* Recent: each font's "Ag" in its own settings, its name and when it last changed. */
+.recent { gap: 16px; }
+.recent-day { display: flex; flex-direction: column; gap: 4px; }
+.recent-day h3 { padding: 0 8px; }
+.recent-item { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px; border-radius: 2px; text-align: left; }
+.recent-item:hover { background: var(--line); }
+.recent-item[aria-current="true"] { background: var(--paper); }
+.recent-sample { display: block; font-size: 28px; line-height: 32px; white-space: nowrap; transform-origin: 0 75%; visibility: hidden; }
+.recent-sample.is-ready { visibility: visible; }
+.recent-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; line-height: 16px; color: var(--ink-muted); }
+.recent-time { font-family: var(--mono); }
+.recent-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 8px; }
+.recent-note { padding: 0 8px; }
 .empty { padding: 8px; color: var(--ink-muted); }
 
 /* Centre: preview */
@@ -279,7 +295,7 @@ label.file:has(:disabled) { cursor: default; }
 .notice-title { color: var(--red); }
 .notice-code { font-family: var(--mono); }
 /* Numbers stay in the interface's mono font, upright and as wide as drawn, whatever the font being made. */
-:is(.button-meta, .size, .count, .slider-tag, .slider-delta, .slider-value, .slider-range, .check-count, .file, .notice-code) { font-variation-settings: normal; }
+:is(.button-meta, .size, .count, .slider-tag, .slider-delta, .slider-value, .slider-range, .check-count, .file, .notice-code, .recent-time) { font-variation-settings: normal; }
 .notice-actions { display: flex; gap: 8px; padding-top: 8px; }
 
 @media (max-width: 1100px) {

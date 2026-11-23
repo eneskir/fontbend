@@ -103,6 +103,9 @@ ul { list-style: none; }
 .foot-code { flex: none; width: 16px; font-family: var(--mono); font-size: 11px; line-height: 16px; text-align: center; font-weight: 600; }
 .menu-name { flex: 1; }
 .menu-code { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); font-variation-settings: normal; }
+.menu-rule { margin: 4px 0; }
+.menu-link { display: flex; align-items: center; height: 32px; padding: 0 8px 0 32px; border-radius: 2px; font-weight: 500; color: inherit; text-decoration: none; }
+.menu-link:hover { background: var(--surface); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .field { height: 32px; width: 100%; padding: 0 8px; background: var(--paper); border: 0; border-radius: 2px; } /* told apart from the drawer by tone, no border (design) */
 .field::placeholder { color: var(--ink-muted); }

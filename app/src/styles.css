@@ -158,7 +158,9 @@ ul { list-style: none; }
 }
 .row { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 16px; align-items: baseline; }
 .size { font-family: var(--mono); text-align: right; }
-.line { line-height: 1.2; overflow-wrap: break-word; }
+/* Words stay whole, as the font draws them; a word wider than the stage scrolls it sideways.
+   Stated outright: an editable line breaks words by default. */
+.line { line-height: 1.2; overflow-wrap: normal; }
 .line.is-main { font-size: var(--size); line-height: 1.1; padding-bottom: 16px; font-variation-settings: var(--axes-moving, var(--axes)); }
 .line.is-main:focus-visible { outline: 1px dashed var(--line-strong); outline-offset: 8px; }
 .paragraph { font-size: 16px; line-height: 24px; max-width: 70ch; }

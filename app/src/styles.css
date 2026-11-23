@@ -27,6 +27,11 @@ body {
   line-height: 20px;
 }
 button, input, select { font: inherit; color: inherit; }
+
+/* The interface wears the font being made (ui/wear.ts), in a readable band; until it arrives, its own font. */
+#app { font-family: var(--wear, "Recursive Text"), "Recursive Text", system-ui, sans-serif; font-variation-settings: var(--wear-axes, normal); font-synthesis: none; }
+/* The font's name shows the exact settings, like the sample. */
+#app .doc-name { font-variation-settings: var(--name-axes, normal); }
 button { background: none; border: 0; cursor: pointer; }
 ul { list-style: none; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
@@ -259,6 +264,8 @@ label.file:has(:disabled) { cursor: default; }
 .notice { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding-left: 12px; border-left: 2px solid var(--ink); }
 .notice-title { color: var(--red); }
 .notice-code { font-family: var(--mono); }
+/* Numbers stay in the interface's mono font, upright and as wide as drawn, whatever the font being made. */
+:is(.button-meta, .size, .count, .slider-tag, .slider-delta, .slider-value, .slider-range, .check-count, .file, .notice-code) { font-variation-settings: normal; }
 .notice-actions { display: flex; gap: 8px; padding-top: 8px; }
 
 @media (max-width: 1100px) {

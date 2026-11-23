@@ -130,7 +130,8 @@ export function preview(store: Store): HTMLElement {
       canvas.classList.remove("is-loading");
       setStatus("");
       // The shipped font shows at once; the stretched one, which can also draw values past the
-      // font's own range, takes its place when ready (up to about 0.7 s).
+      // font's own range and Width and Slant the font lacks, takes its place when ready (0.7 s
+      // for Fraunces, 4 s for Recursive, measured 23.11).
       loadStretched(font).then(async () => {
         const at = variableGlyph(new Uint8Array(await stretchedFont(font)), 0x48);
         if (store.get().font !== font) return;

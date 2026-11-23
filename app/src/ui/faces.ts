@@ -10,8 +10,17 @@ export const fetchBytes = (path: string) =>
 const faces = new Map<string, Promise<void>>();
 
 /** Loads a font once under a family name of its own; a failed load can be tried again. */
-const load = (family: string, source: () => Promise<string | ArrayBuffer>) =>
-  once(faces, family, () => source().then((s) => new FontFace(family, s).load()).then((f) => void document.fonts.add(f)));
+const load = (family: string, source: () => Promise<string | ArrayBuffer>, descriptors?: FontFaceDescriptors) =>
+  once(faces, family, () => source().then((s) => new FontFace(family, s, descriptors).load()).then((f) => void document.fonts.add(f)));
+
+/**
+ * The weights a variable font covers, so font-weight moves its wght axis: the interface wears the
+ * font at its own weight levels (core/wear) instead of the browser thickening it.
+ */
+const weights = (font: CatalogFont): FontFaceDescriptors => {
+  const w = font.axes.find((a) => a.tag === "wght");
+  return w ? { weight: `${Math.max(1, w.min)} ${Math.min(1000, w.max)}` } : {};
+};
 
 /** The font arrived but could not be stretched; unlike a failed download, trying again won't help. */
 export class StretchError extends Error {}
@@ -25,7 +34,7 @@ const stretchJob = jobWorker<StretchReply, ArrayBuffer>(
 
 /** The whole variable font as it ships, for the preview while the stretched one is made. */
 export const previewFamily = (font: CatalogFont) => `fb-${font.id}`;
-export const loadPreview = (font: CatalogFont) => load(previewFamily(font), async () => `url("${url(font.files.upright.path)}")`);
+export const loadPreview = (font: CatalogFont) => load(previewFamily(font), async () => `url("${url(font.files.upright.path)}")`, weights(font));
 
 const stretchedBytes = new Map<string, Promise<ArrayBuffer>>();
 
@@ -36,7 +45,7 @@ export const stretchedFont = (font: CatalogFont) =>
 
 /** The same font rewritten so its axes reach past their own ends (core/stretch), with Width and Slant added where it lacks them (core/synth). */
 export const stretchedFamily = (font: CatalogFont) => `fb-x-${font.id}`;
-export const loadStretched = (font: CatalogFont) => load(stretchedFamily(font), () => stretchedFont(font));
+export const loadStretched = (font: CatalogFont) => load(stretchedFamily(font), () => stretchedFont(font), weights(font));
 
 /** A few kilobytes that draw only the letters of the family name, for the font list. */
 export const nameFamily = (font: CatalogFont) => `fb-name-${font.id}`;

@@ -3,8 +3,9 @@
 :root { color-scheme: dark; }
 /* Height of every control; a phone takes 44 px, the touch target the product keeps there. */
 :root { --control: 32px; }
-/* Declared on the canvas too, so its colours follow its own color-scheme (the build turns light-dark() into variables resolved where declared). */
-:root, .canvas {
+/* Declared on the stage too, so its colours follow its own color-scheme (the build turns light-dark() into variables resolved where declared).
+   Only the stage takes the canvas theme; the band with Sample and Size above it is interface. */
+:root, .stage {
   --paper: light-dark(#FAFAFA, #1A1A1A);
   --surface: light-dark(#EEEEEE, #232323);
   --line: light-dark(#E0E0E0, #333333);
@@ -16,14 +17,14 @@
   --mono: "Recursive Mono", ui-monospace, monospace;
   /* One corner for every box: buttons, fields, menus, panels (design: edges a touch soft). */
   --radius: 2px;
-  /* Keyboard focus: no drawn frame; a soft shadow whose 2px core keeps 3:1 against the ground in both themes. */
-  --focus-shadow: 0 0 4px 2px color-mix(in srgb, var(--ink) 60%, transparent);
+  /* Keyboard focus: no drawn frame; a light shadow whose core keeps 3:1 against paper and surface in both themes (measured 3.2 to 4.3). */
+  --focus-shadow: 0 0 2px 1px color-mix(in srgb, var(--ink) 70%, transparent);
   --tri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 1h10L5 10z'/%3E%3C/svg%3E");
   --tri-hollow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.25 1.75h7.5L5 8.75z' fill='none' stroke='%23000' stroke-width='1.25' stroke-linejoin='miter'/%3E%3C/svg%3E");
 }
 :root[data-theme="light"] { color-scheme: light; }
-:root[data-canvas="light"] .canvas { color-scheme: light; }
-:root[data-canvas="dark"] .canvas { color-scheme: dark; }
+:root[data-canvas="light"] .stage { color-scheme: light; }
+:root[data-canvas="dark"] .stage { color-scheme: dark; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 [hidden] { display: none !important; }
@@ -176,7 +177,7 @@ ul { list-style: none; }
 /* Centre: preview */
 .canvas { display: flex; flex-direction: column; min-height: 0; background: var(--paper); color: var(--ink); }
 .canvas-bar { flex: none; padding: 8px 32px; background: var(--surface); border-bottom: 1px solid var(--line); }
-.stage { flex: 1; padding: 16px 32px 48px; }
+.stage { flex: 1; padding: 16px 32px 48px; background: var(--paper); color: var(--ink); }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
 .field-group {
   position: relative;
@@ -190,7 +191,8 @@ ul { list-style: none; }
 }
 .field-group:has(:focus-visible) { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus-shadow); }
 .select { appearance: none; height: var(--control); padding-right: 20px; background: none; border: 0; font-weight: 500; cursor: pointer; }
-.select:focus-visible { outline: none; }
+/* The field group carries the shadow; the select inside would draw a second one. */
+.select:focus-visible { outline: none; box-shadow: none; }
 .select option { background: var(--paper); color: var(--ink); }
 .field-group::after {
   content: "";
@@ -235,7 +237,7 @@ ul { list-style: none; }
    Stated outright: an editable line breaks words by default. */
 .line { line-height: 1.2; overflow-wrap: normal; }
 .line.is-main { font-size: var(--size); line-height: 1.1; padding-bottom: 16px; font-variation-settings: var(--axes-moving, var(--axes)); }
-.line.is-main:focus-visible { outline-offset: 8px; background: var(--surface); box-shadow: 0 0 0 8px var(--surface), 0 0 4px 10px color-mix(in srgb, var(--ink) 60%, transparent); }
+.line.is-main:focus-visible { outline-offset: 8px; background: var(--surface); box-shadow: 0 0 0 8px var(--surface), 0 0 2px 9px color-mix(in srgb, var(--ink) 70%, transparent); }
 .paragraph { font-size: 16px; line-height: 24px; max-width: 70ch; }
 .source { padding-top: 8px; font-family: "Recursive Text", system-ui, sans-serif; font-variation-settings: normal; }
 

@@ -16,8 +16,8 @@ export type EditorState = {
   readonly name: string | null;
 };
 
-export function startEditing(font: CatalogFont): EditorState {
-  return { font, settings: freshSettings(font), sample: "pangram", text: null, size: 96, name: null };
+export function startEditing(font: CatalogFont, sample: SampleId = "pangram"): EditorState {
+  return { font, settings: freshSettings(font), sample, text: null, size: 96, name: null };
 }
 
 const freshSettings = (font: CatalogFont): FontSettings => ({

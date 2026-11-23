@@ -4,7 +4,7 @@
  */
 import type { Catalog } from "../core/catalog";
 import { linkText, openLink } from "../core/link";
-import { SAMPLE_IDS, SIZES, type SampleId } from "../core/samples";
+import { LANG_SAMPLE, SAMPLE_IDS, SIZES, type SampleId } from "../core/samples";
 import { currentLang, LANGS, saveLang, t, type Lang } from "../i18n";
 import type { Store } from "../store";
 import { h } from "./dom";
@@ -62,7 +62,8 @@ export function carryOver(store: Store, catalog: Catalog, recent: Pick<Recent, "
   }
   store.update((s) => ({
     ...s,
-    sample: SAMPLE_IDS.includes(carry.sample) ? carry.sample : s.sample,
+    // A language's own opening sample gives way to the next language's; one the user picked stays.
+    sample: !SAMPLE_IDS.includes(carry.sample) ? s.sample : Object.values(LANG_SAMPLE).includes(carry.sample) ? LANG_SAMPLE[currentLang()] : carry.sample,
     size: (SIZES as readonly number[]).includes(carry.size) ? carry.size : s.size,
     text: typeof carry.text === "string" ? carry.text : null,
   }));

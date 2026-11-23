@@ -1,3 +1,5 @@
+import type { Lang } from "../i18n";
+
 /** Preview texts. The paragraph is Article 1 of the Universal Declaration of Human Rights. */
 export const SAMPLES = {
   pangram: {
@@ -22,6 +24,9 @@ export const SAMPLES = {
 
 export type SampleId = keyof typeof SAMPLES;
 export const SAMPLE_IDS = Object.keys(SAMPLES) as SampleId[];
+
+/** The sample each interface language opens on, so its own letters show first. */
+export const LANG_SAMPLE: Readonly<Record<Lang, SampleId>> = { en: "pangram", tr: "turkish" };
 
 /** Sizes of the smaller preview lines under the main one, as in the design. */
 export const WATERFALL = [40, 32, 24, 20] as const;

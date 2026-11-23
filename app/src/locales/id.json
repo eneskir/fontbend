@@ -55,6 +55,7 @@
   "preview.loading": "Memuat {family}…",
   "preview.noStretch": "Fontbend tidak bisa merentangkan {family}, jadi nilai di luar rentangnya ditampilkan di ujung rentang.",
   "preview.loadFailed": "{family} tidak termuat. Periksa koneksimu lalu coba lagi.",
+  "preview.sampleFallback": "{family} tidak punya huruf untuk contoh {sample}, jadi contoh bahasa Inggris yang ditampilkan.",
   "sample.pangram": "Pangram",
   "sample.turkish": "Turki",
   "sample.spanish": "Spanyol",

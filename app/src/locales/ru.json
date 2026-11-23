@@ -55,6 +55,7 @@
   "preview.loading": "Загрузка {family}…",
   "preview.noStretch": "Fontbend не смог растянуть {family}, поэтому значения за пределами диапазона показаны на его краю.",
   "preview.loadFailed": "{family} не загрузился. Проверьте подключение и повторите.",
+  "preview.sampleFallback": "В {family} нет букв для образца «{sample}», поэтому показан английский.",
   "sample.pangram": "Панграмма",
   "sample.turkish": "Турецкий",
   "sample.spanish": "Испанский",

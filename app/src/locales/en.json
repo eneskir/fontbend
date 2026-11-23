@@ -55,6 +55,7 @@
   "preview.loading": "Loading {family}…",
   "preview.noStretch": "Fontbend couldn't stretch {family}, so values past its own range show at the range's end.",
   "preview.loadFailed": "{family} didn't load. Check your connection and try again.",
+  "preview.sampleFallback": "{family} has no letters for the {sample} sample, so the English one shows.",
   "sample.pangram": "Pangram",
   "sample.turkish": "Turkish",
   "sample.spanish": "Spanish",

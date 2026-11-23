@@ -55,6 +55,7 @@
   "preview.loading": "Carregando {family}…",
   "preview.noStretch": "O Fontbend não conseguiu esticar {family}, então os valores fora do intervalo dela aparecem no fim do intervalo.",
   "preview.loadFailed": "{family} não carregou. Verifique sua conexão e tente de novo.",
+  "preview.sampleFallback": "{family} não tem as letras da amostra {sample}, por isso aparece a inglesa.",
   "sample.pangram": "Pangrama",
   "sample.turkish": "Turco",
   "sample.spanish": "Espanhol",

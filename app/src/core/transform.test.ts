@@ -72,6 +72,44 @@ function worstGap(original: Uint8Array, mapped: Uint8Array, t: Shear): { gap: nu
 
 const em = (font: Uint8Array) => view(readTables(font).get("head")!).getUint16(18);
 
+/** Kerning, marks on bases and on marks (decomposed, so HarfBuzz positions them), and Turkish. */
+const SHAPED = "AVATAR Tôy fiyatı WAVE Ty, x\u0301 q\u0308 n\u0323\u0302 g\u0303\u0301 Şırnak";
+
+/**
+ * Largest distance between the shaped glyphs of an instance of the mapped font and those of the
+ * original instance, mapped: each glyph's offset is a move (a·x + b·y), its advance scales.
+ */
+async function worstShaped(original: Uint8Array, mapped: Uint8Array, t: Shear): Promise<{ gap: number; where: string }> {
+  const parse = (s: string) => s.split(" ").map((g) => { const [gid, p] = g.split("@"); const [adv, x, y] = p!.split(",").map(Number); return { gid, adv: adv!, x: x!, y: y! }; });
+  let worst = { gap: 0, where: "" };
+  for (const loc of locations(original)) {
+    const a = parse((await shaper(hb.instance(mapped, loc)))(SHAPED, "tr")), b = parse((await shaper(hb.instance(original, loc)))(SHAPED, "tr"));
+    expect(a.map((g) => g.gid), JSON.stringify(loc)).toEqual(b.map((g) => g.gid));
+    a.forEach((g, i) => {
+      const q = b[i]!;
+      const gap = Math.max(Math.abs(g.x - (t.a * q.x + t.b * q.y)), Math.abs(g.y - q.y), Math.abs(g.adv - t.a * q.adv));
+      if (gap > worst.gap) worst = { gap, where: `glyph ${i} at ${JSON.stringify(loc)}` };
+    });
+  }
+  return worst;
+}
+
+/** GDEF's ligature carets that are coordinates (formats 1 and 3), in table order. */
+function carets(tables: ReadonlyMap<string, Uint8Array>): number[] {
+  const gdef = tables.get("GDEF");
+  if (!gdef) return [];
+  const v = view(gdef), list = v.getUint16(8), out: number[] = [];
+  if (!list) return out;
+  for (let i = 0; i < v.getUint16(list + 2); i++) {
+    const lig = list + v.getUint16(list + 4 + i * 2);
+    for (let k = 0; k < v.getUint16(lig); k++) {
+      const cv = lig + v.getUint16(lig + 2 + k * 2);
+      if (v.getUint16(cv) !== 2) out.push(v.getInt16(cv + 2));
+    }
+  }
+  return out;
+}
+
 describe("transformFont", () => {
   // Each tuple's delta is rounded on its own, so where many tuples meet the instance drifts by a
   // few units (measured: mean 0.32, worst 4.2, 0.05% of points past 2); the mapping mistakes the
@@ -94,6 +132,37 @@ describe("transformFont", () => {
       const a = hb.instance(mapped, loc), b = hb.instance(font, loc);
       // Rounded twice (each tuple, then the instance), like the outlines.
       for (const c of "nHo0") expect(Math.abs(advance(a, c) - 0.8 * advance(b, c)), `${c} at ${JSON.stringify(loc)}`).toBeLessThanOrEqual(2);
+    }
+  });
+
+  // Unmapped, the slant moved marks by 31-116 units in every font whose marks this text reaches;
+  // mapped, the worst was 2.4 (rounding of anchors and of their variations).
+  it.each(catalogFiles)("positions %s's marks and kerning with the letters, slanted and narrowed", async (_, font) => {
+    for (const t of [slant(font, 12), widen(0.8)]) {
+      const r = await worstShaped(font, transformFont(font, t), t);
+      expect(r.gap, r.where).toBeLessThanOrEqual(em(font) / 200);
+    }
+  });
+
+  it("moves ligature carets and MVAR's caret slope and script offsets with the letters, at every instance", () => {
+    // Recursive has the most carets, and MVAR varies its caret slope and sub- and superscript offsets.
+    const font = catalogFiles.find(([name]) => name.startsWith("recursive."))![1];
+    const t = slant(font, 12), mapped = transformFont(font, t);
+    for (const loc of locations(font)) {
+      const at = JSON.stringify(loc);
+      const a = readTables(hb.instance(mapped, loc)), b = readTables(hb.instance(font, loc));
+      const ca = carets(a), cb = carets(b);
+      expect(ca.length).toBe(cb.length);
+      expect(ca.length).toBeGreaterThan(0);
+      ca.forEach((x, i) => expect(Math.abs(x - (cb[i]! + t.c)), `caret ${i} at ${at}`).toBeLessThanOrEqual(1));
+      // The vector is whole numbers, and Recursive's MVAR takes its rise from 1 to 1000, so the
+      // mapped vector can only be scaled to rise 30 at the default: within a unit of its run.
+      const ha = view(a.get("hhea")!), hb0 = view(b.get("hhea")!);
+      const lean = (h: DataView) => h.getInt16(20) / h.getInt16(18);
+      expect(Math.abs(lean(ha) - (lean(hb0) + t.b)), at).toBeLessThanOrEqual(1 / ha.getInt16(18));
+      const oa = view(a.get("OS/2")!), ob = view(b.get("OS/2")!);
+      expect(Math.abs(oa.getInt16(14) - (ob.getInt16(14) - t.b * ob.getInt16(16))), at).toBeLessThanOrEqual(1);
+      expect(Math.abs(oa.getInt16(22) - (ob.getInt16(22) + t.b * ob.getInt16(24))), at).toBeLessThanOrEqual(1);
     }
   });
 

@@ -15,12 +15,15 @@
  * value is no longer the mapped one, so such a tuple lists every point unless its inferred
  * values still land within half a unit. HVAR and VVAR are dropped: readers then take advances
  * from gvar's phantom points, which map with the rest. Hinting is dropped, since it moves
- * points along x by the old outlines. GPOS (anchors, kerning) is not mapped yet.
+ * points along x by the old outlines. GPOS and GDEF map in layout.ts; MVAR's x values (the
+ * caret's run, sub- and superscript x offsets) map here with their OS/2 and hhea fields.
  */
 import { glyphData, outline, parseGlyph, type Glyph } from "./glyf";
-import { readTables, view, writeFont } from "./sfnt";
+import { mapLayout } from "./layout";
+import { readTables, tagAt, view, writeFont } from "./sfnt";
 import { encodeDeltas } from "./stretch";
 import { deltasFor, readTuples, type Tuple } from "./variation";
+import { VarStore, varRef, type VarRef } from "./varstore";
 
 /** x' = a·x + b·y + c; y stays. */
 export type Shear = { readonly a: number; readonly b: number; readonly c: number };
@@ -109,6 +112,7 @@ export function transformFont(input: Uint8Array, t: Shear): Uint8Array {
   });
 
   if (gvar && tuples) out.set("gvar", writeGvar(gvar, sources, moved, tuples, t));
+  for (const [tag, data] of mapLayout(tables, t)) out.set(tag, data);
 
   // Metrics: advances scale, and the left side bearing is the new xMin.
   const newAdvances = advances.map((x) => Math.round(t.a * x));
@@ -134,11 +138,15 @@ export function transformFont(input: Uint8Array, t: Shear): Uint8Array {
     hh.setInt16(14, Math.min(...inked.map((b) => b.adv - b.xMax)));
     hh.setInt16(16, Math.max(...inked.map((b) => b.xMax)));
   }
-  // The caret leans with the letters: its run over rise is the vector (run, rise), mapped.
+  // The caret leans with the letters: the vector (run, rise), mapped and scaled by k so that a
+  // small run (an upright font's is often 0 over 1) keeps its precision.
   const rise = hh.getInt16(18) || 1, run = hh.getInt16(20);
-  const lean = (t.a * run + t.b * rise) / rise;
-  hh.setInt16(18, 1000); hh.setInt16(20, Math.round(1000 * lean));
+  const mvar = tables.get("MVAR"), metrics = mvar ? readMvar(mvar) : null;
+  const k = caretFactor(metrics, t, rise, run);
+  hh.setInt16(18, Math.round(k * rise)); hh.setInt16(20, Math.round(k * (t.a * run + t.b * rise)));
+  hh.setInt16(22, Math.round(t.a * hh.getInt16(22))); // caretOffset
   out.set("hhea", newHhea);
+  if (mvar && metrics) out.set("MVAR", mapMvar(mvar, metrics, t, k));
 
   const post = tables.get("post");
   if (post) {
@@ -150,7 +158,11 @@ export function transformFont(input: Uint8Array, t: Shear): Uint8Array {
   const os2 = tables.get("OS/2");
   if (os2) {
     const o = os2.slice();
-    view(o).setInt16(2, Math.round(t.a * view(o).getInt16(2))); // xAvgCharWidth
+    const v = view(o);
+    v.setInt16(2, Math.round(t.a * v.getInt16(2))); // xAvgCharWidth
+    // Sub- and superscripts move with the map; a subscript's y offset counts downward.
+    v.setInt16(14, Math.round(t.a * v.getInt16(14) - t.b * v.getInt16(16)));
+    v.setInt16(22, Math.round(t.a * v.getInt16(22) + t.b * v.getInt16(24)));
     out.set("OS/2", o);
   }
   if (view(maxp).getUint32(0) === 0x00010000) {
@@ -159,6 +171,57 @@ export function transformFont(input: Uint8Array, t: Shear): Uint8Array {
     out.set("maxp", m);
   }
   return writeFont(input, out);
+}
+
+type Mvar = { readonly store: VarStore; readonly refs: ReadonlyMap<string, VarRef> };
+
+/** MVAR's store and its items by tag; null when it has no store. */
+function readMvar(mvar: Uint8Array): Mvar | null {
+  const v = view(mvar), size = v.getUint16(6), count = v.getUint16(8), storeAt = v.getUint16(10);
+  if (!storeAt) return null;
+  const refs = new Map<string, VarRef>();
+  for (let i = 0; i < count; i++) {
+    const r = 12 + i * size;
+    const ref = varRef(v.getUint16(r + 4), v.getUint16(r + 6));
+    if (ref) refs.set(tagAt(mvar, r), ref);
+  }
+  return { store: new VarStore(mvar.subarray(storeAt)), refs };
+}
+
+/**
+ * The caret vector's scale: rise 1000, unless MVAR then moves rise or run past 16 bits (a font
+ * with a slnt axis may keep rise 1 at the default and add 999 along the axis).
+ */
+function caretFactor(m: Mvar | null, t: Shear, rise: number, run: number): number {
+  const was = (tag: string) => m?.refs.get(tag) ?? null;
+  const reachRise = Math.abs(rise) + (m ? m.store.reach([[was("hcrs"), 1]]) : 0);
+  const reachRun = Math.abs(t.a * run + t.b * rise) + (m ? m.store.reach([[was("hcrn"), t.a], [was("hcrs"), t.b]]) : 0);
+  return Math.min(1000 / Math.abs(rise), 30000 / Math.max(reachRise, reachRun));
+}
+
+/** MVAR's variations of the x values mapped above; `k` is the factor the caret vector was scaled by. */
+function mapMvar(mvar: Uint8Array, m: Mvar, t: Shear, k: number): Uint8Array {
+  const { store, refs } = m;
+  const was = (tag: string) => refs.get(tag) ?? null;
+  const mapped = new Map(refs);
+  const set = (tag: string, ref: VarRef | null) => (ref ? mapped.set(tag, ref) : mapped.delete(tag));
+  set("hcrs", store.combine([[was("hcrs"), k]]));
+  set("hcrn", store.combine([[was("hcrn"), k * t.a], [was("hcrs"), k * t.b]]));
+  set("hcof", store.combine([[was("hcof"), t.a]]));
+  set("sbxo", store.combine([[was("sbxo"), t.a], [was("sbyo"), -t.b]]));
+  set("spxo", store.combine([[was("spxo"), t.a], [was("spyo"), t.b]]));
+
+  const tags = [...mapped.keys()].sort(), body = store.write();
+  const out = new Uint8Array(12 + tags.length * 8 + body.length), w = view(out);
+  out.set(mvar.subarray(0, 6));
+  w.setUint16(6, 8); w.setUint16(8, tags.length); w.setUint16(10, 12 + tags.length * 8);
+  tags.forEach((tag, i) => {
+    const r = 12 + i * 8, ref = mapped.get(tag)!;
+    for (let c = 0; c < 4; c++) out[r + c] = tag.charCodeAt(c);
+    w.setUint16(r + 4, ref.outer); w.setUint16(r + 6, ref.inner);
+  });
+  out.set(body, 12 + tags.length * 8);
+  return out;
 }
 
 function readSource(g: Uint8Array | null): Source {

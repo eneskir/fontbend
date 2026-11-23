@@ -1,15 +1,12 @@
-r"""Builds the fonts that fontbend.com and its preview serve, from Recursive.
+r"""Builds the fonts that fontbend.com serves, from Recursive.
 
 Source: Recursive v1.085, SIL Open Font License 1.1, from google/fonts
 (ofl/recursive/Recursive[CASL,CRSV,MONO,slnt,wght].ttf and OFL.txt).
 
 Each entry in FONTS is one instance of Recursive, subset and saved as WOFF2 in the
 fonts/ folder of its tree:
-- recursive-sans (site/): the placeholder pages. The Sans Linear cut (CASL 0, MONO 0),
-  Basic Latin only.
-- recursive-text and recursive-mono (preview/ and app/): pages that are not public yet and
-  the font maker's interface. The text
-  cut chosen for the site on 19.11.2026, MONO 0.3 and CASL 0.25: wider and softer than
+- recursive-text and recursive-mono (site/ and app/): the site's pages and the font maker's
+  interface. The text cut chosen for the site on 19.11.2026, MONO 0.3 and CASL 0.25: wider and softer than
   Sans Linear and close to the logo's single stroke. Numbers and code use the same
   casualness at MONO 1. Both cover Latin-1, Latin Extended-A and typographic
   punctuation, because the interface is in English and Turkish.
@@ -19,8 +16,9 @@ A font is named <name>.<hash>.woff2, where <hash> is the first 8 hex digits of i
 site/_headers lets browsers and Cloudflare keep .woff2 files for a year without asking
 again, so a changed font must get a new name or visitors keep the old one. The script
 writes the new file, points every page of its tree at it and only then removes the
-previous file, so a page never names a deleted font. Every page of a tree names each of
-that tree's fonts exactly twice, in the preload link and in the @font-face rule. The build is reproducible: the same source gives the
+previous file, so a page never names a deleted font. A page names a font of its tree
+either not at all or exactly twice, in the preload link and in the @font-face rule, and
+every font of a tree is named by at least one page. The build is reproducible: the same source gives the
 same bytes, so running it again changes nothing.
 
 Usage: python scripts/build-site-font.py <folder with the Recursive .ttf and OFL.txt>
@@ -50,10 +48,9 @@ class Font:
 
 
 FONTS = (
-    Font("recursive-sans", "site", {"CASL": 0, "MONO": 0, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, BASIC_LATIN),
-    Font("recursive-text", "preview", {"CASL": 0.25, "MONO": 0.3, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, TEXT),
-    Font("recursive-mono", "preview", {"CASL": 0.25, "MONO": 1, "slnt": 0, "CRSV": 0.5, "wght": 400}, TEXT),
-    # The font maker's interface wears the same cuts as the preview pages.
+    Font("recursive-text", "site", {"CASL": 0.25, "MONO": 0.3, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, TEXT),
+    Font("recursive-mono", "site", {"CASL": 0.25, "MONO": 1, "slnt": 0, "CRSV": 0.5, "wght": 400}, TEXT),
+    # The font maker's interface wears the same cuts as the site's pages.
     Font("recursive-text", "app", {"CASL": 0.25, "MONO": 0.3, "slnt": 0, "CRSV": 0.5, "wght": (400, 700)}, TEXT),
     Font("recursive-mono", "app", {"CASL": 0.25, "MONO": 1, "slnt": 0, "CRSV": 0.5, "wght": 400}, TEXT),
 )
@@ -119,10 +116,12 @@ def main() -> None:
         pages.setdefault(spec.tree, read_pages(tree_dir))
         if not pages[spec.tree]:
             sys.exit(f"No pages in {tree_dir}; nothing written")
-        for page, html in pages[spec.tree].items():
-            refs = font_ref(spec.name).findall(html)
-            if len(refs) != EXPECTED_REFS:
-                sys.exit(f"Expected {EXPECTED_REFS} references to {spec.name} in {page}, found {len(refs)}; nothing written")
+        counts = {page: len(font_ref(spec.name).findall(html)) for page, html in pages[spec.tree].items()}
+        for page, n in counts.items():
+            if n not in (0, EXPECTED_REFS):
+                sys.exit(f"Expected 0 or {EXPECTED_REFS} references to {spec.name} in {page}, found {n}; nothing written")
+        if not any(counts.values()):
+            sys.exit(f"No page in {tree_dir} names {spec.name}; nothing written")
 
     built = [(spec, build(sources[0], spec)) for spec in FONTS]
 
@@ -147,7 +146,6 @@ def main() -> None:
         for old in glob.glob(os.path.join(fonts_dir, font_name + "*.woff2")):
             if font_ref(font_name).fullmatch("/fonts/" + os.path.basename(old)) and os.path.basename(old) != name:
                 os.remove(old)
-    # The preview is deployed on top of site/, so one copy of the license serves both.
     # A Windows checkout may have turned its line ends into CRLF; the repository keeps LF.
     with open(license_file, "rb") as f:
         license_text = f.read().replace(b"\r\n", b"\n")

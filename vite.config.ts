@@ -26,8 +26,7 @@ function publishCatalog(): Plugin {
   };
 }
 
-// The app lives in app/ and builds to dist/. site/ stays the hand-written public site
-// until the app replaces it.
+// The app lives in app/ and builds to dist/; the deploy puts site/ on top of it.
 export default defineConfig({
   root: "app",
   plugins: [publishCatalog()],

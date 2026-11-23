@@ -48,10 +48,16 @@ describe("share link", () => {
     const back = openLink([...fonts, own], link);
     expect(back.state.font).toBe(own);
     expect(back.state.settings).toEqual(s.settings);
-    expect(openLink(fonts, link).opened.kind).toBe("damaged");
+    expect(openLink(fonts, link).opened.kind).toBe("noFile");
     // A catalog font never stands in for an opened file with the same id.
     const { local: _, ...asCatalog } = own;
-    expect(openLink([...fonts, asCatalog], link).opened.kind).toBe("damaged");
+    expect(openLink([...fonts, asCatalog], link).opened.kind).toBe("noFile");
+  });
+
+  it("tells a link from a later version apart from a damaged one", () => {
+    expect(openLink(fonts, "v=2&f=fraunces&wght=820").opened).toEqual({ kind: "newer" });
+    expect(openLink(fonts, "v=12&f=fraunces").state.font).toBe(fonts[0]);
+    for (const bad of ["v=0&f=fraunces", "v=1.5&f=fraunces", "v=x&f=fraunces", "f=fraunces"]) expect(openLink(fonts, bad).opened.kind, bad).toBe("damaged");
   });
 
   it("still opens a link made by this version", () => {
@@ -85,11 +91,12 @@ describe("share link", () => {
   });
 
   it("opens the first font as designed when the link can't be read", () => {
-    for (const bad of ["v=1&f=fraunces&wght=heavy&sub=all&out=ttf", "v=9&f=fraunces", "garbage", "v=1&f=no-such-font&sub=all&out=ttf",
-      `v=1&f=local:${"ab".repeat(32)}&sub=all&out=ttf`]) {
+    const bads = { "v=1&f=fraunces&wght=heavy&sub=all&out=ttf": "damaged", "garbage": "damaged", "v=1&f=no-such-font&sub=all&out=ttf": "damaged",
+      "v=9&f=fraunces": "newer", [`v=1&f=local:${"ab".repeat(32)}&sub=all&out=ttf`]: "noFile" };
+    for (const [bad, kind] of Object.entries(bads)) {
       const { state, opened } = openLink(fonts, bad);
       expect(state, bad).toEqual(startEditing(fonts[0]!));
-      expect(opened.kind, bad).toBe("damaged");
+      expect(opened.kind, bad).toBe(kind);
     }
   });
 });

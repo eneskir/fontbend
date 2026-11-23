@@ -32,8 +32,13 @@ describe("result sentence", () => {
   it("leaves out a part too small to see", () => {
     expect(resultSentence(1.12, 1.02)).toBe("Overall 12% wider than the original.");
     expect(resultSentence(1.004, 0.6)).toBe("Strokes 40% thinner than the original.");
-    expect(resultSentence(1, null)).toBe("Same width and strokes as the original.");
+    expect(resultSentence(1, 1.02)).toBe("Same width and strokes as the original.");
     expect(resultSentence(0.82, 0.003)).toBe("Overall 18% narrower, strokes 99% thinner than the original.");
+  });
+
+  it("never calls strokes the same before they are measured", () => {
+    expect(resultSentence(1, null)).toBe("Same width as the original.");
+    expect(resultSentence(0.9, null)).toBe("Overall 10% narrower than the original.");
   });
 
   it("says it in Turkish as the Turkish design does: decimal comma, percent sign first", () => {

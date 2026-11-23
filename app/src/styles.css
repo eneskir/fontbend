@@ -365,4 +365,12 @@ label.file:has(:disabled) { cursor: default; }
   /* A phone is narrower than one word at 96 px; the main line keeps whole words. */
   .line.is-main { font-size: min(var(--size), 14vw); }
 }
+/* On a phone tall enough to spare the room, Weight, Width and Slant stay at the foot of the screen, so the
+   sample shows while they move; the page ends above them and focus never hides under them. A short screen
+   (a landscape phone, large zoom) keeps them in the page. */
+@media (max-width: 760px) and (min-height: 600px) {
+  .big-sliders { position: fixed; inset: auto 0 0 0; z-index: 3; padding: 8px 16px calc(8px + env(safe-area-inset-bottom)); background: var(--surface); border-top: 1px solid var(--line); }
+  #app { padding-bottom: var(--strip, 0px); }
+  html { scroll-padding-bottom: var(--strip, 0px); }
+}
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } .progress-bar::after { animation: none; width: 100%; } }

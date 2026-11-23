@@ -47,7 +47,7 @@
   "preview.size": "Size",
   "preview.px": "{n} px",
   "preview.textLabel": "Preview text, editable",
-  "preview.asDesigned": "{family} as designed. Move a slider on the right, or pick another font.",
+  "preview.asDesigned": "{family} as designed. Move a slider, or pick another font.",
   "preview.breaks": "Some letters break past {value}.",
   "preview.loading": "Loading {family}…",
   "preview.noStretch": "Fontbend couldn't stretch {family}, so values past its own range show at the range's end.",

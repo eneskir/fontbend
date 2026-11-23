@@ -1,0 +1,18 @@
+# Read by Cloudflare Pages from the root of dist/, rules in order. A font file the user opens is
+# read through a blob: address on this page, so fonts and fetches allow blob:; the font builder is
+# WebAssembly; the interface's small icons are SVG data: images in styles.css.
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self' blob:; font-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+
+# Vite names these files by their content.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The WOFF2 workers alone (vite.config.ts puts them here): their encoder builds functions from
+# strings. A worker follows the policy its own file is served with, so the page keeps the strict one.
+/assets/woff2/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval'

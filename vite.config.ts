@@ -34,4 +34,11 @@ export default defineConfig({
   // Browsers without modulepreload (Safari before 17) still load the modules, only without
   // the early hint, so the polyfill is left out.
   build: { outDir: "../dist", emptyOutDir: true, modulePreload: { polyfill: false } },
+  // The WOFF2 workers get a folder of their own: their encoder builds functions from strings,
+  // which _headers allows there and nowhere else.
+  worker: {
+    rolldownOptions: {
+      output: { entryFileNames: (chunk) => (chunk.name.includes("woff2") ? "assets/woff2/[name]-[hash].js" : "assets/[name]-[hash].js") },
+    },
+  },
 });

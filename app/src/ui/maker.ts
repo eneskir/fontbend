@@ -47,7 +47,7 @@ export function makeWoff2(ttf: Uint8Array): Promise<Uint8Array> {
       else no(new MakeError("WOFF2_FAILED", e.data.error));
     };
     worker.onerror = (e) => { done(); no(new MakeError("WOFF2_FAILED", e.message || "the WOFF2 maker stopped")); };
-    worker.postMessage({ id, ttf } satisfies Woff2Request);
+    worker.postMessage({ id, bytes: ttf } satisfies Woff2Request);
   });
 }
 

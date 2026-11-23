@@ -6,9 +6,11 @@ import type { Catalog } from "../core/catalog";
 import { axisValue, variationSettings, type EditorState } from "../core/editor";
 import { linkText, openLink } from "../core/link";
 import { byDay, mergeRecent, parseRecent, serializeRecent, type RecentEntry } from "../core/recent";
+import { decodeSettings } from "../core/settings";
 import type { Store } from "../store";
 import { h } from "./dom";
 import { loadPreview, previewFamily } from "./faces";
+import { allFonts } from "./opened";
 
 const KEY = "fontbend.recent";
 // A slider sends dozens of values a second; the list is written once it rests.
@@ -33,12 +35,15 @@ export type Recent = {
   render(): void;
   /** Opens the latest font; false when Recent is empty. */
   openLatest(): boolean;
+  /** Opens the latest entry of an opened font file, chosen again; false when it has none. */
+  openFor(sha256: string): boolean;
   /** The next change starts a new entry instead of updating the one being edited. */
   detach(): void;
   count(): number;
 };
 
-export function recent(store: Store, catalog: Catalog, browse: () => void): Recent {
+/** `browse` shows the catalog; `choose` asks for a font file, for an entry whose file isn't open. */
+export function recent(store: Store, catalog: Catalog, browse: () => void, choose: () => void): Recent {
   let storage = kept();
   const stored = parseRecent(storage?.read() ?? null);
   // A later version's list stays as it is: this one neither shows nor writes it.
@@ -49,7 +54,7 @@ export function recent(store: Store, catalog: Catalog, browse: () => void): Rece
   const view = h("div", { class: "drawer recent", id: "drawer-recent", role: "tabpanel", "aria-label": "Recent", hidden: true });
 
   const stateOf = (e: RecentEntry): EditorState | null => {
-    const { state, opened } = openLink(catalog.fonts, e.link);
+    const { state, opened } = openLink(allFonts(catalog), e.link);
     return opened.kind === "damaged" ? null : { ...state, name: e.name };
   };
 
@@ -83,7 +88,8 @@ export function recent(store: Store, catalog: Catalog, browse: () => void): Rece
     // Fonts as designed aren't listed; Reset all keeps the entry as it was.
     if (Object.keys(now.settings.axes).length === 0) return;
     current ??= crypto.randomUUID();
-    entries = mergeRecent(entries, [{ id: current, at: Date.now(), link: linkText(now), name: now.name }]);
+    const file = now.font.local?.fileName;
+    entries = mergeRecent(entries, [{ id: current, at: Date.now(), link: linkText(now), name: now.name, ...(file ? { file } : {}) }]);
     clearTimeout(saving);
     saving = window.setTimeout(save, SAVE_AFTER);
   });
@@ -113,6 +119,17 @@ export function recent(store: Store, catalog: Catalog, browse: () => void): Rece
       h("span", { class: "recent-meta" }, h("span", {}, e.name ?? s.font.family), h("span", { class: "recent-time" }, e.id === current ? "now" : time.format(e.at))));
   };
 
+  // A font file's entry whose file isn't open: the file was never kept, so the user chooses it again.
+  const fileOf = (e: RecentEntry) => { const d = decodeSettings(e.link); return d.ok && d.settings.source.kind === "local" ? d.settings.source.sha256 : null; };
+  const missing = (e: RecentEntry) => {
+    const file = e.file ?? "the font file";
+    return h("div", { class: "recent-missing" },
+      h("p", { class: "label" }, e.name ?? file.replace(/\.[^.]+$/, "")),
+      h("p", { class: "recent-meta" }, h("span", {}, "File not found"), h("span", { class: "recent-time" }, time.format(e.at))),
+      h("p", { class: "meta" }, `Choose ${file} again to keep working on it.`),
+      h("button", { class: "text-button", type: "button", onclick: choose }, "Choose file"));
+  };
+
   function render() {
     if (!shown) return;
     if (!storage) {
@@ -120,17 +137,17 @@ export function recent(store: Store, catalog: Catalog, browse: () => void): Rece
         h("p", { class: "banner-body" }, "This browser doesn't let Fontbend keep anything, for example in a private window. The Copy link button still saves your settings in the link.")));
       return;
     }
-    const listed = entries.flatMap((e) => { const s = stateOf(e); return s ? [{ e, s }] : []; });
+    const listed = entries.flatMap((e): { e: RecentEntry; s: EditorState | null }[] => { const s = stateOf(e); return s || fileOf(e) ? [{ e, s }] : []; });
     if (listed.length === 0) {
       view.replaceChildren(h("div", { class: "recent-empty" }, h("p", { class: "label" }, "No recent fonts yet"),
-        h("p", { class: "banner-body" }, "Fonts you change are listed here."),
+        h("p", { class: "banner-body" }, "Fonts you change are listed here. Font files you open aren't copied, so choose them again to continue."),
         h("button", { class: "text-button", type: "button", onclick: browse }, "Browse base fonts")));
       return;
     }
     const states = new Map(listed.map(({ e, s }) => [e.id, s]));
     view.replaceChildren(
       ...byDay(listed.map(({ e }) => e), new Date(), (d) => date.format(d)).map((g) =>
-        h("section", { class: "recent-day" }, h("h3", { class: "meta" }, g.label), ...g.entries.map((e) => item(e, states.get(e.id)!)))),
+        h("section", { class: "recent-day" }, h("h3", { class: "meta" }, g.label), ...g.entries.map((e) => { const s = states.get(e.id); return s ? item(e, s) : missing(e); }))),
       h("p", { class: "meta recent-note" }, "Recent fonts are kept in this browser's storage. Clearing the site's data removes them."));
   }
 
@@ -138,6 +155,7 @@ export function recent(store: Store, catalog: Catalog, browse: () => void): Rece
     view,
     render() { shown = true; render(); },
     openLatest() { const e = entries.find((x) => stateOf(x)); if (e) open(e); return e !== undefined; },
+    openFor(sha256) { const e = entries.find((x) => fileOf(x) === sha256 && stateOf(x)); if (e) open(e); return e !== undefined; },
     detach() { current = null; },
     count: () => entries.length,
   };

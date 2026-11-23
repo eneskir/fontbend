@@ -8,6 +8,7 @@ import { linkText, openLink, type Opened } from "../core/link";
 import { axisLabel } from "../core/sliders";
 import type { Store } from "../store";
 import { h } from "./dom";
+import { allFonts } from "./opened";
 import type { Recent } from "./recent";
 
 const COPIED_FOR = 2000;
@@ -75,7 +76,7 @@ export function sharedLinks(store: Store, catalog: Catalog, recent: Pick<Recent,
     const text = location.hash.slice(1);
     if (!text) return false;
     history.replaceState(null, "", location.pathname + location.search);
-    const { state, opened } = openLink(catalog.fonts, text);
+    const { state, opened } = openLink(allFonts(catalog), text);
     const hadRecent = recent.count() > 0;
     recent.detach();
     // The sample text and size stay as the user left them.

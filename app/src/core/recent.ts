@@ -14,13 +14,15 @@ export type RecentEntry = {
   readonly link: string;
   /** The name the user gave the font; null keeps the suggestion. */
   readonly name: string | null;
+  /** For a font file the user opened, its file name, to ask for it again: the file itself isn't kept. */
+  readonly file?: string;
 };
 
 const isEntry = (x: unknown): x is RecentEntry => {
   if (typeof x !== "object" || x === null) return false;
   const e = x as Record<string, unknown>;
   return typeof e.id === "string" && e.id !== "" && typeof e.at === "number" && Number.isFinite(e.at)
-    && typeof e.link === "string" && (e.name === null || typeof e.name === "string");
+    && typeof e.link === "string" && (e.name === null || typeof e.name === "string") && (e.file === undefined || typeof e.file === "string");
 };
 
 /**

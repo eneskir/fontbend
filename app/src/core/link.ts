@@ -18,15 +18,15 @@ export type Opened =
 /** The text after the # that opens `state`'s settings. */
 export const linkText = (state: EditorState): string => encodeSettings(state.settings);
 
-/** The editor state a link opens, and what to tell the user about it. `fonts` is the catalog, first font first. */
+/** The editor state a link opens, and what to tell the user about it. `fonts` is the catalog, first font first, then any font files open on this page. */
 export function openLink(fonts: readonly CatalogFont[], text: string): { readonly state: EditorState; readonly opened: Opened } {
   const damaged = (reason: string) => ({ state: startEditing(fonts[0]!), opened: { kind: "damaged", reason } as const });
   const decoded = decodeSettings(text);
   if (!decoded.ok) return damaged(decoded.error);
   const s = decoded.settings;
-  if (s.source.kind !== "catalog") return damaged("a font file opened on another computer");
-  const id = s.source.id, font = fonts.find((f) => f.id === id);
-  if (!font) return damaged(`no font ${id}`);
+  const source = s.source;
+  const font = source.kind === "catalog" ? fonts.find((f) => !f.local && f.id === source.id) : fonts.find((f) => f.local?.sha256 === source.sha256);
+  if (!font) return damaged(source.kind === "catalog" ? `no font ${source.id}` : "a font file that isn't open on this page");
 
   const axes: Record<string, AxisSetting> = {}, skipped: string[] = [];
   for (const [tag, value] of Object.entries(s.axes)) {

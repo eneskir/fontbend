@@ -22,7 +22,7 @@ export function startEditing(font: CatalogFont): EditorState {
 
 const freshSettings = (font: CatalogFont): FontSettings => ({
   schemaVersion: 1,
-  source: { kind: "catalog", id: font.id },
+  source: font.local ? { kind: "local", sha256: font.local.sha256 } : { kind: "catalog", id: font.id },
   axes: {},
   subset: "all",
   formats: FORMATS,

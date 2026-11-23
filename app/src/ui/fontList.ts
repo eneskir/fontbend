@@ -54,5 +54,5 @@ export function fontList(store: Store, catalog: Catalog): HTMLElement {
   mark();
   store.subscribe((now, before) => { if (now.font !== before.font) mark(); });
 
-  return h("nav", { class: "drawer", "aria-label": "Fonts" }, h("h2", { class: "drawer-title label" }, "Fonts"), search, list, empty);
+  return h("nav", { class: "drawer", id: "drawer-fonts", role: "tabpanel", "aria-label": "Fonts" }, search, list, empty);
 }

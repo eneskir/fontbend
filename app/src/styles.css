@@ -1,7 +1,8 @@
 /* Tokens from the Figma design (V7), light then dark. Blue only means "changed from the original"; red only errors.
-   Dark is the default; the Theme menu sets data-theme="light". */
-:root {
-  color-scheme: dark;
+   Dark is the default; the Theme menu sets data-theme="light", and data-canvas when the canvas takes its own colours. */
+:root { color-scheme: dark; }
+/* Declared on the canvas too, so its colours follow its own color-scheme (the build turns light-dark() into variables resolved where declared). */
+:root, .canvas {
   --paper: light-dark(#FAFAF7, #1A1A18);
   --surface: light-dark(#EFEEE9, #232320);
   --line: light-dark(#E2E0DA, #34332F);
@@ -11,10 +12,16 @@
   --red: light-dark(#C0261F, #F0675C);
   --changed: light-dark(#0062E6, #3D8EFF);
   --mono: "Recursive Mono", ui-monospace, monospace;
+  /* One corner for every box: buttons, fields, menus, panels (design: edges a touch soft). */
+  --radius: 2px;
+  /* Keyboard focus: no drawn frame; a soft shadow whose 2px core keeps 3:1 against the ground in both themes. */
+  --focus-shadow: 0 0 4px 2px color-mix(in srgb, var(--ink) 60%, transparent);
   --tri: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 1h10L5 10z'/%3E%3C/svg%3E");
   --tri-hollow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1.25 1.75h7.5L5 8.75z' fill='none' stroke='%23000' stroke-width='1.25' stroke-linejoin='miter'/%3E%3C/svg%3E");
 }
 :root[data-theme="light"] { color-scheme: light; }
+:root[data-canvas="light"] .canvas { color-scheme: light; }
+:root[data-canvas="dark"] .canvas { color-scheme: dark; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 [hidden] { display: none !important; }
@@ -34,7 +41,8 @@ button, input, select { font: inherit; color: inherit; }
 #app .doc-name { font-variation-settings: var(--name-axes, normal); }
 button { background: none; border: 0; cursor: pointer; }
 ul { list-style: none; }
-:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+/* The transparent outline shows only in forced colours, where shadows are dropped. */
+:focus-visible { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus-shadow); }
 
 .title { font-size: 16px; line-height: 24px; font-weight: 600; }
 .label { font-size: 14px; line-height: 20px; font-weight: 500; }
@@ -65,13 +73,13 @@ ul { list-style: none; }
 @supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; } }
 
 .bar-end { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; }
-.primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 2px; background: var(--ink); color: var(--paper); font-weight: 500; }
+.primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: var(--radius); background: var(--ink); color: var(--paper); font-weight: 500; }
 .primary-button:disabled { background: var(--line); color: var(--ink-muted); cursor: default; }
 .primary-button.has-caret::after { content: ""; width: 10px; height: 10px; background: currentColor; mask: var(--tri) center / 8px no-repeat; }
 .primary-button.is-wide { width: 100%; height: 40px; }
 .button-meta { font-family: var(--mono); font-size: 12px; font-weight: 400; }
-.text-button { height: 32px; padding: 0 8px; border-radius: 2px; font-weight: 500; }
-.text-button:hover:not(:disabled) { background: var(--line); }
+.text-button { height: 32px; padding: 0 8px; border-radius: var(--radius); font-weight: 500; }
+.text-button:hover:not(:disabled), .text-button:focus-visible { background: var(--line); }
 .text-button:disabled { color: var(--ink-muted); cursor: default; }
 
 /* Left: fonts */
@@ -79,8 +87,8 @@ ul { list-style: none; }
 .drawer { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 8px; }
 /* Foot of the drawer (design: Help, Theme, language); Theme opens a menu of three choices. */
 .drawer-foot { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 8px; }
-.foot-button { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px 0 4px; border-radius: 2px; color: var(--ink-muted); font-weight: 500; }
-.foot-button:hover, .foot-button[aria-expanded="true"], .drawer-tab[aria-selected="true"] { background: var(--paper); color: var(--ink); }
+.foot-button { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 8px 0 4px; border-radius: var(--radius); color: var(--ink-muted); font-weight: 500; }
+.foot-button:hover, .foot-button:focus-visible, .foot-button[aria-expanded="true"], .drawer-tab[aria-selected="true"], .drawer-tab:focus-visible { background: var(--paper); color: var(--ink); }
 /* Top of the drawer: its views as tabs (design: drawer tabs). */
 .drawer-tabs { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 8px; }
 .icon-text { flex: none; width: 16px; font-size: 11px; line-height: 16px; text-align: center; font-weight: 600; }
@@ -89,25 +97,25 @@ ul { list-style: none; }
 .icon { flex: none; width: 16px; height: 16px; background: currentColor; }
 .icon-theme { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='5.25' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3Cpath d='M8 2.75a5.25 5.25 0 0 1 0 10.5z'/%3E%3C/svg%3E") center / contain no-repeat; }
 /* Menu as the design draws it: a heading, then choices with a tick on the chosen one (radios underneath for keyboard and screen readers). */
-.menu { position: fixed; inset: auto auto 0 0; margin: 0; width: 248px; padding: 4px; background: var(--paper); color: var(--ink); border: 1px solid var(--line-strong); }
+.menu { position: fixed; inset: auto auto 0 0; margin: 0; width: 248px; padding: 4px; background: var(--paper); color: var(--ink); border: 1px solid var(--line-strong); border-radius: var(--radius); }
 .menu-options { display: flex; flex-direction: column; border: 0; }
 .menu-options legend { padding: 0 8px 0 32px; line-height: 24px; }
-.menu-option { position: relative; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px; border-radius: 2px; font-weight: 500; cursor: pointer; }
+.menu-option { position: relative; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 8px; border-radius: var(--radius); font-weight: 500; cursor: pointer; }
 .menu-option:hover { background: var(--surface); }
 .menu-option input { position: absolute; opacity: 0; pointer-events: none; }
 .menu-option::before { content: ""; flex: none; width: 16px; height: 16px; }
 .menu-option:has(:checked)::before { background: var(--ink); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
-.menu-option:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: -2px; }
+.menu-option:has(:focus-visible) { background: var(--surface); box-shadow: inset var(--focus-shadow); }
 /* Language menu: each language in its own name, its code at the right; then a link to suggest a translation. */
 .foot-item { display: contents; }
 .foot-code { flex: none; width: 16px; font-family: var(--mono); font-size: 11px; line-height: 16px; text-align: center; font-weight: 600; }
 .menu-name { flex: 1; }
 .menu-code { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); font-variation-settings: normal; }
 .menu-rule { margin: 4px 0; }
-.menu-link { display: flex; align-items: center; height: 32px; padding: 0 8px 0 32px; border-radius: 2px; font-weight: 500; color: inherit; text-decoration: none; }
-.menu-link:hover { background: var(--surface); }
+.menu-link { display: flex; align-items: center; height: 32px; padding: 0 8px 0 32px; border-radius: var(--radius); font-weight: 500; color: inherit; text-decoration: none; }
+.menu-link:hover, .menu-link:focus-visible { background: var(--surface); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.field { height: 32px; width: 100%; padding: 0 8px; background: var(--paper); border: 0; border-radius: 2px; } /* told apart from the drawer by tone, no border (design) */
+.field { height: 32px; width: 100%; padding: 0 8px; background: var(--paper); border: 0; border-radius: var(--radius); } /* told apart from the drawer by tone, no border (design) */
 .field::placeholder { color: var(--ink-muted); }
 .font-groups { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
 .font-group h3 { padding: 0 8px 4px; }
@@ -116,12 +124,12 @@ ul { list-style: none; }
   width: 100%;
   min-height: 32px;
   padding: 4px 8px;
-  border-radius: 2px;
+  border-radius: var(--radius);
   text-align: left;
   font-size: 16px;
   line-height: 24px;
 }
-.font-item:hover { background: var(--line); }
+.font-item:hover, .font-item:focus-visible { background: var(--line); }
 .font-file { display: block; font-family: "Recursive Text", system-ui, sans-serif; overflow-wrap: anywhere; }
 .font-item[aria-current="true"] { background: var(--paper); }
 /* Open (design E5): choose a font file or drop it on the canvas; a file that can't open says why. */
@@ -137,13 +145,13 @@ ul { list-style: none; }
 .empty .label { color: var(--ink); }
 /* While a file is dragged over the canvas (design: drop target). */
 .canvas { position: relative; }
-.canvas.is-dropping::after { content: attr(data-drop); position: absolute; inset: 16px; z-index: 2; display: flex; align-items: center; justify-content: center; background: var(--paper); border: 2px solid var(--ink); font-size: 14px; line-height: 20px; font-weight: 500; pointer-events: none; }
+.canvas.is-dropping::after { content: attr(data-drop); position: absolute; inset: 16px; z-index: 2; display: flex; align-items: center; justify-content: center; background: var(--paper); border: 2px solid var(--ink); border-radius: var(--radius); font-size: 14px; line-height: 20px; font-weight: 500; pointer-events: none; }
 /* Recent: each font's "Ag" in its own settings, its name and when it last changed. */
 .recent { gap: 16px; }
 .recent-day { display: flex; flex-direction: column; gap: 4px; }
 .recent-day h3 { padding: 0 8px; }
-.recent-item { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px; border-radius: 2px; text-align: left; }
-.recent-item:hover { background: var(--line); }
+.recent-item { display: flex; flex-direction: column; gap: 4px; width: 100%; padding: 8px; border-radius: var(--radius); text-align: left; }
+.recent-item:hover, .recent-item:focus-visible { background: var(--line); }
 .recent-item[aria-current="true"] { background: var(--paper); }
 .recent-sample { display: block; font-size: 28px; line-height: 32px; white-space: nowrap; transform-origin: 0 75%; visibility: hidden; }
 .recent-sample.is-ready { visibility: visible; }
@@ -154,7 +162,7 @@ ul { list-style: none; }
 .empty { padding: 8px; color: var(--ink-muted); }
 
 /* Centre: preview */
-.canvas { display: flex; flex-direction: column; min-height: 0; }
+.canvas { display: flex; flex-direction: column; min-height: 0; background: var(--paper); color: var(--ink); }
 .canvas-bar { flex: none; padding: 8px 32px; background: var(--surface); border-bottom: 1px solid var(--line); }
 .stage { flex: 1; padding: 16px 32px 48px; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -166,9 +174,9 @@ ul { list-style: none; }
   height: 32px;
   padding: 0 8px;
   background: var(--paper); /* on the band, told apart by tone (design Y1, no border) */
-  border-radius: 2px;
+  border-radius: var(--radius);
 }
-.field-group:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; }
+.field-group:has(:focus-visible) { outline: 2px solid transparent; outline-offset: 2px; box-shadow: var(--focus-shadow); }
 .select { appearance: none; height: 32px; padding-right: 20px; background: none; border: 0; font-weight: 500; cursor: pointer; }
 .select:focus-visible { outline: none; }
 .select option { background: var(--paper); color: var(--ink); }
@@ -194,8 +202,8 @@ ul { list-style: none; }
 .banner-texts { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .banner-body { color: var(--ink-muted); }
 .banner.is-damaged .label { color: var(--red); }
-.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 2px; }
-.icon-button:hover { background: var(--line); }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--radius); }
+.icon-button:hover, .icon-button:focus-visible { background: var(--line); }
 .icon-close { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 3.5l9 9m0-9l-9 9' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
 .icon-check { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
 .copy-link { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
@@ -215,7 +223,7 @@ ul { list-style: none; }
    Stated outright: an editable line breaks words by default. */
 .line { line-height: 1.2; overflow-wrap: normal; }
 .line.is-main { font-size: var(--size); line-height: 1.1; padding-bottom: 16px; font-variation-settings: var(--axes-moving, var(--axes)); }
-.line.is-main:focus-visible { outline: 1px dashed var(--line-strong); outline-offset: 8px; }
+.line.is-main:focus-visible { outline-offset: 8px; background: var(--surface); box-shadow: 0 0 0 8px var(--surface), 0 0 4px 10px color-mix(in srgb, var(--ink) 60%, transparent); }
 .paragraph { font-size: 16px; line-height: 24px; max-width: 70ch; }
 .source { padding-top: 8px; font-family: "Recursive Text", system-ui, sans-serif; font-variation-settings: normal; }
 
@@ -226,7 +234,7 @@ ul { list-style: none; }
 .count { margin-left: 8px; font-family: var(--mono); color: var(--ink-muted); font-weight: 400; }
 .owner { font-size: 12px; color: var(--ink-muted); }
 .big-sliders { display: flex; flex-direction: column; gap: 8px; }
-.card { padding: 8px 12px; background: var(--paper); }
+.card { padding: 8px 12px; background: var(--paper); border-radius: var(--radius); }
 .is-big .slider-label { font-size: 14px; line-height: 20px; font-weight: 600; }
 .axis-list { display: flex; flex-direction: column; gap: 16px; }
 
@@ -239,7 +247,7 @@ ul { list-style: none; }
 .slider-value { margin-left: auto; font-family: var(--mono); }
 /* The handle's centre sits where the native thumb's centre is: 6px in from each end. */
 .slider-track { position: relative; height: 22px; --x: calc(6px + var(--at) * (100% - 12px)); }
-.slider-track:has(:focus-visible) { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+.slider-track:has(:focus-visible) { outline: 2px solid transparent; outline-offset: 2px; border-radius: var(--radius); box-shadow: var(--focus-shadow); }
 .slider-track input { appearance: none; position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 1; }
 .slider-track input::-webkit-slider-thumb { appearance: none; width: 12px; height: 22px; }
 .slider-track input::-moz-range-thumb { width: 12px; height: 22px; border: 0; }
@@ -270,6 +278,7 @@ ul { list-style: none; }
   background: var(--paper);
   color: var(--ink);
   border: 1px solid var(--line-strong); /* floating panels and menus get the strong edge (design) */
+  border-radius: var(--radius);
 }
 .download:popover-open { display: flex; }
 .download-head { display: flex; flex-direction: column; gap: 12px; }
@@ -288,7 +297,7 @@ ul { list-style: none; }
 .back-button::before { content: ""; width: 10px; height: 10px; background: currentColor; mask: var(--tri) center / 8px no-repeat; transform: rotate(90deg); }
 .download-name { font-size: 32px; line-height: 40px; overflow-wrap: anywhere; }
 .download-field { display: flex; flex-direction: column; gap: 4px; }
-.input { height: 40px; width: 100%; padding: 0 8px; background: var(--surface); border: 0; border-radius: 2px; font-weight: 500; }
+.input { height: 40px; width: 100%; padding: 0 8px; background: var(--surface); border: 0; border-radius: var(--radius); font-weight: 500; }
 .input:focus-visible { outline-offset: 0; }
 .select-field { position: relative; display: block; }
 .select-field .input { appearance: none; padding-right: 28px; cursor: pointer; }
@@ -299,7 +308,7 @@ ul { list-style: none; }
 .file-name { overflow-wrap: anywhere; }
 label.file { cursor: pointer; }
 label.file:has(:disabled) { cursor: default; }
-.check { appearance: none; flex: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--ink); border-radius: 2px; cursor: inherit; }
+.check { appearance: none; flex: none; width: 16px; height: 16px; margin: 0; border: 1.5px solid var(--ink); border-radius: var(--radius); cursor: inherit; }
 .check:checked { background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%231A1A18' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / 16px no-repeat; }
 .file-size.is-failed { color: var(--red); }
 /* The tick is paper colored; a data URL can't read the token, so light gets its own. */

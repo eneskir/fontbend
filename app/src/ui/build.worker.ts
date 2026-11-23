@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import wasmUrl from "harfbuzzjs/dist/harfbuzz-subset.wasm?url";
 import type { Axis } from "../core/axis";
+import { balanceSettings } from "../core/balance";
 import { BuildError, buildFont, needsStretched } from "../core/build";
 import { loadInstancer, type Instancer } from "../core/harfbuzz";
 import type { MadeNames } from "../core/download";
@@ -35,7 +36,7 @@ const instancer = () => {
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
 scope.onmessage = async (e: MessageEvent<BuildRequest>) => {
-  const { id, original, axes, settings, names, subset } = e.data;
+  const { id, original, axes, names, subset } = e.data;
   let maker: Instancer;
   try {
     maker = await instancer();
@@ -46,9 +47,12 @@ scope.onmessage = async (e: MessageEvent<BuildRequest>) => {
   }
   // The stretched font the page draws with carries added axes (core/synth), so a download past
   // the font's own range stretches the shipped file here, without them (up to about 0.7 s).
+  // A Width the font lacks gets its weight balanced as the preview draws it (core/balance).
   let stretched: Uint8Array | null = null;
+  let settings = e.data.settings;
   try {
-    if (needsStretched(axes, settings)) stretched = stretchFont(original).bytes;
+    settings = balanceSettings(axes, settings, () => (stretched ??= stretchFont(original).bytes));
+    if (!stretched && needsStretched(axes, settings)) stretched = stretchFont(original).bytes;
   } catch {
     scope.postMessage({ id, error: "STRETCH_FAILED", message: "Fontbend couldn't stretch this font past its own range. Bring the values back inside it to download." } satisfies BuildReply);
     return;

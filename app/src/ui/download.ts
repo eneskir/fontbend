@@ -1,5 +1,6 @@
 import { FAMILY_MAX, defaultFamily, downloadFiles, fileStem, madeNames, type MadeNames } from "../core/download";
-import { setFormat, setSubset, variationSettings, type Format } from "../core/editor";
+import { setFormat, setSubset, type Format } from "../core/editor";
+import { drawnSettings } from "./drawn";
 import { SUBSETS, type Subset } from "../core/subsets";
 import { makeZip } from "../core/zip";
 import type { Store } from "../store";
@@ -83,7 +84,7 @@ export function download(store: Store): { button: HTMLElement; panel: HTMLElemen
     nameInput.placeholder = defaultFamily(s.font);
     preview.textContent = names.family;
     preview.style.fontFamily = `"${stretchedFamily(s.font)}", "${previewFamily(s.font)}", sans-serif`;
-    preview.style.fontVariationSettings = variationSettings(s);
+    preview.style.fontVariationSettings = drawnSettings(s);
     const stem = fileStem(names);
     ttfRow.name.textContent = `${stem}.ttf`;
     woff2Row.name.textContent = `${stem}.woff2`;

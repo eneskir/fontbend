@@ -1,6 +1,7 @@
 import { GROUPS, SAMPLE, checkCharacters, type GroupResult } from "../core/charcheck";
 import { codePoints } from "../core/cmap";
-import { setSubset, variationSettings } from "../core/editor";
+import { setSubset } from "../core/editor";
+import { drawnSettings } from "./drawn";
 import { readNotdef, type Notdef } from "../core/notdef";
 import { readTables, view } from "../core/sfnt";
 import type { Subset } from "../core/subsets";
@@ -79,7 +80,7 @@ export function characterCheck(store: Store, back: () => void) {
   const draw = (into: HTMLElement, letters: readonly string[], r: Extract<Result, { chars: Set<number> }>) => {
     const s = store.get();
     into.style.fontFamily = `"${stretchedFamily(s.font)}", "${previewFamily(s.font)}", sans-serif`;
-    into.style.fontVariationSettings = variationSettings(s);
+    into.style.fontVariationSettings = drawnSettings(s);
     into.replaceChildren(...letters.map((l) => (r.chars.has(l.codePointAt(0)!) ? l : box(r.notdef))));
     into.setAttribute("aria-label", letters.filter((l) => r.chars.has(l.codePointAt(0)!)).join(" ") || "none of the letters");
   };

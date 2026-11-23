@@ -51,7 +51,8 @@ ul { list-style: none; }
   background: var(--surface);
   border-bottom: 1px solid var(--line);
 }
-.doc-name { padding: 0 8px; font-size: 14px; line-height: 20px; font-weight: 500; }
+/* On a phone a long name gives way to the buttons, cut short on one line. */
+.doc-name { min-width: 0; padding: 0 8px; font-size: 14px; line-height: 20px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .workspace { display: grid; grid-template-columns: 288px minmax(0, 1fr) 400px; flex: 1; min-height: 0; }
 .drawer, .stage, .panel { overflow: auto; }
@@ -63,7 +64,7 @@ ul { list-style: none; }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--ink-muted); }
 @supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; } }
 
-.bar-end { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.bar-end { flex: none; margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .primary-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 2px; background: var(--ink); color: var(--paper); font-weight: 500; }
 .primary-button:disabled { background: var(--line); color: var(--ink-muted); cursor: default; }
 .primary-button.has-caret::after { content: ""; width: 10px; height: 10px; background: currentColor; mask: var(--tri) center / 8px no-repeat; }
@@ -146,6 +147,17 @@ ul { list-style: none; }
 /* Measured, never seen: a box of no size keeps its long line from widening the page. */
 .measure { position: absolute; width: 0; height: 0; overflow: hidden; visibility: hidden; pointer-events: none; white-space: pre; font-size: 64px; }
 .is-failed .status { color: var(--red); }
+/* A shared link's band (design E7): under the controls, over the sample, closed by the user. */
+.banner { flex: none; display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 8px 8px 8px 32px; background: var(--surface); border-bottom: 1px solid var(--line); }
+.banner[hidden] { display: none; }
+.banner-texts { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.banner-body { color: var(--ink-muted); }
+.banner.is-damaged .label { color: var(--red); }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 2px; }
+.icon-button:hover { background: var(--line); }
+.icon-close { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 3.5l9 9m0-9l-9 9' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
+.icon-check { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4.25 8.25l2.5 2.5 5-5.5' fill='none' stroke='%23000' stroke-width='1.75' stroke-linecap='square'/%3E%3C/svg%3E") center / contain no-repeat; }
+.copy-link { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 .is-loading .sample, .is-failed .sample { visibility: hidden; }
 
 .sample {
